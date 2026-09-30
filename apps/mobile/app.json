@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "no.idimy.egenberedskap",
+      "bundleIdentifier": "no.htas.egenberedskap",
       "supportsTablet": false
     },
     "android": {
@@ -20,7 +20,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "no.idimy.egenberedskap"
+      "package": "no.htas.egenberedskap"
     },
     "plugins": [
       "expo-router",
