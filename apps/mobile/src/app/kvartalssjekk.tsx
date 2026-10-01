@@ -1,0 +1,179 @@
+import { daysBetween, nextQuarterlyCheck } from '@egenberedskap/core';
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { Icon } from '@/components/ui/icon';
+import { Colors, Radius, Spacing } from '@/constants/theme';
+import { formatDate, todayIso } from '@/lib/format';
+import { household, stock } from '@/lib/sample-data';
+
+type Step = {
+  question: string;
+  detail?: string;
+  /** The first answer is the "all good" one and gets the filled button. */
+  answers: [string, string];
+};
+
+export default function Kvartalssjekk() {
+  const today = todayIso();
+  const expiringThisMonth = stock.filter(
+    (item) => item.expiresOn && daysBetween(today, item.expiresOn) >= 0 && daysBetween(today, item.expiresOn) <= 30,
+  ).length;
+
+  const steps: Step[] = [
+    { question: `Er dere fortsatt ${household.people} i husstanden?`, answers: ['Ja', 'Nei, endre'] },
+    {
+      question: 'Gå gjennom utløpsdatoer',
+      detail:
+        expiringThisMonth > 0
+          ? `${expiringThisMonth} ${expiringThisMonth === 1 ? 'vare går' : 'varer går'} ut innen en måned`
+          : 'Ingen varer går ut den neste måneden',
+      answers: ['Byttet', 'Påminn meg'],
+    },
+    { question: 'Test lommelykt og radio', answers: ['Virker', 'Må fikses'] },
+    { question: 'Stemmer nødkontaktene?', answers: ['Ja', 'Endre'] },
+  ];
+
+  const [answers, setAnswers] = useState<string[]>([]);
+  const current = answers.length;
+  const complete = current === steps.length;
+  const answer = (value: string) => setAnswers((prev) => [...prev, value]);
+
+  return (
+    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
+      <View style={styles.topBar}>
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Lukk"
+          hitSlop={8}
+          style={styles.close}>
+          <Icon name={{ ios: 'xmark', android: 'close' }} size={15} color={Colors.label} />
+        </Pressable>
+        <Text style={styles.duration}>Ca. 5 minutter</Text>
+        <View style={styles.spacer} />
+      </View>
+
+      <View style={styles.intro}>
+        <Text style={styles.title}>Kvartalssjekk</Text>
+        <Text style={styles.lead}>Beredskap blir fort utdatert. Fire raske spørsmål holder tallet riktig.</Text>
+      </View>
+
+      <View style={styles.card}>
+        {steps.map((step, i) => {
+          const state = i < current ? 'done' : i === current ? 'active' : 'pending';
+          return (
+            <View key={step.question} style={[styles.step, i > 0 && styles.stepDivider]}>
+              <View
+                style={[
+                  styles.badge,
+                  state === 'done' && { backgroundColor: Colors.success, borderColor: Colors.success },
+                  state === 'active' && { backgroundColor: Colors.accent, borderColor: Colors.accent },
+                ]}>
+                {state === 'done' ? (
+                  <Icon name={{ ios: 'checkmark', android: 'check' }} size={11} color="#FFFFFF" />
+                ) : (
+                  <Text style={[styles.badgeText, state === 'active' && { color: '#FFFFFF' }]}>{i + 1}</Text>
+                )}
+              </View>
+              <View style={styles.stepBody}>
+                <Text
+                  style={[
+                    styles.question,
+                    state === 'active' && styles.questionActive,
+                    state === 'pending' && { color: Colors.secondaryLabel },
+                  ]}>
+                  {step.question}
+                </Text>
+                {state === 'done' && <Text style={styles.detail}>{answers[i]}</Text>}
+                {state === 'active' && step.detail && <Text style={styles.detail}>{step.detail}</Text>}
+                {state === 'active' && (
+                  <View style={styles.actions}>
+                    {step.answers.map((label, a) => (
+                      <Pressable
+                        key={label}
+                        onPress={() => answer(label)}
+                        style={({ pressed }) => [
+                          styles.action,
+                          a === 0 ? styles.actionPrimary : styles.actionSecondary,
+                          pressed && { opacity: 0.8 },
+                        ]}>
+                        <Text style={[styles.actionText, a === 0 && { color: '#FFFFFF' }]}>{label}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
+            </View>
+          );
+        })}
+      </View>
+
+      <Text style={styles.footnote}>
+        Neste sjekk blir foreslått rundt {formatDate(nextQuarterlyCheck(today))}.
+      </Text>
+
+      {complete && (
+        <Pressable onPress={() => router.back()} style={[styles.action, styles.actionPrimary, styles.save]}>
+          <Text style={[styles.actionText, { color: '#FFFFFF' }]}>Lagre sjekken</Text>
+        </Pressable>
+      )}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: Colors.background },
+  content: { paddingBottom: 40, gap: 20 },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.screen,
+    paddingTop: 16,
+  },
+  close: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.fill,
+  },
+  spacer: { width: 44 },
+  duration: { fontSize: 15, color: Colors.secondaryLabel },
+  intro: { paddingHorizontal: Spacing.screen + 4, gap: 6 },
+  title: { fontSize: 34, fontWeight: '700', color: Colors.label },
+  lead: { fontSize: 17, lineHeight: 23, color: Colors.secondaryLabel },
+  card: {
+    marginHorizontal: Spacing.screen,
+    borderRadius: Radius.card,
+    borderCurve: 'continuous',
+    backgroundColor: Colors.card,
+    overflow: 'hidden',
+  },
+  step: { flexDirection: 'row', gap: 14, paddingHorizontal: Spacing.rowInset, paddingVertical: 13 },
+  stepDivider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Colors.separator },
+  badge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    borderColor: Colors.tertiaryLabel,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badgeText: { fontSize: 14, fontWeight: '600', color: Colors.secondaryLabel },
+  stepBody: { flex: 1, gap: 2 },
+  question: { fontSize: 17, color: Colors.label },
+  questionActive: { fontWeight: '600' },
+  detail: { fontSize: 15, color: Colors.secondaryLabel },
+  actions: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  action: { flex: 1, alignItems: 'center', paddingVertical: 11, borderRadius: Radius.pill },
+  actionPrimary: { backgroundColor: Colors.accent },
+  actionSecondary: { backgroundColor: Colors.fill },
+  actionText: { fontSize: 15, fontWeight: '600', color: Colors.label },
+  footnote: { marginHorizontal: Spacing.screen + Spacing.rowInset, marginTop: -12, fontSize: 13, color: Colors.secondaryLabel },
+  save: { flex: 0, marginHorizontal: Spacing.screen },
+});
