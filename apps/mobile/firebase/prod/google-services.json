@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "374868390030",
+    "project_id": "egenberedskapsappen",
+    "storage_bucket": "egenberedskapsappen.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:374868390030:android:7956c49a14f0b0e69199df",
+        "android_client_info": {
+          "package_name": "no.htas.egenberedskap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWBl3k5QLTY-cC2QhGFaOYohcy22_5fkg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
