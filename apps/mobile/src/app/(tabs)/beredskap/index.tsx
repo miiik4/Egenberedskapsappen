@@ -21,8 +21,7 @@ export default function Beredskap() {
       items: data.stock,
       emergencyContacts: data.contacts.length,
       hasMeetingPlace: data.meetingPlace !== null,
-      // Offline documents arrive in a later step.
-      offlineDocuments: 0,
+      offlineDocuments: data.documents.filter((d) => d.files.length > 0).length,
       // Filming arrives in a later step, so no room is filmed yet.
       rooms: data.rooms
         .filter((room) => room.propertyId === data.selectedPropertyId)

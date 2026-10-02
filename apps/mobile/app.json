@@ -10,7 +10,10 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "no.htas.egenberedskap",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "entitlements": {
+        "com.apple.developer.default-data-protection": "NSFileProtectionComplete"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +36,23 @@
         }
       ],
       "expo-sqlite",
-      "expo-notifications"
+      "expo-notifications",
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Velg bilder av dokumenter du vil ha tilgjengelig uten nett.",
+          "cameraPermission": "Ta bilde av dokumenter du vil ha tilgjengelig uten nett.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Bruk Face ID for \u00e5 \u00e5pne dokumentene dine."
+        }
+      ],
+      "./modules/backup-exclusion/app.plugin.js"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -53,6 +53,19 @@ describe('migrations', () => {
     await store.migrate();
     expect(sqlite.prepare('PRAGMA user_version').get()).toEqual({ user_version: SCHEMA_VERSION });
   });
+
+  it('upgrades a database from an earlier version without losing data', async () => {
+    await onboard();
+    await store.saveStockItem({ name: 'Radio', category: 'radio' });
+    // Wind back to how version 1 left it.
+    sqlite.exec('DROP TABLE document_files; DROP TABLE documents; PRAGMA user_version = 1;');
+
+    await store.migrate();
+    const data = await store.load();
+    expect(sqlite.prepare('PRAGMA user_version').get()).toEqual({ user_version: SCHEMA_VERSION });
+    expect(data.stock.map((i) => i.name)).toEqual(['Radio']);
+    expect(data.documents).toEqual([]);
+  });
 });
 
 describe('first launch', () => {
@@ -186,6 +199,14 @@ describe('insurance and quarterly check', () => {
     ]);
   });
 
+  it('locks documents unless the user turns it off', async () => {
+    expect((await store.load()).documentLock).toBe(true);
+    await store.setDocumentLock(false);
+    expect((await store.load()).documentLock).toBe(false);
+    await store.setDocumentLock(true);
+    expect((await store.load()).documentLock).toBe(true);
+  });
+
   it('remembers and clears a requested expiry review', async () => {
     await store.setExpiryReview('2026-10-09');
     expect((await store.load()).expiryReviewOn).toBe('2026-10-09');
@@ -198,6 +219,44 @@ describe('insurance and quarterly check', () => {
     today = '2027-01-03';
     await store.recordQuarterlyCheck({ household: 'Ja' });
     expect((await store.load()).lastQuarterlyCheck).toBe('2027-01-03');
+  });
+});
+
+describe('documents', () => {
+  beforeEach(onboard);
+
+  it('keeps documents with their files, in the order they were added', async () => {
+    const doc = await store.saveDocument({ name: 'Pass, Kari og Ola' });
+    await store.addDocumentFile({ documentId: doc, fileName: 'a.jpg', mimeType: 'image/jpeg', size: 1200 });
+    await store.addDocumentFile({ documentId: doc, fileName: 'b.pdf', mimeType: 'application/pdf', size: 3400 });
+    const [stored] = (await store.load()).documents;
+    expect(stored).toMatchObject({ id: doc, name: 'Pass, Kari og Ola' });
+    expect(stored!.files.map((f) => [f.fileName, f.mimeType, f.size])).toEqual([
+      ['a.jpg', 'image/jpeg', 1200],
+      ['b.pdf', 'application/pdf', 3400],
+    ]);
+  });
+
+  it('renames without touching the files', async () => {
+    const doc = await store.saveDocument({ name: 'Pass' });
+    await store.addDocumentFile({ documentId: doc, fileName: 'a.jpg', mimeType: 'image/jpeg', size: 1 });
+    await store.saveDocument({ id: doc, name: 'Pass, Kari' });
+    expect((await store.load()).documents[0]).toMatchObject({ name: 'Pass, Kari', files: [{ fileName: 'a.jpg' }] });
+  });
+
+  it('removes one file', async () => {
+    const doc = await store.saveDocument({ name: 'Resepter' });
+    const file = await store.addDocumentFile({ documentId: doc, fileName: 'a.jpg', mimeType: 'image/jpeg', size: 1 });
+    await store.deleteDocumentFile(file);
+    expect((await store.load()).documents[0]!.files).toEqual([]);
+  });
+
+  it('removes a document with its files, and says which files to delete from disk', async () => {
+    const doc = await store.saveDocument({ name: 'Skjøte' });
+    await store.addDocumentFile({ documentId: doc, fileName: 'a.pdf', mimeType: 'application/pdf', size: 1 });
+    await store.addDocumentFile({ documentId: doc, fileName: 'b.pdf', mimeType: 'application/pdf', size: 1 });
+    expect(await store.deleteDocument(doc)).toEqual(['a.pdf', 'b.pdf']);
+    expect((await store.load()).documents).toEqual([]);
   });
 });
 

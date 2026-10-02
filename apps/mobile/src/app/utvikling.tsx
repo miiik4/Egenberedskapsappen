@@ -2,6 +2,7 @@ import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
 
 import { useActions, useData } from '@/data/data-provider';
+import { deleteAllStoredFiles } from '@/documents/files';
 import { seedDemoData } from '@/lib/demo-data';
 
 /**
@@ -17,6 +18,7 @@ export default function Utvikling() {
     if (!__DEV__) return;
     (async () => {
       await actions.reset();
+      deleteAllStoredFiles();
       await seedDemoData(actions, { ...data, onboarded: false });
       setDone(true);
     })();

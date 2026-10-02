@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
-import { AddRow, EmptyRow, Row, Section } from '@/components/ui/list';
+import { AddRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { Segmented } from '@/components/ui/segmented';
 import { Colors, Radius, Spacing } from '@/constants/theme';
@@ -37,6 +37,9 @@ export default function Dokumenter() {
       </Stack.Toolbar>
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Menu icon="plus">
+          <Stack.Toolbar.MenuAction icon="doc.badge.plus" onPress={() => router.push('/dokument')}>
+            Dokument
+          </Stack.Toolbar.MenuAction>
           <Stack.Toolbar.MenuAction icon="person.crop.circle.badge.plus" onPress={() => router.push('/kontakt')}>
             Nødkontakt
           </Stack.Toolbar.MenuAction>
@@ -65,7 +68,7 @@ export default function Dokumenter() {
 }
 
 function Nodinfo() {
-  const { contacts, meetingPlace } = useData();
+  const { contacts, meetingPlace, documents } = useData();
   return (
     <>
       {/* Emergency numbers always come first and never sit behind anything else. */}
@@ -130,7 +133,16 @@ function Nodinfo() {
       </Section>
 
       <Section header="Dokumenter" footer="Pass, resepter og skjøte lagres på telefonen og kan åpnes uten nett.">
-        <EmptyRow text="Dokumenter kommer i neste versjon." />
+        {documents.map((d) => (
+          <Row
+            key={d.id}
+            title={d.name}
+            detail={d.files.length > 0 ? String(d.files.length) : 'Tom'}
+            chevron
+            onPress={() => router.push({ pathname: '/dokumenter/[id]', params: { id: d.id } })}
+          />
+        ))}
+        <AddRow title="Legg til dokument" onPress={() => router.push('/dokument')} />
       </Section>
     </>
   );

@@ -74,6 +74,29 @@ const MIGRATIONS: string[] = [
     created_at TEXT NOT NULL
   );
   `,
+  // 2: documents kept on the phone, each with one or more files (photos or PDFs).
+  `
+  CREATE TABLE documents (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT
+  );
+
+  CREATE TABLE document_files (
+    id TEXT PRIMARY KEY NOT NULL,
+    document_id TEXT NOT NULL REFERENCES documents(id),
+    -- Only the name: the app's folder moves between installs and updates on iOS, so the
+    -- full path is worked out when the file is opened.
+    file_name TEXT NOT NULL,
+    mime_type TEXT NOT NULL,
+    size INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT
+  );
+  `,
 ];
 
 export const SCHEMA_VERSION = MIGRATIONS.length;

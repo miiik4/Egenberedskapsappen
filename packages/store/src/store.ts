@@ -16,6 +16,8 @@ export type Policy = {
   deductibleKr?: number;
 };
 export type QuarterlyAnswers = Record<string, string>;
+export type DocumentFile = { id: string; fileName: string; mimeType: string; size: number };
+export type StoredDocument = { id: string; name: string; files: DocumentFile[] };
 
 /** Everything the screens show. Small enough to load whole after every change. */
 export type AppData = {
@@ -30,9 +32,12 @@ export type AppData = {
   stock: StockItem[];
   contacts: Contact[];
   policies: Policy[];
+  documents: StoredDocument[];
   lastQuarterlyCheck: IsoDate | null;
   /** «Påminn meg» from the quarterly check: when to remind about expiry dates again. */
   expiryReviewOn: IsoDate | null;
+  /** Ask for Face ID or the phone's code before showing documents. On unless turned off. */
+  documentLock: boolean;
 };
 
 /** Without an id it's a new record; with one it replaces that record. */
@@ -110,7 +115,7 @@ export function createStore({ db, newId, now, today }: Deps) {
     migrate: () => migrate(db),
 
     async load(): Promise<AppData> {
-      const [onboardedOn, name, people, meetingName, meetingAddress, selected, expiryReviewOn] = await Promise.all(
+      const [onboardedOn, name, people, meetingName, meetingAddress, selected, expiryReviewOn, documentLock] = await Promise.all(
         [
           'onboardedOn',
           'name',
@@ -119,6 +124,7 @@ export function createStore({ db, newId, now, today }: Deps) {
           'meetingPlaceAddress',
           'selectedPropertyId',
           'expiryReviewOn',
+          'documentLock',
         ].map(
           getSetting,
         ),
@@ -143,6 +149,13 @@ export function createStore({ db, newId, now, today }: Deps) {
         sum_kr: number | null;
         deductible_kr: number | null;
       }>('SELECT id, name, renews_on, sum_kr, deductible_kr FROM policies WHERE deleted_at IS NULL ORDER BY created_at');
+      const documents = await db.all<{ id: string; name: string }>(
+        'SELECT id, name FROM documents WHERE deleted_at IS NULL ORDER BY created_at',
+      );
+      const files = await db.all<{ id: string; document_id: string; file_name: string; mime_type: string; size: number }>(
+        `SELECT id, document_id, file_name, mime_type, size FROM document_files
+         WHERE deleted_at IS NULL ORDER BY created_at`,
+      );
       const lastCheck = await db.first<{ checked_on: string }>(
         'SELECT checked_on FROM quarterly_checks ORDER BY checked_on DESC, created_at DESC LIMIT 1',
       );
@@ -170,8 +183,15 @@ export function createStore({ db, newId, now, today }: Deps) {
           ...(p.sum_kr !== null && { sumKr: p.sum_kr }),
           ...(p.deductible_kr !== null && { deductibleKr: p.deductible_kr }),
         })),
+        documents: documents.map((d) => ({
+          ...d,
+          files: files
+            .filter((f) => f.document_id === d.id)
+            .map((f) => ({ id: f.id, fileName: f.file_name, mimeType: f.mime_type, size: f.size })),
+        })),
         lastQuarterlyCheck: lastCheck?.checked_on ?? null,
         expiryReviewOn: expiryReviewOn ?? null,
+        documentLock: documentLock !== 'off',
       };
     },
 
@@ -278,6 +298,39 @@ export function createStore({ db, newId, now, today }: Deps) {
     },
     deletePolicy: (id: string) => softDelete('policies', id),
 
+    saveDocument: async (draft: { id?: string; name: string }) =>
+      upsert('documents', draft.id, { name: required(draft.name, 'name') }),
+
+    /**
+     * Removes a document and its files from the records. Returns the stored file names so
+     * the caller can delete the files themselves, which the store never touches.
+     */
+    async deleteDocument(id: string): Promise<string[]> {
+      const files = await db.all<{ file_name: string }>(
+        'SELECT file_name FROM document_files WHERE document_id = ? AND deleted_at IS NULL',
+        [id],
+      );
+      await db.transaction(async () => {
+        const at = stamp();
+        await db.run(
+          'UPDATE document_files SET deleted_at = ?, updated_at = ? WHERE document_id = ? AND deleted_at IS NULL',
+          [at, at, id],
+        );
+        await softDelete('documents', id);
+      });
+      return files.map((f) => f.file_name);
+    },
+
+    /** Records a file that has already been copied into the app's documents folder. */
+    addDocumentFile: async (file: { documentId: string; fileName: string; mimeType: string; size: number }) =>
+      upsert('document_files', undefined, {
+        document_id: file.documentId,
+        file_name: required(file.fileName, 'fileName'),
+        mime_type: file.mimeType,
+        size: file.size,
+      }),
+    deleteDocumentFile: (id: string) => softDelete('document_files', id),
+
     async recordQuarterlyCheck(answers: QuarterlyAnswers) {
       await db.run('INSERT INTO quarterly_checks (id, checked_on, answers, created_at) VALUES (?, ?, ?, ?)', [
         newId(),
@@ -292,10 +345,22 @@ export function createStore({ db, newId, now, today }: Deps) {
       await setSetting('expiryReviewOn', on);
     },
 
+    setDocumentLock: (on: boolean) => setSetting('documentLock', on ? 'on' : 'off'),
+
     /** Wipes everything back to first launch. Only reachable from developer settings. */
     async reset() {
       await db.transaction(async () => {
-        for (const table of ['settings', 'rooms', 'properties', 'stock_items', 'contacts', 'policies', 'quarterly_checks']) {
+        for (const table of [
+          'settings',
+          'rooms',
+          'properties',
+          'stock_items',
+          'contacts',
+          'policies',
+          'quarterly_checks',
+          'document_files',
+          'documents',
+        ]) {
           await db.run(`DELETE FROM ${table}`);
         }
       });
