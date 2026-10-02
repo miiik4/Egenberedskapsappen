@@ -1,44 +1,64 @@
 import { daysBetween, nextQuarterlyCheck } from '@egenberedskap/core';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
 import { Colors, Radius, Spacing } from '@/constants/theme';
+import { useActions, useData } from '@/data/data-provider';
 import { formatDate, todayIso } from '@/lib/format';
-import { household, stock } from '@/lib/sample-data';
 
 type Step = {
+  key: string;
   question: string;
   detail?: string;
   /** The first answer is the "all good" one and gets the filled button. */
   answers: [string, string];
+  /** Where to go after saving if the second answer was chosen, to put it right. */
+  fix?: Href;
 };
 
 export default function Kvartalssjekk() {
+  const { household, stock } = useData();
+  const { recordQuarterlyCheck } = useActions();
   const today = todayIso();
   const expiringThisMonth = stock.filter(
     (item) => item.expiresOn && daysBetween(today, item.expiresOn) >= 0 && daysBetween(today, item.expiresOn) <= 30,
   ).length;
 
   const steps: Step[] = [
-    { question: `Er dere fortsatt ${household.people} i husstanden?`, answers: ['Ja', 'Nei, endre'] },
     {
+      key: 'household',
+      question: `Er dere fortsatt ${household.people} i husstanden?`,
+      answers: ['Ja', 'Nei, endre'],
+      fix: '/husstand',
+    },
+    {
+      key: 'expiry',
       question: 'Gå gjennom utløpsdatoer',
       detail:
         expiringThisMonth > 0
           ? `${expiringThisMonth} ${expiringThisMonth === 1 ? 'vare går' : 'varer går'} ut innen en måned`
           : 'Ingen varer går ut den neste måneden',
-      answers: ['Byttet', 'Påminn meg'],
+      answers: ['Byttet', 'Senere'],
+      fix: '/beredskap/lager',
     },
-    { question: 'Test lommelykt og radio', answers: ['Virker', 'Må fikses'] },
-    { question: 'Stemmer nødkontaktene?', answers: ['Ja', 'Endre'] },
+    { key: 'equipment', question: 'Test lommelykt og radio', answers: ['Virker', 'Må fikses'] },
+    { key: 'contacts', question: 'Stemmer nødkontaktene?', answers: ['Ja', 'Endre'], fix: '/dokumenter' },
   ];
 
   const [answers, setAnswers] = useState<string[]>([]);
   const current = answers.length;
   const complete = current === steps.length;
   const answer = (value: string) => setAnswers((prev) => [...prev, value]);
+
+  const save = async () => {
+    await recordQuarterlyCheck(Object.fromEntries(steps.map((step, i) => [step.key, answers[i]!])));
+    // Open the first thing that needs putting right, if any.
+    const fix = steps.find((step, i) => step.fix && answers[i] === step.answers[1])?.fix;
+    router.back();
+    if (fix) router.navigate(fix);
+  };
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
@@ -64,7 +84,7 @@ export default function Kvartalssjekk() {
         {steps.map((step, i) => {
           const state = i < current ? 'done' : i === current ? 'active' : 'pending';
           return (
-            <View key={step.question} style={[styles.step, i > 0 && styles.stepDivider]}>
+            <View key={step.key} style={[styles.step, i > 0 && styles.stepDivider]}>
               <View
                 style={[
                   styles.badge,
@@ -115,7 +135,7 @@ export default function Kvartalssjekk() {
       </Text>
 
       {complete && (
-        <Pressable onPress={() => router.back()} style={[styles.action, styles.actionPrimary, styles.save]}>
+        <Pressable onPress={save} style={[styles.action, styles.actionPrimary, styles.save]}>
           <Text style={[styles.actionText, { color: '#FFFFFF' }]}>Lagre sjekken</Text>
         </Pressable>
       )}

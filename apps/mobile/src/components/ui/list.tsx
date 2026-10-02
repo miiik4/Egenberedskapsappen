@@ -81,6 +81,23 @@ export function Row({
   );
 }
 
+/** «+ Legg til …» as the last row of a section. */
+export function AddRow({ title, onPress }: { title: string; onPress: () => void }) {
+  return (
+    <Row
+      title={title}
+      titleColor={Colors.accent}
+      leading={<Icon name={{ ios: 'plus', android: 'add' }} size={17} color={Colors.accent} />}
+      onPress={onPress}
+    />
+  );
+}
+
+/** A quiet line of text inside a section that has nothing in it yet. */
+export function EmptyRow({ text }: { text: string }) {
+  return <Text style={styles.empty}>{text}</Text>;
+}
+
 /** A single tappable card, like «Kvartalssjekk om 9 dager» on Home. */
 export function CardButton(props: Parameters<typeof Row>[0]) {
   return (
@@ -119,6 +136,7 @@ const styles = StyleSheet.create({
   bold: { fontWeight: '600' },
   subtitle: { fontSize: 15, color: Colors.secondaryLabel },
   detail: { fontSize: 17, color: Colors.secondaryLabel },
+  empty: { fontSize: 15, lineHeight: 20, color: Colors.secondaryLabel, paddingHorizontal: Spacing.rowInset, paddingVertical: 14 },
   tile: {
     width: 30,
     height: 30,

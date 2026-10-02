@@ -1,38 +1,56 @@
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 
-import { Row, Section } from '@/components/ui/list';
+import { AddRow, EmptyRow, Row, Section } from '@/components/ui/list';
 import { Pill } from '@/components/ui/pill';
 import { Screen } from '@/components/ui/screen';
 import { Segmented } from '@/components/ui/segmented';
 import { Colors, Spacing } from '@/constants/theme';
+import { useActions, useData } from '@/data/data-provider';
 import { formatKr } from '@/lib/format';
-import { properties, rooms, trips } from '@/lib/sample-data';
 
 type Tab = 'innbo' | 'reise';
 
-const openCamera = () => Alert.alert('Film et rom', 'Kameraet kommer i neste steg.');
+const openCamera = () => Alert.alert('Film et rom', 'Filming med KI kommer i en senere versjon.');
 
 export default function Eiendeler() {
-  const [view, setView] = useState<Tab>('innbo');
-  const [property, setProperty] = useState(properties[0]!.id);
+  const { properties, selectedPropertyId } = useData();
+  const { selectProperty } = useActions();
+  const [tab, setTab] = useState<Tab>('innbo');
+  const property = properties.find((p) => p.id === selectedPropertyId);
 
   return (
     <>
       <Stack.Screen options={{ title: 'Eiendeler' }} />
       <Stack.Toolbar placement="left">
         <Stack.Toolbar.Menu>
-          <Stack.Toolbar.Label>{properties.find((p) => p.id === property)!.short}</Stack.Toolbar.Label>
+          <Stack.Toolbar.Label>{property?.shortName ?? 'Eiendom'}</Stack.Toolbar.Label>
           {properties.map((p) => (
-            <Stack.Toolbar.MenuAction key={p.id} isOn={p.id === property} onPress={() => setProperty(p.id)}>
-              {p.short}
+            <Stack.Toolbar.MenuAction key={p.id} isOn={p.id === property?.id} onPress={() => selectProperty(p.id)}>
+              {p.shortName}
             </Stack.Toolbar.MenuAction>
           ))}
+          {property && (
+            <Stack.Toolbar.MenuAction
+              icon="pencil"
+              onPress={() => router.push({ pathname: '/eiendom', params: { id: property.id } })}>
+              Rediger {property.shortName.toLowerCase()}
+            </Stack.Toolbar.MenuAction>
+          )}
+          <Stack.Toolbar.MenuAction icon="plus" onPress={() => router.push('/eiendom')}>
+            Ny eiendom
+          </Stack.Toolbar.MenuAction>
         </Stack.Toolbar.Menu>
       </Stack.Toolbar>
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Button icon="plus" variant="prominent" tintColor={Colors.accent} onPress={openCamera} />
+        <Stack.Toolbar.Button
+          icon="plus"
+          variant="prominent"
+          tintColor={Colors.accent}
+          accessibilityLabel="Film et rom"
+          onPress={openCamera}
+        />
       </Stack.Toolbar>
 
       <Screen>
@@ -41,67 +59,49 @@ export default function Eiendeler() {
             { value: 'innbo', label: 'Innbo' },
             { value: 'reise', label: 'Reise' },
           ]}
-          value={view}
-          onChange={setView}
+          value={tab}
+          onChange={setTab}
         />
-        {view === 'innbo' ? <Innbo /> : <Reise />}
+        {tab === 'innbo' ? <Innbo /> : <Reise />}
       </Screen>
     </>
   );
 }
 
 function Innbo() {
-  const total = rooms.reduce((sum, room) => sum + room.value, 0);
-  const filmed = rooms.filter((room) => room.filmed).length;
+  const { rooms, selectedPropertyId } = useData();
+  const propertyRooms = rooms.filter((room) => room.propertyId === selectedPropertyId);
+  // Belongings come with filming; until then every room is unfilmed and worth nothing on record.
+  const filmed = 0;
 
   return (
     <>
       <View style={styles.stats}>
-        <Stat value={formatKr(total)} label="dokumentert" />
-        <Stat value={`${filmed} av ${rooms.length}`} label="rom filmet" />
+        <Stat value={formatKr(0)} label="dokumentert" />
+        <Stat value={`${filmed} av ${propertyRooms.length}`} label="rom filmet" />
       </View>
       <Section header="Rom" separatorInset={74}>
-        {rooms.map((room) => (
+        {propertyRooms.map((room) => (
           <Row
             key={room.id}
             title={room.name}
-            subtitle={room.filmed ? `${room.items} gjenstander · ${formatKr(room.value)}` : 'Ikke filmet'}
-            leading={<View style={[styles.thumb, !room.filmed && styles.thumbEmpty]} />}
-            chevron={room.filmed}
-            trailing={!room.filmed && <Pill label="Film" tone="accent" onPress={openCamera} />}
-            onPress={room.filmed ? () => Alert.alert(room.name, 'Romvisningen kommer snart.') : undefined}
+            subtitle="Ikke filmet"
+            leading={<View style={styles.thumb} />}
+            trailing={<Pill label="Film" tone="accent" onPress={openCamera} />}
+            onPress={() => router.push({ pathname: '/rom', params: { id: room.id } })}
           />
         ))}
+        <AddRow title="Legg til rom" onPress={() => router.push('/rom')} />
       </Section>
     </>
   );
 }
 
 function Reise() {
-  const upcoming = trips.filter((trip) => trip.upcoming);
-  const past = trips.filter((trip) => !trip.upcoming);
   return (
-    <>
-      {upcoming.length > 0 && (
-        <Section header="Kommende" footer="Punktene blir gjøremål på Hjem uken før avreise.">
-          {upcoming.map((trip) => (
-            <Row key={trip.id} title={trip.name} subtitle={trip.when} chevron onPress={() => {}} />
-          ))}
-        </Section>
-      )}
-      <Section header="Tidligere">
-        {past.map((trip) => (
-          <Row
-            key={trip.id}
-            title={trip.name}
-            subtitle={`${trip.when} · ${trip.items} gjenstander`}
-            detail={formatKr(trip.value)}
-            chevron
-            onPress={() => {}}
-          />
-        ))}
-      </Section>
-    </>
+    <Section footer="Ta med ting fra innboet på en reise, og film bagasjen før avreise.">
+      <EmptyRow text="Reiser kommer i en senere versjon." />
+    </Section>
   );
 }
 
@@ -126,9 +126,10 @@ const styles = StyleSheet.create({
   },
   statValue: { fontSize: 22, fontWeight: '700', color: Colors.label, fontVariant: ['tabular-nums'] },
   statLabel: { fontSize: 15, color: Colors.secondaryLabel },
-  thumb: { width: 44, height: 44, borderRadius: 10, backgroundColor: Colors.fill },
-  thumbEmpty: {
-    backgroundColor: 'transparent',
+  thumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
     borderWidth: 1,
     borderStyle: 'dashed',
     borderColor: Colors.tertiaryLabel,

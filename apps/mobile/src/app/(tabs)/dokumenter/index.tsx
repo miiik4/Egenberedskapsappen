@@ -1,18 +1,25 @@
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
-import { Row, Section } from '@/components/ui/list';
+import { AddRow, EmptyRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { Segmented } from '@/components/ui/segmented';
 import { Colors, Radius, Spacing } from '@/constants/theme';
-import { formatKr, initials } from '@/lib/format';
-import { contacts, documents, emergencyNumbers, meetingPlace, policies } from '@/lib/sample-data';
+import { useData } from '@/data/data-provider';
+import { formatDate, formatKr, initials } from '@/lib/format';
 
 type Tab = 'nodinfo' | 'forsikring';
 
-const call = (number: string) => Linking.openURL(`tel:${number}`);
+const EMERGENCY_NUMBERS = [
+  { number: '110', label: 'Brann', urgent: true },
+  { number: '112', label: 'Politi', urgent: true },
+  { number: '113', label: 'Ambulanse', urgent: true },
+  { number: '116117', display: '116 117', label: 'Legevakt', urgent: false },
+];
+
+const call = (number: string) => Linking.openURL(`tel:${number.replace(/\s/g, '')}`);
 
 export default function Dokumenter() {
   const [tab, setTab] = useState<Tab>('nodinfo');
@@ -29,7 +36,17 @@ export default function Dokumenter() {
         </Stack.Toolbar.View>
       </Stack.Toolbar>
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Button icon="plus" onPress={() => Alert.alert('Legg til', 'Kommer snart.')} />
+        <Stack.Toolbar.Menu icon="plus">
+          <Stack.Toolbar.MenuAction icon="person.crop.circle.badge.plus" onPress={() => router.push('/kontakt')}>
+            Nødkontakt
+          </Stack.Toolbar.MenuAction>
+          <Stack.Toolbar.MenuAction icon="mappin" onPress={() => router.push('/motested')}>
+            Møtested
+          </Stack.Toolbar.MenuAction>
+          <Stack.Toolbar.MenuAction icon="checkmark.shield" onPress={() => router.push('/forsikring')}>
+            Forsikring
+          </Stack.Toolbar.MenuAction>
+        </Stack.Toolbar.Menu>
       </Stack.Toolbar>
 
       <Screen>
@@ -48,11 +65,12 @@ export default function Dokumenter() {
 }
 
 function Nodinfo() {
+  const { contacts, meetingPlace } = useData();
   return (
     <>
       {/* Emergency numbers always come first and never sit behind anything else. */}
       <View style={styles.numbers}>
-        {emergencyNumbers.map((n) => (
+        {EMERGENCY_NUMBERS.map((n) => (
           <Pressable
             key={n.number}
             onPress={() => call(n.number)}
@@ -75,7 +93,8 @@ function Nodinfo() {
           <Row
             key={c.id}
             title={c.name}
-            subtitle={c.relation}
+            subtitle={c.relation || c.phone}
+            onPress={() => router.push({ pathname: '/kontakt', params: { id: c.id } })}
             leading={
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>{initials(c.name)}</Text>
@@ -93,41 +112,52 @@ function Nodinfo() {
             }
           />
         ))}
-        <Row
-          title="Møtested"
-          subtitle={`${meetingPlace.name}, ${meetingPlace.address}`}
-          leading={
-            <View style={[styles.avatar, { backgroundColor: Colors.accent }]}>
-              <Icon name={{ ios: 'mappin', android: 'location_on' }} size={18} color="#FFFFFF" />
-            </View>
-          }
-        />
+        {meetingPlace ? (
+          <Row
+            title="Møtested"
+            subtitle={[meetingPlace.name, meetingPlace.address].filter(Boolean).join(', ')}
+            onPress={() => router.push('/motested')}
+            leading={
+              <View style={[styles.avatar, { backgroundColor: Colors.accent }]}>
+                <Icon name={{ ios: 'mappin', android: 'location_on' }} size={18} color="#FFFFFF" />
+              </View>
+            }
+          />
+        ) : (
+          <AddRow title="Legg til møtested" onPress={() => router.push('/motested')} />
+        )}
+        <AddRow title="Legg til nødkontakt" onPress={() => router.push('/kontakt')} />
       </Section>
 
-      <Section header="Dokumenter">
-        {documents.map((d) => (
-          <Row key={d.id} title={d.name} detail={String(d.files)} chevron onPress={() => {}} />
-        ))}
+      <Section header="Dokumenter" footer="Pass, resepter og skjøte lagres på telefonen og kan åpnes uten nett.">
+        <EmptyRow text="Dokumenter kommer i neste versjon." />
       </Section>
     </>
   );
 }
 
 function Forsikring() {
+  const { policies } = useData();
   return (
-    <Section header="Forsikringer" footer="Fornyelser innen 60 dager blir gjøremål på Hjem.">
+    <Section header="Forsikringer" footer="Fornyelsesdato, forsikringssum og egenandel samlet ett sted.">
       {policies.map((p) => (
         <Row
           key={p.id}
           title={p.name}
-          subtitle={[p.sum && `${formatKr(p.sum)} forsikringssum`, `Egenandel ${formatKr(p.deductible)}`]
-            .filter(Boolean)
-            .join(' · ')}
-          detail={p.renews}
+          subtitle={
+            [
+              p.sumKr !== undefined && `${formatKr(p.sumKr)} forsikringssum`,
+              p.deductibleKr !== undefined && `Egenandel ${formatKr(p.deductibleKr)}`,
+            ]
+              .filter(Boolean)
+              .join(' · ') || undefined
+          }
+          detail={p.renewsOn && formatDate(p.renewsOn)}
           chevron
-          onPress={() => {}}
+          onPress={() => router.push({ pathname: '/forsikring', params: { id: p.id } })}
         />
       ))}
+      <AddRow title="Legg til forsikring" onPress={() => router.push('/forsikring')} />
     </Section>
   );
 }

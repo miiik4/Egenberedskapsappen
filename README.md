@@ -10,6 +10,7 @@ Funded by partners, not by users and not by ads. Sponsored content is always lab
 | --- | --- |
 | `apps/mobile` | Expo app (iOS + Android), Expo Router, SDK 57 |
 | `packages/core` | Shared TypeScript: domain types, the days-covered calculation, guidance figures. No React, fully tested |
+| `packages/store` | On-device storage: SQLite schema, migrations and every read and write. Tested against real SQLite (`node:sqlite`); the app runs it on expo-sqlite |
 
 Planned: `functions/` (Cloud Functions) and `apps/web` (marketing site and blog) once the Firebase project exists.
 
@@ -24,5 +25,7 @@ npm run typecheck
 npm run lint
 npm run mobile      # Expo dev server; scan the QR code with Expo Go
 ```
+
+In development, opening `exp://<host>:8081/--/utvikling` wipes the local database and fills it with the household from the design.
 
 Add app dependencies with `npx expo install <pkg>` from `apps/mobile`, never plain `npm install`, so versions match the SDK.
