@@ -1,4 +1,4 @@
-import { daysBetween, nextQuarterlyCheck } from '@egenberedskap/core';
+import { addDays, daysBetween, nextQuarterlyCheck } from '@egenberedskap/core';
 import { router, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -6,7 +6,11 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Icon } from '@/components/ui/icon';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
+import { useNotifications } from '@/notifications/notifications-provider';
 import { formatDate, todayIso } from '@/lib/format';
+
+/** «Påminn meg» comes back a week later. */
+const EXPIRY_REVIEW_AFTER_DAYS = 7;
 
 type Step = {
   key: string;
@@ -20,7 +24,8 @@ type Step = {
 
 export default function Kvartalssjekk() {
   const { household, stock } = useData();
-  const { recordQuarterlyCheck } = useActions();
+  const { recordQuarterlyCheck, setExpiryReview } = useActions();
+  const { permission, requestPermission } = useNotifications();
   const today = todayIso();
   const expiringThisMonth = stock.filter(
     (item) => item.expiresOn && daysBetween(today, item.expiresOn) >= 0 && daysBetween(today, item.expiresOn) <= 30,
@@ -40,8 +45,7 @@ export default function Kvartalssjekk() {
         expiringThisMonth > 0
           ? `${expiringThisMonth} ${expiringThisMonth === 1 ? 'vare går' : 'varer går'} ut innen en måned`
           : 'Ingen varer går ut den neste måneden',
-      answers: ['Byttet', 'Senere'],
-      fix: '/beredskap/lager',
+      answers: ['Byttet', 'Påminn meg'],
     },
     { key: 'equipment', question: 'Test lommelykt og radio', answers: ['Virker', 'Må fikses'] },
     { key: 'contacts', question: 'Stemmer nødkontaktene?', answers: ['Ja', 'Endre'], fix: '/dokumenter' },
@@ -53,7 +57,12 @@ export default function Kvartalssjekk() {
   const answer = (value: string) => setAnswers((prev) => [...prev, value]);
 
   const save = async () => {
-    await recordQuarterlyCheck(Object.fromEntries(steps.map((step, i) => [step.key, answers[i]!])));
+    const answered = Object.fromEntries(steps.map((step, i) => [step.key, answers[i]!]));
+    await recordQuarterlyCheck(answered);
+    if (answered.expiry === 'Påminn meg') {
+      await setExpiryReview(addDays(today, EXPIRY_REVIEW_AFTER_DAYS));
+      if (permission === 'undetermined') await requestPermission();
+    }
     // Open the first thing that needs putting right, if any.
     const fix = steps.find((step, i) => step.fix && answers[i] === step.answers[1])?.fix;
     router.back();

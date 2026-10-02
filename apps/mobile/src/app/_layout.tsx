@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
 import { DataProvider, useData } from '@/data/data-provider';
+import { NotificationsProvider } from '@/notifications/notifications-provider';
 
 export default function RootLayout() {
   const dark = useColorScheme() === 'dark';
@@ -9,7 +10,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={dark ? DarkTheme : DefaultTheme}>
       <DataProvider>
-        <Routes />
+        <NotificationsProvider>
+          <Routes />
+        </NotificationsProvider>
       </DataProvider>
     </ThemeProvider>
   );

@@ -31,6 +31,8 @@ export type AppData = {
   contacts: Contact[];
   policies: Policy[];
   lastQuarterlyCheck: IsoDate | null;
+  /** «Påminn meg» from the quarterly check: when to remind about expiry dates again. */
+  expiryReviewOn: IsoDate | null;
 };
 
 /** Without an id it's a new record; with one it replaces that record. */
@@ -108,8 +110,16 @@ export function createStore({ db, newId, now, today }: Deps) {
     migrate: () => migrate(db),
 
     async load(): Promise<AppData> {
-      const [onboardedOn, name, people, meetingName, meetingAddress, selected] = await Promise.all(
-        ['onboardedOn', 'name', 'people', 'meetingPlaceName', 'meetingPlaceAddress', 'selectedPropertyId'].map(
+      const [onboardedOn, name, people, meetingName, meetingAddress, selected, expiryReviewOn] = await Promise.all(
+        [
+          'onboardedOn',
+          'name',
+          'people',
+          'meetingPlaceName',
+          'meetingPlaceAddress',
+          'selectedPropertyId',
+          'expiryReviewOn',
+        ].map(
           getSetting,
         ),
       );
@@ -161,6 +171,7 @@ export function createStore({ db, newId, now, today }: Deps) {
           ...(p.deductible_kr !== null && { deductibleKr: p.deductible_kr }),
         })),
         lastQuarterlyCheck: lastCheck?.checked_on ?? null,
+        expiryReviewOn: expiryReviewOn ?? null,
       };
     },
 
@@ -274,6 +285,11 @@ export function createStore({ db, newId, now, today }: Deps) {
         JSON.stringify(answers),
         stamp(),
       ]);
+    },
+
+    async setExpiryReview(on: IsoDate | null) {
+      if (on !== null) validDate(on, 'expiryReviewOn');
+      await setSetting('expiryReviewOn', on);
     },
 
     /** Wipes everything back to first launch. Only reachable from developer settings. */

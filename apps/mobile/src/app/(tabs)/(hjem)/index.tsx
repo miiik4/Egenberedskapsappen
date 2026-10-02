@@ -8,6 +8,7 @@ import { Pill } from '@/components/ui/pill';
 import { Screen } from '@/components/ui/screen';
 import { Colors } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
+import { useNotifications } from '@/notifications/notifications-provider';
 import { describeAction, formatDate, formatDayChange, greeting, initials, todayIso } from '@/lib/format';
 
 const TASKS_ON_HOME = 3;
@@ -22,6 +23,7 @@ export default function Home() {
   const lastCheck = data.lastQuarterlyCheck ?? data.onboardedOn ?? today;
   const checkIn = daysUntilQuarterlyCheck(lastCheck, today);
   const property = data.properties.find((p) => p.id === data.selectedPropertyId);
+  const { permission, requestPermission } = useNotifications();
 
   return (
     <>
@@ -68,6 +70,14 @@ export default function Home() {
             }
             onPress={() => router.push('/kvartalssjekk')}
           />
+          {permission === 'undetermined' && (
+            <CardButton
+              leading={<IconTile name={{ ios: 'bell.fill', android: 'notifications' }} color={Colors.tileBlue} />}
+              title="Slå på påminnelser"
+              subtitle="Før noe går ut, og når det er tid for kvartalssjekk"
+              onPress={requestPermission}
+            />
+          )}
         </View>
 
         {actions.length > 0 && (

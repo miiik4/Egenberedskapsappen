@@ -186,6 +186,13 @@ describe('insurance and quarterly check', () => {
     ]);
   });
 
+  it('remembers and clears a requested expiry review', async () => {
+    await store.setExpiryReview('2026-10-09');
+    expect((await store.load()).expiryReviewOn).toBe('2026-10-09');
+    await store.setExpiryReview(null);
+    expect((await store.load()).expiryReviewOn).toBeNull();
+  });
+
   it('remembers the latest quarterly check', async () => {
     await store.recordQuarterlyCheck({ household: 'Ja' });
     today = '2027-01-03';
