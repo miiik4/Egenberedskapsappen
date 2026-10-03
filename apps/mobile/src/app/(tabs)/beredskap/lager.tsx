@@ -14,6 +14,7 @@ import { Icon } from '@/components/ui/icon';
 import { AddRow, Row, Section } from '@/components/ui/list';
 import { Pill } from '@/components/ui/pill';
 import { Screen } from '@/components/ui/screen';
+import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { categoryName, formatDate, todayIso } from '@/lib/format';
@@ -45,7 +46,7 @@ export default function Lager() {
     <>
       <Stack.Screen options={{ title: 'Beredskapslager' }} />
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Button icon="plus" accessibilityLabel="Legg til vare" onPress={() => addItem()} />
+        <Stack.Toolbar.Button icon={ToolbarIcons.plus} accessibilityLabel="Legg til vare" onPress={() => addItem()} />
       </Stack.Toolbar>
 
       <Screen>

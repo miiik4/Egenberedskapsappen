@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Share, StyleSheet, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Share, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { useBackup } from '@/backup/backup-provider';
 import { backupErrorMessage, cleanActivationCode } from '@/backup/messages';
@@ -218,5 +218,11 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
     backgroundColor: Colors.card,
   },
-  codeGroup: { fontSize: 24, fontWeight: '600', fontFamily: 'Menlo', letterSpacing: 2, color: Colors.label },
+  codeGroup: {
+    fontSize: 24,
+    fontWeight: '600',
+    fontFamily: Platform.select({ ios: 'Menlo', default: 'monospace' }),
+    letterSpacing: 2,
+    color: Colors.label,
+  },
 });

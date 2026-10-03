@@ -6,6 +6,7 @@ import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'rea
 import { Icon, type IconName } from '@/components/ui/icon';
 import { IconTile, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
+import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { isPdf, storedFile } from '@/documents/files';
@@ -56,7 +57,7 @@ export default function DocumentPage() {
     <>
       <Stack.Screen options={{ title: document.name }} />
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Menu icon="ellipsis">
+        <Stack.Toolbar.Menu icon={ToolbarIcons.more}>
           <Stack.Toolbar.MenuAction
             icon="pencil"
             onPress={() => router.push({ pathname: '/dokument', params: { id: document.id } })}>

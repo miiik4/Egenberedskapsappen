@@ -18,4 +18,5 @@ npm workspaces monorepo: `apps/mobile` (Expo), `packages/core` (domain logic) an
 - Firebase isn't in Expo Go: anything that touches it must check `firebaseAvailable()` so the rest of the app still runs there.
 - New synced tables go in `TABLES` in `packages/store/src/sync-source.ts`, parents before children.
 - No ad SDKs or third-party tracking. Sponsored content is served first-party and labelled "Sponset".
+- Over-the-air updates (EAS Update) reach builds with the same `version` in `apps/mobile/app.json` (runtime policy `appVersion`). **Bump `version` whenever native code changes** (a new native package, a config plugin, app.json native settings), then make new builds; otherwise an update could reach a build that lacks the native code it needs and crash it. JS-only changes can go out with `eas update`.
 - Run `npm test`, `npm run typecheck` and `npm run lint` from the root before calling something done.

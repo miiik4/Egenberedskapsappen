@@ -79,6 +79,12 @@
         "projectId": "b92cddc0-f00c-4701-b7f9-99dfcf4a2ccc"
       }
     },
-    "owner": "mkl96"
+    "owner": "mkl96",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b92cddc0-f00c-4701-b7f9-99dfcf4a2ccc"
+    }
   }
 }

@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { CardButton, IconTile, Section } from '@/components/ui/list';
 import { Pill } from '@/components/ui/pill';
 import { Screen } from '@/components/ui/screen';
+import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { describeGap, formatDate, scenarioName, todayIso } from '@/lib/format';
@@ -36,7 +37,7 @@ export default function Beredskap() {
     <>
       <Stack.Screen options={{ title: 'Beredskap' }} />
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Menu icon="ellipsis">
+        <Stack.Toolbar.Menu icon={ToolbarIcons.more}>
           <Stack.Toolbar.MenuAction icon="checklist" onPress={() => router.push('/kvartalssjekk')}>
             Start kvartalssjekk
           </Stack.Toolbar.MenuAction>

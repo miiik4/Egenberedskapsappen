@@ -6,6 +6,7 @@ import { Icon } from '@/components/ui/icon';
 import { AddRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { Segmented } from '@/components/ui/segmented';
+import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { formatDate, formatKr, initials } from '@/lib/format';
@@ -36,7 +37,7 @@ export default function Dokumenter() {
         </Stack.Toolbar.View>
       </Stack.Toolbar>
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Menu icon="plus">
+        <Stack.Toolbar.Menu icon={ToolbarIcons.plus}>
           <Stack.Toolbar.MenuAction icon="doc.badge.plus" onPress={() => router.push('/dokument')}>
             Dokument
           </Stack.Toolbar.MenuAction>

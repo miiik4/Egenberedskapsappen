@@ -6,6 +6,7 @@ import { AddRow, EmptyRow, Row, Section } from '@/components/ui/list';
 import { Pill } from '@/components/ui/pill';
 import { Screen } from '@/components/ui/screen';
 import { Segmented } from '@/components/ui/segmented';
+import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { formatKr } from '@/lib/format';
@@ -45,7 +46,7 @@ export default function Eiendeler() {
       </Stack.Toolbar>
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Button
-          icon="plus"
+          icon={ToolbarIcons.plus}
           variant="prominent"
           tintColor={Colors.accent}
           accessibilityLabel="Film et rom"
