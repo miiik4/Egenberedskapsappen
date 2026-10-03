@@ -1,15 +1,13 @@
 {
   "expo": {
-    "name": "Egenberedskap",
+    "name": "Egenberedskapsappen",
     "slug": "egenberedskapsappen",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "egenberedskap",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "no.htas.egenberedskap",
       "supportsTablet": false,
       "entitlements": {
         "com.apple.developer.default-data-protection": "NSFileProtectionComplete"
@@ -22,8 +20,7 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
-      "package": "no.htas.egenberedskap"
+      "predictiveBackGestureEnabled": false
     },
     "plugins": [
       "expo-router",
