@@ -1,5 +1,6 @@
 import type { RemoteRecord, RemoteVault } from '@egenberedskap/sync';
 import { getApp } from '@react-native-firebase/app';
+import { initializeAppCheck, ReactNativeFirebaseAppCheckProvider } from '@react-native-firebase/app-check';
 import { getAuth, signInAnonymously } from '@react-native-firebase/auth';
 import {
   collection,
@@ -15,6 +16,7 @@ import {
 } from '@react-native-firebase/firestore';
 import { getFunctions, httpsCallable } from '@react-native-firebase/functions';
 import { deleteObject, getStorage, putFile, ref, writeToFile } from '@react-native-firebase/storage';
+import Constants from 'expo-constants';
 import { File, Paths } from 'expo-file-system';
 
 /** Next to the database, in Finland. */
@@ -36,10 +38,36 @@ export function firebaseAvailable(): boolean {
 }
 
 /**
+ * App Check proves to the backend that requests come from this app on a real device:
+ * App Attest on iPhone (DeviceCheck on the few that lack it), Play Integrity on Android.
+ * Development builds use a debug token registered in the test project instead; the release
+ * build never does, so a leaked debug token can't reach production.
+ */
+let appCheckReady: Promise<unknown> | null = null;
+function ensureAppCheck() {
+  appCheckReady ??= (async () => {
+    const debug = Constants.expoConfig?.extra?.variant !== 'production';
+    const debugToken = process.env.EXPO_PUBLIC_APP_CHECK_DEBUG_TOKEN;
+    const provider = new ReactNativeFirebaseAppCheckProvider();
+    provider.configure({
+      apple: { provider: debug ? 'debug' : 'appAttestWithDeviceCheckFallback', debugToken },
+      android: { provider: debug ? 'debug' : 'playIntegrity', debugToken },
+    });
+    await initializeAppCheck(getApp(), { provider, isTokenAutoRefreshEnabled: true });
+  })().catch((error) => {
+    // Try again next time rather than staying broken.
+    appCheckReady = null;
+    throw error;
+  });
+  return appCheckReady;
+}
+
+/**
  * Backups have no accounts. Firebase still needs to know which phone is asking, so each
  * install gets an anonymous user; vaults decide which of those may read and write them.
  */
 export async function ensureSignedIn() {
+  await ensureAppCheck();
   const auth = getAuth();
   if (!auth.currentUser) await signInAnonymously(auth);
 }
@@ -48,7 +76,10 @@ type VaultResult = { entitledUntil: string };
 
 export async function callFunction<T>(name: 'createVault' | 'joinVault' | 'extendVault', data: object): Promise<T> {
   await ensureSignedIn();
-  const result = await httpsCallable<object, T>(getFunctions(getApp(), REGION), name)(data);
+  // Single-use App Check tokens: the functions refuse one they've seen before.
+  const result = await httpsCallable<object, T>(getFunctions(getApp(), REGION), name, {
+    limitedUseAppCheckTokens: true,
+  })(data);
   return result.data;
 }
 

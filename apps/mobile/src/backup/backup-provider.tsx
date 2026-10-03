@@ -16,7 +16,7 @@ import { useActions, useData, useSyncSource } from '@/data/data-provider';
 import { ensureFolder, storedFile } from '@/documents/files';
 
 import { expoCrypto } from './crypto';
-import { createVault, extendVault, firebaseAvailable, firebaseVault, joinVault } from './firebase';
+import { createVault, ensureSignedIn, extendVault, firebaseAvailable, firebaseVault, joinVault } from './firebase';
 import { deleteDataKey, loadDataKey, saveDataKey } from './keychain';
 
 export type BackupStatus =
@@ -92,6 +92,7 @@ export function BackupProvider({ children }: { children: ReactNode }) {
     try {
       do {
         again.current = false;
+        await ensureSignedIn();
         const dataKey = await loadDataKey();
         if (!dataKey) throw new Error('No data key on this phone');
         await syncOnce({

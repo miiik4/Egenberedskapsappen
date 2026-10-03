@@ -4,7 +4,8 @@
 //   node --test test/backend.test.mjs
 //
 // Needs gcloud logged in as a project owner (to create activation codes and move an
-// entitlement's date), and anonymous sign-in enabled in Firebase Auth.
+// entitlement's date), anonymous sign-in enabled in Firebase Auth, and the App Check debug
+// token in apps/mobile/.env.local (or APP_CHECK_DEBUG_TOKEN), registered for the iOS dev app.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
@@ -19,7 +20,31 @@ const plist = readFileSync(new URL('../../apps/mobile/firebase/test/GoogleServic
 const API_KEY = /<key>API_KEY<\/key>\s*<string>([^<]+)</.exec(plist)[1];
 const BUCKET = /<key>STORAGE_BUCKET<\/key>\s*<string>([^<]+)</.exec(plist)[1];
 
+const IOS_APP_ID = /<key>GOOGLE_APP_ID<\/key>\s*<string>([^<]+)</.exec(plist)[1];
+const DEBUG_TOKEN =
+  process.env.APP_CHECK_DEBUG_TOKEN ??
+  /EXPO_PUBLIC_APP_CHECK_DEBUG_TOKEN=(\S+)/.exec(
+    readFileSync(new URL('../../apps/mobile/.env.local', import.meta.url), 'utf8'),
+  )?.[1];
+
 const FIRESTORE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
+
+/** An App Check token, as the app gets one. Limited-use tokens are what the vault functions take. */
+async function appCheckToken({ limitedUse = false } = {}) {
+  const res = await fetch(
+    `https://firebaseappcheck.googleapis.com/v1/projects/${PROJECT}/apps/${IOS_APP_ID}:exchangeDebugToken?key=${API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Ios-Bundle-Identifier': BUNDLE },
+      body: JSON.stringify({ debugToken: DEBUG_TOKEN, limitedUse }),
+    },
+  );
+  const body = await res.json();
+  assert.ok(res.ok, `App Check exchange failed: ${JSON.stringify(body)}`);
+  return body.token;
+}
+let sessionToken;
+const appCheck = async () => (sessionToken ??= await appCheckToken());
 const sha256 = (text) => createHash('sha256').update(text).digest('hex');
 const hex = () => randomBytes(32).toString('hex');
 const ownerToken = () => execFileSync('gcloud', ['auth', 'print-access-token', `--account=${OWNER}`]).toString().trim();
@@ -35,10 +60,15 @@ async function signInAnonymously() {
   return { uid: body.localId, token: body.idToken };
 }
 
-async function call(name, user, data) {
+async function call(name, user, data, { appCheck: token } = {}) {
+  const check = token === undefined ? await appCheckToken({ limitedUse: true }) : token;
   const res = await fetch(`https://${REGION}-${PROJECT}.cloudfunctions.net/${name}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${user.token}`,
+      ...(check && { 'X-Firebase-AppCheck': check }),
+    },
     body: JSON.stringify({ data }),
   });
   const body = await res.json();
@@ -68,7 +98,7 @@ async function createActivationCode({ uses = 1, days = 365 } = {}) {
 }
 
 /** A record write as the app makes it, with the server time set by the server. */
-async function writeRecord(user, vaultId, { type = 'contacts', id = 'c1', extra = {}, serverTime = true } = {}) {
+async function writeRecord(user, vaultId, { type = 'contacts', id = 'c1', extra = {}, serverTime = true, withAppCheck = true } = {}) {
   const fields = {
     type: { stringValue: type },
     id: { stringValue: id },
@@ -80,7 +110,11 @@ async function writeRecord(user, vaultId, { type = 'contacts', id = 'c1', extra 
   if (!serverTime) fields.serverUpdatedAt = { timestampValue: '2020-01-01T00:00:00Z' };
   const res = await fetch(`${FIRESTORE.replace('/documents', '/documents:commit')}`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${user.token}`, 'Content-Type': 'application/json' },
+    headers: {
+      Authorization: `Bearer ${user.token}`,
+      'Content-Type': 'application/json',
+      ...(withAppCheck && { 'X-Firebase-AppCheck': await appCheck() }),
+    },
     body: JSON.stringify({
       writes: [
         {
@@ -95,14 +129,22 @@ async function writeRecord(user, vaultId, { type = 'contacts', id = 'c1', extra 
   return res.status;
 }
 
-const readRecords = async (user, vaultId) =>
-  (await fetch(`${FIRESTORE}/vaults/${vaultId}/records`, { headers: { Authorization: `Bearer ${user.token}` } })).status;
+const readRecords = async (user, vaultId, { withAppCheck = true } = {}) =>
+  (
+    await fetch(`${FIRESTORE}/vaults/${vaultId}/records`, {
+      headers: { Authorization: `Bearer ${user.token}`, ...(withAppCheck && { 'X-Firebase-AppCheck': await appCheck() }) },
+    })
+  ).status;
 
-async function upload(user, vaultId) {
+async function upload(user, vaultId, { withAppCheck = true } = {}) {
   const name = encodeURIComponent(`vaults/${vaultId}/files/a.jpg`);
   const res = await fetch(`https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o?name=${name}`, {
     method: 'POST',
-    headers: { Authorization: `Firebase ${user.token}`, 'Content-Type': 'application/octet-stream' },
+    headers: {
+      Authorization: `Firebase ${user.token}`,
+      'Content-Type': 'application/octet-stream',
+      ...(withAppCheck && { 'X-Firebase-AppCheck': await appCheck() }),
+    },
     body: randomBytes(1000),
   });
   return res.status;
@@ -168,6 +210,21 @@ describe('backup backend (test project)', () => {
     const { result } = await call('extendVault', alice, { vaultId, activationCode });
     assert.ok(new Date(result.entitledUntil) > new Date());
     assert.equal(await writeRecord(alice, vaultId), 200);
+  });
+
+  it('refuses functions without App Check, and a token used twice', async () => {
+    assert.equal((await call('joinVault', alice, { vaultId, proof }, { appCheck: null })).error, 'Unauthenticated');
+    const token = await appCheckToken({ limitedUse: true });
+    assert.ok((await call('joinVault', alice, { vaultId, proof }, { appCheck: token })).result);
+    assert.equal((await call('joinVault', alice, { vaultId, proof }, { appCheck: token })).error, 'app-check-token-reused');
+  });
+
+  it('refuses Firestore and Storage without App Check, even for members', async () => {
+    // A member the rules would let in, so a refusal here can only be App Check's.
+    const refused = (status) => assert.ok([401, 403].includes(status), `expected a refusal, got ${status}`);
+    refused(await readRecords(alice, vaultId, { withAppCheck: false }));
+    refused(await writeRecord(alice, vaultId, { withAppCheck: false }));
+    refused(await upload(alice, vaultId, { withAppCheck: false }));
   });
 
   it('refuses requests without sign-in', async () => {

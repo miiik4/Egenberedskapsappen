@@ -55,6 +55,8 @@ export function activationCodeHash(code: string): string {
 }
 
 function requireUser(request: CallableRequest): string {
+  // consumeAppCheckToken only marks a reused token; refusing it is up to us.
+  if (request.app?.alreadyConsumed) throw new HttpsError('unauthenticated', 'app-check-token-reused');
   if (!request.auth) throw new HttpsError('unauthenticated', 'sign-in-required');
   return request.auth.uid;
 }
@@ -80,10 +82,17 @@ async function redeem(tx: Transaction, code: string): Promise<{ partner: string;
   return { partner: data.partner, days: data.durationDays };
 }
 
+/**
+ * Every call must come from our app (App Check: App Attest on iPhone, Play Integrity on
+ * Android, debug tokens in development builds). Each token works once, so a recorded request
+ * can't be replayed: the app asks for single-use tokens for these calls.
+ */
+const PROTECTED = { enforceAppCheck: true, consumeAppCheckToken: true } as const;
+
 const daysFrom = (start: number, days: number) => Timestamp.fromMillis(start + days * 24 * 60 * 60 * 1000);
 
 /** Turns backup on: a new vault, paid for by the insurer's activation code. */
-export const createVault = onCall(async (request) => {
+export const createVault = onCall(PROTECTED, async (request) => {
   const uid = requireUser(request);
   const { activationCode, vaultId, proof, wrappedKey } = request.data ?? {};
   requireString(activationCode, 'activation-code', /^[0-9A-Za-z\s-]+$/, 40);
@@ -110,7 +119,7 @@ export const createVault = onCall(async (request) => {
 });
 
 /** A new phone joins an existing vault by proving it knows the recovery code. */
-export const joinVault = onCall(async (request) => {
+export const joinVault = onCall(PROTECTED, async (request) => {
   const uid = requireUser(request);
   const { vaultId, proof } = request.data ?? {};
   requireString(vaultId, 'vault-id', HEX_64);
@@ -132,7 +141,7 @@ export const joinVault = onCall(async (request) => {
 });
 
 /** A new activation code from the insurer extends the entitlement from where it stands. */
-export const extendVault = onCall(async (request) => {
+export const extendVault = onCall(PROTECTED, async (request) => {
   const uid = requireUser(request);
   const { vaultId, activationCode } = request.data ?? {};
   requireString(vaultId, 'vault-id', HEX_64);

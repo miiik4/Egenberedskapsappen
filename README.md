@@ -26,7 +26,23 @@ node --test functions/test/backend.test.mjs    # end-to-end check against the TE
 node functions/scripts/create-codes.mjs egenberedskapsappen-test <partner> <count>   # activation codes
 ```
 
-Before launch: App Check (App Attest / Play Integrity) on the functions, Firestore and Storage, and the same deploy to prod.
+### App Check
+
+Only our app may reach the backend. The functions require App Check and take each token once (no replays); Firestore and Storage enforce it in the test project.
+
+- Development builds use the **debug provider**. Its token lives in `apps/mobile/.env.local` as `EXPO_PUBLIC_APP_CHECK_DEBUG_TOKEN` (never committed) and is registered for the `.dev` apps in the test project only. The production build never uses it.
+- The release build uses **App Attest** (DeviceCheck fallback) on iOS and **Play Integrity** on Android.
+
+### Before launch: prod checklist
+
+The prod project (`egenberedskapsappen`) has its Firestore database (europe-north1), Blaze and the budget alert, but nothing else yet. In order:
+
+1. Firebase Auth: *Get started* in the console, turn on **Anonymous**.
+2. Storage: create the default bucket in **europe-north1**, and grant `roles/firebaserules.firestoreServiceAgent` to the Firebase Storage service agent (Storage rules read vaults from Firestore).
+3. Deploy: `npx firebase-tools deploy --only firestore:rules,storage,functions --project prod`, then a container cleanup policy (`functions:artifacts:setpolicy`).
+4. Grant `roles/firebaseappcheck.tokenVerifier` to the functions' service account (needed to consume tokens).
+5. App Check: register **App Attest** (needs the Apple Team ID) and **Play Integrity** (needs the app in Play Console, linked to the project, with its SHA-256).
+6. Only after a release build has been seen passing App Check: **enforce** it for Firestore and Storage. Enforcing earlier locks everyone out.
 
 ## Builds
 
