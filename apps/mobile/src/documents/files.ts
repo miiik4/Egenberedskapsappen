@@ -12,6 +12,18 @@ const folder = () => new Directory(Paths.document, 'dokumenter');
 
 export const storedFile = (fileName: string) => new File(folder(), fileName);
 
+/**
+ * Creates the folder if needed, always kept out of iCloud backups: passports and
+ * prescriptions don't belong where Apple holds the keys unless the user has Advanced Data
+ * Protection. Android is handled by build-time rules. Used for imports and for files that
+ * arrive from the encrypted backup alike.
+ */
+export function ensureFolder() {
+  const dir = folder();
+  dir.create({ intermediates: true, idempotent: true });
+  excludeFromBackup(dir.uri);
+}
+
 const EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -23,11 +35,8 @@ export const isPdf = (mimeType: string) => mimeType === 'application/pdf';
 
 /** Copies a picked or photographed file into the app, under a fresh name. */
 export async function importFile(sourceUri: string, mimeType: string) {
+  ensureFolder();
   const dir = folder();
-  dir.create({ intermediates: true, idempotent: true });
-  // Passports and prescriptions stay out of iCloud backups, where Apple holds the keys
-  // unless the user has Advanced Data Protection. Android is handled by build-time rules.
-  excludeFromBackup(dir.uri);
   const extension = EXTENSIONS[mimeType] ?? /\.(\w{2,5})$/.exec(sourceUri)?.[1]?.toLowerCase() ?? 'bin';
   const destination = new File(dir, `${randomUUID()}.${extension}`);
   await new File(sourceUri).copy(destination);

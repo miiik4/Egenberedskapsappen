@@ -1,6 +1,7 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
+import { BackupProvider } from '@/backup/backup-provider';
 import { DataProvider, useData } from '@/data/data-provider';
 import { DocumentLockProvider } from '@/documents/lock';
 import { NotificationsProvider } from '@/notifications/notifications-provider';
@@ -13,7 +14,9 @@ export default function RootLayout() {
       <DataProvider>
         <NotificationsProvider>
           <DocumentLockProvider>
-            <Routes />
+            <BackupProvider>
+              <Routes />
+            </BackupProvider>
           </DocumentLockProvider>
         </NotificationsProvider>
       </DataProvider>
@@ -32,6 +35,7 @@ function Routes() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={!onboarded}>
         <Stack.Screen name="velkommen" />
+        <Stack.Screen name="gjenopprett" options={sheet} />
       </Stack.Protected>
       <Stack.Protected guard={onboarded}>
         <Stack.Screen name="(tabs)" />
@@ -44,6 +48,7 @@ function Routes() {
         <Stack.Screen name="eiendom" options={sheet} />
         <Stack.Screen name="forsikring" options={sheet} />
         <Stack.Screen name="dokument" options={sheet} />
+        <Stack.Screen name="sikkerhetskopi" options={sheet} />
         <Stack.Screen name="fil" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
       </Stack.Protected>
       {/* Last, so it's never the fallback a guard redirects to. */}

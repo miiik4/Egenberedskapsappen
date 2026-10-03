@@ -16,6 +16,8 @@ export type Policy = {
   deductibleKr?: number;
 };
 export type QuarterlyAnswers = Record<string, string>;
+/** This phone's link to an encrypted backup. The key itself lives in the Keychain, not here. */
+export type BackupState = { vaultId: string; entitledUntil: string; lastSyncedAt: string | null };
 export type DocumentFile = { id: string; fileName: string; mimeType: string; size: number };
 export type StoredDocument = { id: string; name: string; files: DocumentFile[] };
 
@@ -38,6 +40,7 @@ export type AppData = {
   expiryReviewOn: IsoDate | null;
   /** Ask for Face ID or the phone's code before showing documents. On unless turned off. */
   documentLock: boolean;
+  backup: BackupState | null;
 };
 
 /** Without an id it's a new record; with one it replaces that record. */
@@ -120,7 +123,19 @@ export function createStore({ db, newId, now, today }: Deps) {
     migrate: () => migrate(db),
 
     async load(): Promise<AppData> {
-      const [onboardedOn, name, people, meetingName, meetingAddress, selected, expiryReviewOn, documentLock] = await Promise.all(
+      const [
+        onboardedOn,
+        name,
+        people,
+        meetingName,
+        meetingAddress,
+        selected,
+        expiryReviewOn,
+        documentLock,
+        backupVaultId,
+        backupEntitledUntil,
+        lastSyncedAt,
+      ] = await Promise.all(
         [
           'onboardedOn',
           'name',
@@ -130,6 +145,9 @@ export function createStore({ db, newId, now, today }: Deps) {
           'selectedPropertyId',
           'expiryReviewOn',
           'documentLock',
+          'backupVaultId',
+          'backupEntitledUntil',
+          'lastSyncedAt',
         ].map(
           getSetting,
         ),
@@ -197,6 +215,10 @@ export function createStore({ db, newId, now, today }: Deps) {
         lastQuarterlyCheck: lastCheck?.checked_on ?? null,
         expiryReviewOn: expiryReviewOn ?? null,
         documentLock: documentLock !== 'off',
+        backup:
+          backupVaultId && backupEntitledUntil
+            ? { vaultId: backupVaultId, entitledUntil: backupEntitledUntil, lastSyncedAt: lastSyncedAt ?? null }
+            : null,
       };
     },
 
@@ -350,6 +372,19 @@ export function createStore({ db, newId, now, today }: Deps) {
     },
 
     setDocumentLock: (on: boolean) => setSetting('documentLock', on ? 'on' : 'off'),
+
+    /** Links this phone to a backup vault, or unlinks it with null. Never synced. */
+    async setBackup(backup: { vaultId: string; entitledUntil: string } | null) {
+      await db.transaction(async () => {
+        await setSetting('backupVaultId', backup?.vaultId ?? null);
+        await setSetting('backupEntitledUntil', backup?.entitledUntil ?? null);
+        if (!backup) await setSetting('lastSyncedAt', null);
+      });
+    },
+    setLastSynced: (at: string) => setSetting('lastSyncedAt', at),
+
+    /** A phone restored from backup skips the welcome questions: the answers came with it. */
+    markOnboarded: () => setSetting('onboardedOn', today()),
 
     /** Wipes everything back to first launch. Only reachable from developer settings. */
     async reset() {

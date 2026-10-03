@@ -1,5 +1,6 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CountField, TextField } from '@/components/form/fields';
@@ -51,6 +52,9 @@ export default function Velkommen() {
         </Section>
 
         <PrimaryButton label="Kom i gang" onPress={start} disabled={!ready} />
+        <Pressable onPress={() => router.push('/gjenopprett')} accessibilityRole="button" hitSlop={8}>
+          <Text style={styles.restore}>Ny telefon? Gjenopprett fra sikkerhetskopi</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -62,4 +66,5 @@ const styles = StyleSheet.create({
   intro: { paddingHorizontal: Spacing.screen + 4, gap: 10 },
   title: { fontSize: 34, fontWeight: '700', color: Colors.label },
   lead: { fontSize: 17, lineHeight: 24, color: Colors.secondaryLabel },
+  restore: { textAlign: 'center', fontSize: 17, color: Colors.accent },
 });

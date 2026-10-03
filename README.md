@@ -11,8 +11,32 @@ Funded by partners, not by users and not by ads. Sponsored content is always lab
 | `apps/mobile` | Expo app (iOS + Android), Expo Router, SDK 57 |
 | `packages/core` | Shared TypeScript: domain types, the days-covered calculation, guidance figures. No React, fully tested |
 | `packages/store` | On-device storage: SQLite schema, migrations and every read and write. Tested against real SQLite (`node:sqlite`); the app runs it on expo-sqlite |
+| `packages/sync` | End-to-end encryption and the sync engine for backup. Pure TypeScript, tested with two simulated phones |
+| `functions` | Cloud Functions (europe-north1) for vaults and activation codes. Not a workspace: it deploys on its own |
 
-Planned: `functions/` (Cloud Functions) and `apps/web` (marketing site and blog) once the Firebase project exists.
+Planned: `apps/web` (marketing site and blog).
+
+## Backend
+
+Firebase projects `egenberedskapsappen-test` (alias `test`, the default) and `egenberedskapsappen` (`prod`), all in europe-north1.
+
+```sh
+npx firebase-tools deploy --only firestore:rules,storage,functions --project test
+node --test functions/test/backend.test.mjs    # end-to-end check against the TEST project
+node functions/scripts/create-codes.mjs egenberedskapsappen-test <partner> <count>   # activation codes
+```
+
+Before launch: App Check (App Attest / Play Integrity) on the functions, Firestore and Storage, and the same deploy to prod.
+
+## Builds
+
+Backup needs the native Firebase SDK, so it only works in a development build, not in Expo Go (everything else still does).
+
+```sh
+cd apps/mobile
+npx eas-cli build --profile development-simulator --platform ios   # simulator
+npx expo start --dev-client
+```
 
 ## Getting started
 

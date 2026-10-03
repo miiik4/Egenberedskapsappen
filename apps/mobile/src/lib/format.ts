@@ -17,6 +17,17 @@ export function formatDate(date: IsoDate): string {
   return `${day}. ${MONTHS[month! - 1]}`;
 }
 
+/** "kl. 08.40", the Norwegian way: a dot between hours and minutes. */
+export function formatTime(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `kl. ${pad(date.getHours())}.${pad(date.getMinutes())}`;
+}
+
+/** "3. oktober 2027", for dates that may be a year or more away. */
+export function formatDateWithYear(date: IsoDate): string {
+  return `${formatDate(date)} ${date.slice(0, 4)}`;
+}
+
 /** "186 400 kr", grouped with a no-break space so the number never wraps. */
 export function formatKr(amount: number): string {
   return `${Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} kr`;

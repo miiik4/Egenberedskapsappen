@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDate, formatDayChange, formatKr, greeting, initials, todayIso } from './format';
+import { formatDate, formatDateWithYear, formatDayChange, formatKr, formatTime, greeting, initials, todayIso } from './format';
 
 describe('format', () => {
   it('writes dates the Norwegian way', () => {
     expect(formatDate('2026-10-02')).toBe('2. oktober');
     expect(formatDate('2027-01-01')).toBe('1. januar');
+  });
+
+  it('writes times and far-off dates the Norwegian way', () => {
+    expect(formatTime(new Date(2026, 9, 3, 8, 5))).toBe('kl. 08.05');
+    expect(formatDateWithYear('2027-10-03')).toBe('3. oktober 2027');
   });
 
   it('groups kroner with no-break spaces', () => {

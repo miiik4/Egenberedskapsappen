@@ -208,6 +208,19 @@ describe('insurance and quarterly check', () => {
     ]);
   });
 
+  it('remembers this phone\'s backup link, and forgets it', async () => {
+    expect((await store.load()).backup).toBeNull();
+    await store.setBackup({ vaultId: 'v'.repeat(64), entitledUntil: '2027-10-03T00:00:00.000Z' });
+    await store.setLastSynced('2026-10-03T08:00:00.000Z');
+    expect((await store.load()).backup).toEqual({
+      vaultId: 'v'.repeat(64),
+      entitledUntil: '2027-10-03T00:00:00.000Z',
+      lastSyncedAt: '2026-10-03T08:00:00.000Z',
+    });
+    await store.setBackup(null);
+    expect((await store.load()).backup).toBeNull();
+  });
+
   it('locks documents unless the user turns it off', async () => {
     expect((await store.load()).documentLock).toBe(true);
     await store.setDocumentLock(false);

@@ -6,6 +6,8 @@ import { CountField, DestructiveButton, TextField } from '@/components/form/fiel
 import { FormSheet } from '@/components/form/sheet';
 import { Row, Section } from '@/components/ui/list';
 import { useActions, useData } from '@/data/data-provider';
+import { useBackup } from '@/backup/backup-provider';
+import { deleteDataKey } from '@/backup/keychain';
 import { deleteAllStoredFiles } from '@/documents/files';
 import { useDocumentLock } from '@/documents/lock';
 import { useNotifications } from '@/notifications/notifications-provider';
@@ -15,6 +17,7 @@ export default function Husstand() {
   const { profile, documentLock } = useData();
   const { updateProfile, reset, setDocumentLock } = useActions();
   const { method, unlock } = useDocumentLock();
+  const { status: backupStatus } = useBackup();
 
   // Turning the lock off needs the same Face ID or code as opening a document, or anyone
   // holding the unlocked phone could just switch it off here.
@@ -40,6 +43,7 @@ export default function Husstand() {
           router.back();
           await reset();
           deleteAllStoredFiles();
+          await deleteDataKey();
         },
       },
     ]);
@@ -49,6 +53,14 @@ export default function Husstand() {
       <Section footer="Mengden vann og mat regnes ut fra antall personer.">
         <TextField label="Fornavn" value={name} onChange={setName} autoCapitalize="words" textContentType="name" />
         <CountField label="Personer" value={people} onChange={setPeople} />
+      </Section>
+      <Section footer="Kryptert, så bare du kan åpne den. Inkludert hos utvalgte forsikringsselskaper.">
+        <Row
+          title="Sikkerhetskopi"
+          detail={backupStatus === 'off' ? 'Av' : backupStatus === 'unavailable' ? undefined : 'På'}
+          chevron
+          onPress={() => router.push('/sikkerhetskopi')}
+        />
       </Section>
       <Section footer="Før noe i lageret går ut, og når det er tid for kvartalssjekk.">
         <Row

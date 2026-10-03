@@ -7,7 +7,8 @@ import { Colors, Spacing } from '@/constants/theme';
 
 /**
  * A form presented as a sheet, as in the design: a round close button on the left, the
- * title in the middle and a round, filled save button on the right.
+ * title in the middle and a round, filled save button on the right. Without `onSave` it's an
+ * information sheet with just the close button.
  */
 export function FormSheet({
   title,
@@ -16,8 +17,8 @@ export function FormSheet({
   children,
 }: {
   title: string;
-  canSave: boolean;
-  onSave: () => void;
+  canSave?: boolean;
+  onSave?: () => void;
   children: ReactNode;
 }) {
   return (
@@ -31,13 +32,17 @@ export function FormSheet({
         <Text style={styles.title} numberOfLines={1}>
           {title}
         </Text>
-        <RoundButton
-          label="Lagre"
-          icon={{ ios: 'checkmark', android: 'check' }}
-          onPress={onSave}
-          prominent
-          disabled={!canSave}
-        />
+        {onSave ? (
+          <RoundButton
+            label="Lagre"
+            icon={{ ios: 'checkmark', android: 'check' }}
+            onPress={onSave}
+            prominent
+            disabled={!canSave}
+          />
+        ) : (
+          <View style={styles.spacer} />
+        )}
       </View>
       {children}
     </ScrollView>
@@ -90,6 +95,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 16 : 24,
   },
   title: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: '600', color: Colors.label },
+  spacer: { width: 44 },
   round: {
     width: 44,
     height: 44,

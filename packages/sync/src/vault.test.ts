@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { fromBase64, toBase64, utf8 } from './encoding';
 import type { CryptoPrimitives } from './primitives';
-import { generateRecoveryCode, normalizeRecoveryCode } from './recovery';
+import { generateRecoveryCode, normalizeRecoveryCode, vaultIdentity } from './recovery';
 import {
   createDataKey,
   decryptFile,
@@ -108,6 +108,17 @@ describe('recovery code', () => {
     const wrapped = await wrapDataKey(node, key, code);
     expect(wrapped).not.toContain(toBase64(key));
     expect(await unwrapDataKey(node, wrapped, code.toLowerCase().replace(/-/g, ' '))).toEqual(key);
+  });
+
+  it('finds the vault from the code alone, in the form the server expects', async () => {
+    const code = generateRecoveryCode(node);
+    const { vaultId, proof } = await vaultIdentity(node, code);
+    expect(vaultId).toMatch(/^[0-9a-f]{64}$/);
+    expect(proof).toMatch(/^[0-9a-f]{64}$/);
+    expect(proof).not.toBe(vaultId);
+    // However the code is typed, it's the same vault.
+    expect(await vaultIdentity(node, code.toLowerCase().replace(/-/g, ' '))).toEqual({ vaultId, proof });
+    expect((await vaultIdentity(node, generateRecoveryCode(node))).vaultId).not.toBe(vaultId);
   });
 
   it('does not unwrap with another code', async () => {

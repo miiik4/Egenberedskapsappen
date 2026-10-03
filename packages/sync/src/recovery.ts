@@ -40,6 +40,24 @@ export async function recoveryKey(crypto: Pick<CryptoPrimitives, 'sha256'>, code
   return crypto.sha256(concat(utf8('egenberedskapsappen/recovery-key/v1\n'), utf8(normalized)));
 }
 
+/**
+ * How the server finds a vault without ever seeing the code: two one-way hashes of it, under
+ * different labels, so one can't be turned into the other. The server stores only a hash of
+ * `proof`, and asks for `proof` itself before letting a new phone join.
+ */
+export async function vaultIdentity(
+  crypto: Pick<CryptoPrimitives, 'sha256'>,
+  code: string,
+): Promise<{ vaultId: string; proof: string }> {
+  const normalized = normalizeRecoveryCode(code);
+  if (!normalized) throw new Error('Invalid recovery code');
+  const hash = async (label: string) =>
+    toHex(await crypto.sha256(concat(utf8(`egenberedskapsappen/${label}/v1\n`), utf8(normalized))));
+  return { vaultId: await hash('vault-id'), proof: await hash('vault-proof') };
+}
+
+const toHex = (bytes: Uint8Array) => [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
+
 function chunks(text: string): string[] {
   return text.match(new RegExp(`.{1,${GROUP}}`, 'g')) ?? [];
 }
