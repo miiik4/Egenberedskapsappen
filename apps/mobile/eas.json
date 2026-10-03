@@ -1,0 +1,34 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "node": "24.16.0"
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": { "APP_VARIANT": "development" }
+    },
+    "development-simulator": {
+      "extends": "development",
+      "ios": { "simulator": true }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "env": { "APP_VARIANT": "development" }
+    },
+    "production": {
+      "extends": "base",
+      "autoIncrement": true,
+      "env": { "APP_VARIANT": "production" }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

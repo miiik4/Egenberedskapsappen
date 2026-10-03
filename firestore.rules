@@ -1,0 +1,59 @@
+rules_version = '2';
+
+// Backups are end-to-end encrypted: everything below a vault is ciphertext the server can't
+// read. These rules decide who may read and write it, never what it says.
+//
+// Vaults themselves are created and changed only by Cloud Functions (createVault, joinVault,
+// extendVault), which check the insurer's activation code and the recovery-code proof.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function vault(vaultId) {
+      return get(/databases/$(database)/documents/vaults/$(vaultId)).data;
+    }
+
+    function isMember(vaultId) {
+      return request.auth != null && vault(vaultId).members.get(request.auth.uid, false) == true;
+    }
+
+    // Writing needs a current entitlement. Reading never does, so a lapsed subscription
+    // can still restore everything: data is never held hostage.
+    function isEntitled(vaultId) {
+      return vault(vaultId).entitledUntil > request.time;
+    }
+
+    match /vaults/{vaultId} {
+      allow read: if request.auth != null && resource.data.members.get(request.auth.uid, false) == true;
+      allow write: if false;
+
+      match /records/{recordId} {
+        allow read: if isMember(vaultId);
+        allow create, update: if isMember(vaultId) && isEntitled(vaultId) && validRecord(recordId);
+        // Removal is a record with deleted: true, so other phones learn about it too.
+        allow delete: if false;
+      }
+    }
+
+    // Only Cloud Functions touch activation codes.
+    match /activationCodes/{codeHash} {
+      allow read, write: if false;
+    }
+
+    function validRecord(recordId) {
+      let r = request.resource.data;
+      return r.keys().hasOnly(['type', 'id', 'data', 'deleted', 'updatedAt', 'serverUpdatedAt'])
+        && r.keys().hasAll(['type', 'id', 'data', 'deleted', 'updatedAt', 'serverUpdatedAt'])
+        && r.type is string && r.id is string
+        && recordId == r.type + '_' + r.id
+        && r.data is string && r.data.size() < 500000
+        && r.deleted is bool
+        && r.updatedAt is string
+        // Lets other phones fetch «everything since I last looked» by server time.
+        && r.serverUpdatedAt == request.time;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

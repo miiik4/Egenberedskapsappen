@@ -1,0 +1,28 @@
+rules_version = '2';
+
+// Encrypted document files. Same rules as the records in Firestore: members of the vault may
+// read, and may write while the insurer's entitlement is current.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /vaults/{vaultId}/files/{fileName} {
+      function vault() {
+        return firestore.get(/databases/(default)/documents/vaults/$(vaultId)).data;
+      }
+      function isMember() {
+        return request.auth != null && vault().members.get(request.auth.uid, false) == true;
+      }
+
+      allow read: if isMember();
+      // No content-type check: the server can't tell ciphertext from anything else, so it would
+      // only look like protection. That guarantee comes from the encryption on the phone.
+      allow create, update: if isMember()
+        && vault().entitledUntil > request.time
+        && request.resource.size < 30 * 1024 * 1024;
+      allow delete: if isMember() && vault().entitledUntil > request.time;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

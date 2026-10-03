@@ -74,18 +74,23 @@ type StockRow = {
 export type Store = ReturnType<typeof createStore>;
 
 export function createStore({ db, newId, now, today }: Deps) {
-  const stamp = () => now().toISOString();
+  const stamp = monotonicStamp(now);
 
   const getSetting = async (key: string) =>
-    (await db.first<{ value: string }>('SELECT value FROM settings WHERE key = ?', [key]))?.value ?? null;
+    (await db.first<{ value: string }>('SELECT value FROM settings WHERE key = ? AND deleted_at IS NULL', [key]))
+      ?.value ?? null;
 
-  const setSetting = (key: string, value: string | null) =>
-    value === null
-      ? db.run('DELETE FROM settings WHERE key = ?', [key])
+  /** Clearing a setting is a soft delete, so other phones learn it was cleared. */
+  const setSetting = (key: string, value: string | null) => {
+    const at = stamp();
+    return value === null
+      ? db.run('UPDATE settings SET deleted_at = ?, updated_at = ? WHERE key = ? AND deleted_at IS NULL', [at, at, key])
       : db.run(
-          'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value',
-          [key, value],
+          `INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)
+           ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at, deleted_at = NULL`,
+          [key, value, at],
         );
+  };
 
   /** Insert or update a record, keeping its creation time and clearing any soft delete. */
   async function upsert(table: string, id: string | undefined, fields: Record<string, SqlValue>) {
@@ -157,7 +162,7 @@ export function createStore({ db, newId, now, today }: Deps) {
          WHERE deleted_at IS NULL ORDER BY created_at`,
       );
       const lastCheck = await db.first<{ checked_on: string }>(
-        'SELECT checked_on FROM quarterly_checks ORDER BY checked_on DESC, created_at DESC LIMIT 1',
+        'SELECT checked_on FROM quarterly_checks WHERE deleted_at IS NULL ORDER BY checked_on DESC, created_at DESC LIMIT 1',
       );
 
       const householdPeople = Math.max(1, Number(people ?? 1));
@@ -332,12 +337,11 @@ export function createStore({ db, newId, now, today }: Deps) {
     deleteDocumentFile: (id: string) => softDelete('document_files', id),
 
     async recordQuarterlyCheck(answers: QuarterlyAnswers) {
-      await db.run('INSERT INTO quarterly_checks (id, checked_on, answers, created_at) VALUES (?, ?, ?, ?)', [
-        newId(),
-        today(),
-        JSON.stringify(answers),
-        stamp(),
-      ]);
+      const at = stamp();
+      await db.run(
+        'INSERT INTO quarterly_checks (id, checked_on, answers, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+        [newId(), today(), JSON.stringify(answers), at, at],
+      );
     },
 
     async setExpiryReview(on: IsoDate | null) {
@@ -395,6 +399,18 @@ function validPeople(people: number): number {
 
 function validDate(date: string, field: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new ValidationError(field, `${field} must be YYYY-MM-DD`);
+}
+
+/**
+ * ISO timestamps that never repeat or go backwards within this process, even for two writes
+ * in the same millisecond: sync compares them to tell what still needs uploading.
+ */
+export function monotonicStamp(now: () => Date) {
+  let last = 0;
+  return () => {
+    last = Math.max(now().getTime(), last + 1);
+    return new Date(last).toISOString();
+  };
 }
 
 function toStockItem(row: StockRow): StockItem {

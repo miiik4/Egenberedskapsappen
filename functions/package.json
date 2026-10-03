@@ -1,0 +1,21 @@
+{
+  "name": "egenberedskapsappen-functions",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "create-codes": "node scripts/create-codes.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0",
+    "firebase-functions": "^7.4.0"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  }
+}

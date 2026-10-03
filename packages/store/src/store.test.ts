@@ -3,7 +3,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { computeCoverage } from '@egenberedskap/core';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { SCHEMA_VERSION } from './schema';
+import { migrate, SCHEMA_VERSION } from './schema';
 import type { SqlExecutor, SqlValue } from './sql';
 import { createStore, DEFAULT_ROOMS, ValidationError, type Store } from './store';
 
@@ -54,16 +54,25 @@ describe('migrations', () => {
     expect(sqlite.prepare('PRAGMA user_version').get()).toEqual({ user_version: SCHEMA_VERSION });
   });
 
-  it('upgrades a database from an earlier version without losing data', async () => {
-    await onboard();
-    await store.saveStockItem({ name: 'Radio', category: 'radio' });
-    // Wind back to how version 1 left it.
-    sqlite.exec('DROP TABLE document_files; DROP TABLE documents; PRAGMA user_version = 1;');
+  it('upgrades a version 1 database without losing data', async () => {
+    // A phone that installed the very first release: schema 1, with data written then.
+    const old = new DatabaseSync(':memory:');
+    await migrate(nodeExecutor(old), 1);
+    old.exec(`
+      INSERT INTO settings (key, value) VALUES ('name', 'Kari'), ('onboardedOn', '2026-10-01');
+      INSERT INTO stock_items (id, name, category, litres, created_at, updated_at)
+        VALUES ('w1', 'Vann', 'water', 30, '2026-10-01T10:00:00.000Z', '2026-10-01T10:00:00.000Z');
+      INSERT INTO quarterly_checks (id, checked_on, answers, created_at)
+        VALUES ('q1', '2026-10-01', '{}', '2026-10-01T10:00:00.000Z');
+    `);
 
-    await store.migrate();
-    const data = await store.load();
-    expect(sqlite.prepare('PRAGMA user_version').get()).toEqual({ user_version: SCHEMA_VERSION });
-    expect(data.stock.map((i) => i.name)).toEqual(['Radio']);
+    const upgraded = createStore({ db: nodeExecutor(old), newId: () => 'x', now: () => new Date(), today: () => today });
+    await upgraded.migrate();
+    const data = await upgraded.load();
+    expect(old.prepare('PRAGMA user_version').get()).toEqual({ user_version: SCHEMA_VERSION });
+    expect(data.profile.name).toBe('Kari');
+    expect(data.stock).toEqual([{ id: 'w1', name: 'Vann', category: 'water', litres: 30 }]);
+    expect(data.lastQuarterlyCheck).toBe('2026-10-01');
     expect(data.documents).toEqual([]);
   });
 });

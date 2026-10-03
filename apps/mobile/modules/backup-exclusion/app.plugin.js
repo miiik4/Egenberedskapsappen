@@ -1,14 +1,19 @@
 // Keeps stored documents out of Android's cloud backup and device-to-device transfer.
 // Everything else the app stores is still backed up.
 //
-// If expo-secure-store is added later, it brings its own backup rules for the same manifest
-// attributes: merge its exclusions into the files below instead of letting one overwrite the other.
+// expo-secure-store would write its own rules to the same manifest attributes, as an include
+// list that would also drop the database from backups. Its rules are switched off in app.json
+// (configureAndroidBackup: false) and its one exclusion lives here instead: the encrypted key
+// store, whose keys are bound to this phone and would be useless restored anywhere else.
 const fs = require('node:fs');
 const path = require('node:path');
 const { withAndroidManifest, withDangerousMod } = require('expo/config-plugins');
 
 // Paths.document on Android is the app's filesDir, which backup rules call the "file" domain.
-const EXCLUDE = '<exclude domain="file" path="dokumenter/" />';
+const EXCLUDE = [
+  '<exclude domain="file" path="dokumenter/" />',
+  '<exclude domain="sharedpref" path="SecureStore" />',
+].join('\n    ');
 
 const FILES = {
   // Android 11 and earlier.

@@ -49,11 +49,36 @@
           "faceIDPermission": "Bruk Face ID for \u00e5 \u00e5pne dokumentene dine."
         }
       ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": false,
+          "faceIDPermission": "Bruk Face ID for \u00e5 \u00e5pne dokumentene dine."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "dynamic"
+          }
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      "@react-native-firebase/app-check",
       "./modules/backup-exclusion/app.plugin.js"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b92cddc0-f00c-4701-b7f9-99dfcf4a2ccc"
+      }
+    },
+    "owner": "mkl96"
   }
 }

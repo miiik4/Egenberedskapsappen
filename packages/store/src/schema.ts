@@ -97,18 +97,42 @@ const MIGRATIONS: string[] = [
     deleted_at TEXT
   );
   `,
+  // 3: backup and sync. pushed_at records which version of a row has been uploaded, so a row
+  // needs uploading whenever updated_at has moved past it. Settings become records like the
+  // rest, with timestamps and soft deletes, and files remember when they were uploaded.
+  `
+  ALTER TABLE settings ADD COLUMN updated_at TEXT;
+  ALTER TABLE settings ADD COLUMN deleted_at TEXT;
+  UPDATE settings SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now');
+
+  ALTER TABLE quarterly_checks ADD COLUMN updated_at TEXT;
+  ALTER TABLE quarterly_checks ADD COLUMN deleted_at TEXT;
+  UPDATE quarterly_checks SET updated_at = created_at;
+
+  ALTER TABLE settings ADD COLUMN pushed_at TEXT;
+  ALTER TABLE properties ADD COLUMN pushed_at TEXT;
+  ALTER TABLE rooms ADD COLUMN pushed_at TEXT;
+  ALTER TABLE stock_items ADD COLUMN pushed_at TEXT;
+  ALTER TABLE contacts ADD COLUMN pushed_at TEXT;
+  ALTER TABLE policies ADD COLUMN pushed_at TEXT;
+  ALTER TABLE quarterly_checks ADD COLUMN pushed_at TEXT;
+  ALTER TABLE documents ADD COLUMN pushed_at TEXT;
+  ALTER TABLE document_files ADD COLUMN pushed_at TEXT;
+  ALTER TABLE document_files ADD COLUMN uploaded_at TEXT;
+  `,
 ];
 
 export const SCHEMA_VERSION = MIGRATIONS.length;
 
-export async function migrate(db: SqlExecutor): Promise<void> {
+/** Brings the schema up to date. `target` stops early, for testing upgrades from old versions. */
+export async function migrate(db: SqlExecutor, target = SCHEMA_VERSION): Promise<void> {
   await db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
   const row = await db.first<{ user_version: number }>('PRAGMA user_version');
   const current = row?.user_version ?? 0;
   if (current > SCHEMA_VERSION) {
     throw new Error(`Database is at version ${current}, newer than this app (${SCHEMA_VERSION})`);
   }
-  for (let version = current; version < SCHEMA_VERSION; version++) {
+  for (let version = current; version < target; version++) {
     await db.transaction(async () => {
       await db.exec(MIGRATIONS[version]!);
       await db.exec(`PRAGMA user_version = ${version + 1}`);
