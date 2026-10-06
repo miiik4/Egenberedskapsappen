@@ -16,7 +16,7 @@ import { useActions, useData, useSyncSource } from '@/data/data-provider';
 import { ensureFolder, storedFile } from '@/documents/files';
 
 import { expoCrypto } from './crypto';
-import { createVault, ensureSignedIn, extendVault, firebaseAvailable, firebaseVault, joinVault } from './firebase';
+import { loadFirebase, requireFirebase } from './load-firebase';
 import { deleteDataKey, loadDataKey, saveDataKey } from './keychain';
 
 export type BackupStatus =
@@ -71,7 +71,7 @@ export function BackupProvider({ children }: { children: ReactNode }) {
   const data = useData();
   const actions = useActions();
   const { source, reload } = useSyncSource();
-  const available = useMemo(() => firebaseAvailable(), []);
+  const available = useMemo(() => loadFirebase() !== null, []);
   const [status, setStatus] = useState<BackupStatus>(available ? 'off' : 'unavailable');
 
   const vaultId = data.backup?.vaultId ?? null;
@@ -92,6 +92,7 @@ export function BackupProvider({ children }: { children: ReactNode }) {
     try {
       do {
         again.current = false;
+        const { ensureSignedIn, firebaseVault } = requireFirebase();
         await ensureSignedIn();
         const dataKey = await loadDataKey();
         if (!dataKey) throw new Error('No data key on this phone');
@@ -151,7 +152,7 @@ export function BackupProvider({ children }: { children: ReactNode }) {
         const dataKey = createDataKey(expoCrypto);
         const { vaultId: id, proof } = await vaultIdentity(expoCrypto, code);
         const wrappedKey = await wrapDataKey(expoCrypto, dataKey, code);
-        const { entitledUntil } = await createVault({ activationCode, vaultId: id, proof, wrappedKey });
+        const { entitledUntil } = await requireFirebase().createVault({ activationCode, vaultId: id, proof, wrappedKey });
         await saveDataKey(dataKey);
         await actions.setBackup({ vaultId: id, entitledUntil });
       },
@@ -160,11 +161,11 @@ export function BackupProvider({ children }: { children: ReactNode }) {
         const code = normalizeRecoveryCode(recoveryCode);
         if (!code) throw new Error('Invalid recovery code');
         const { vaultId: id, proof } = await vaultIdentity(expoCrypto, code);
-        const { wrappedKey, entitledUntil } = await joinVault({ vaultId: id, proof });
+        const { wrappedKey, entitledUntil } = await requireFirebase().joinVault({ vaultId: id, proof });
         const dataKey = await unwrapDataKey(expoCrypto, wrappedKey, code);
         await saveDataKey(dataKey);
         // Bring everything down before showing the app, so it opens complete.
-        await syncOnce({ crypto: expoCrypto, dataKey, source, remote: firebaseVault(id), files: localFiles, order: SYNC_ORDER });
+        await syncOnce({ crypto: expoCrypto, dataKey, source, remote: requireFirebase().firebaseVault(id), files: localFiles, order: SYNC_ORDER });
         await actions.setBackup({ vaultId: id, entitledUntil });
         await actions.setLastSynced(new Date().toISOString());
         await actions.markOnboarded();
@@ -173,7 +174,7 @@ export function BackupProvider({ children }: { children: ReactNode }) {
 
       async extend(activationCode) {
         if (!vaultId) throw new Error('Backup is not on');
-        const { entitledUntil } = await extendVault({ vaultId, activationCode });
+        const { entitledUntil } = await requireFirebase().extendVault({ vaultId, activationCode });
         await actions.setBackup({ vaultId, entitledUntil });
       },
 
