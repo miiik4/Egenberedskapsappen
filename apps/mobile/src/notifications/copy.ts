@@ -1,6 +1,8 @@
-import type { Reminder } from '@egenberedskap/core';
+import { EXPIRY_REMINDER_DAYS, type Reminder } from '@egenberedskap/core';
 
-import { formatDate } from '@/lib/format';
+import { formatDate, formatDuration } from '@/lib/format';
+
+const LEAD = formatDuration(EXPIRY_REMINDER_DAYS);
 
 export type ReminderMessage = { title: string; body: string; url: string };
 
@@ -12,15 +14,15 @@ export function reminderMessage(reminder: Reminder): ReminderMessage {
       const [first, ...rest] = reminder.items;
       if (rest.length === 0) {
         return {
-          title: 'Går ut om to uker',
+          title: `Går ut om ${LEAD}`,
           body: `${first!.name} går ut ${when}. Bytt det ut, så teller det fortsatt.`,
-          url: `/vare?id=${encodeURIComponent(first!.id)}`,
+          url: `/lager/vare/${encodeURIComponent(first!.id)}`,
         };
       }
       return {
-        title: `${reminder.items.length} varer går ut om to uker`,
+        title: `${reminder.items.length} varer går ut om ${LEAD}`,
         body: `${listNames(reminder.items.map((item) => item.name))} går ut ${when}.`,
-        url: '/beredskap/lager',
+        url: '/lager',
       };
     }
     case 'quarterlyCheck':
@@ -33,7 +35,7 @@ export function reminderMessage(reminder: Reminder): ReminderMessage {
       return {
         title: 'Gå gjennom utløpsdatoer',
         body: 'Du ba om en påminnelse i kvartalssjekken.',
-        url: '/beredskap/lager',
+        url: '/lager',
       };
   }
 }

@@ -1,5 +1,5 @@
 import { addDays, daysBetween } from './dates';
-import { EXPIRY_WARNING_DAYS } from './guidance';
+import { EXPIRY_REMINDER_DAYS } from './guidance';
 import { nextQuarterlyCheck } from './quarterly';
 import type { IsoDate, StockItem } from './types';
 
@@ -34,13 +34,13 @@ export function planReminders({ items, lastQuarterlyCheck, expiryReviewOn, today
 
   const byWarningDay = new Map<IsoDate, StockItem[]>();
   for (const item of items) {
-    if (!item.expiresOn) continue;
-    const on = addDays(item.expiresOn, -EXPIRY_WARNING_DAYS);
+    if (!item.expiresOn || !item.remind) continue;
+    const on = addDays(item.expiresOn, -EXPIRY_REMINDER_DAYS);
     if (!ahead(on)) continue;
     byWarningDay.set(on, [...(byWarningDay.get(on) ?? []), item]);
   }
   for (const [on, dayItems] of byWarningDay) {
-    reminders.push({ kind: 'expiring', on, expiresOn: addDays(on, EXPIRY_WARNING_DAYS), items: dayItems });
+    reminders.push({ kind: 'expiring', on, expiresOn: addDays(on, EXPIRY_REMINDER_DAYS), items: dayItems });
   }
 
   const checkDue = nextQuarterlyCheck(lastQuarterlyCheck);

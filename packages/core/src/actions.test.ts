@@ -1,110 +1,80 @@
 import { describe, expect, it } from 'vitest';
 
-import { nextActions } from './actions';
+import { nextActions, type NextAction } from './actions';
+import { item } from './test-items';
 import { daysUntilQuarterlyCheck, nextQuarterlyCheck } from './quarterly';
-import { assessScenarios, type PreparednessSnapshot } from './scenarios';
-import type { Household, StockItem } from './types';
+import type { HouseholdMembers, StockItem } from './types';
 
 const today = '2026-09-30';
-const household: Household = { id: 'h1', people: 2 };
+const two: HouseholdMembers = { adults: 2, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 };
 
-// 30 of 42 litres (5 days), food for 6 days, a radio but no light.
+// 30 of 42 litres (5 days), 36 meals (6 days), a stove, a radio and cash; no light, first aid or hygiene.
 const items: StockItem[] = [
-  { id: 'w1', name: 'Vann på flaske, 6 l', category: 'water', litres: 6, expiresOn: '2026-10-02' },
-  { id: 'w2', name: 'Vanndunk', category: 'water', litres: 24 },
-  { id: 'f1', name: 'Knekkebrød', category: 'food', personDays: 4, expiresOn: '2026-10-14' },
-  { id: 'f2', name: 'Hermetikk', category: 'food', personDays: 8 },
-  { id: 'r1', name: 'DAB-radio', category: 'radio' },
+  item('w1', { type: 'drinkingWater', litres: 6, expiresOn: '2026-10-02' }),
+  item('w2', { type: 'drinkingWater', litres: 24 }),
+  item('f1', { type: 'crispbread', meals: 6, expiresOn: '2026-10-14' }),
+  item('f2', { type: 'cannedMeals', meals: 30 }),
+  item('h1', { type: 'heatSource' }),
+  item('h2', { type: 'woolBlankets' }),
+  item('h3', { type: 'matches' }),
+  item('r1', { type: 'radio' }),
+  item('r2', { type: 'cash' }),
+  item('t1', { type: 'purificationTablets' }),
 ];
 
+const label = (a: NextAction) =>
+  a.kind === 'replace' ? `replace ${a.item.id} ${a.dayChange}` : a.kind === 'getType' ? `get ${a.type.id}` : a.kind;
+
 describe('nextActions', () => {
-  it('puts closing the gap first, then replacements soonest first, then missing essentials', () => {
-    expect(nextActions(household, items, today).map((a) => a.kind)).toEqual([
+  it('closes the gaps first, then replacements that cost days, then what is missing from the list', () => {
+    expect(nextActions(two, items, today).map(label)).toEqual([
       'buyWater',
       'buyFood',
-      'replace',
-      'replace',
-      'getEssential',
-      'getEssential',
-      'getEssential',
-    ]);
-  });
-
-  it('reports what each action does to the number, honestly', () => {
-    const [water, food, firstReplace] = nextActions(household, items, today);
-    // 12 more litres lifts water to 7 days, but food then holds the household at 6.
-    expect(water).toEqual({ kind: 'buyWater', litres: 12, dayChange: 1 });
-    // Food alone changes nothing while water is the limit.
-    expect(food).toEqual({ kind: 'buyFood', personDays: 2, dayChange: 0 });
-    expect(firstReplace).toMatchObject({ kind: 'replace', expiresOn: '2026-10-02', dayChange: -1 });
-  });
-
-  it('puts a missing essential before replacing something that does not move the number', () => {
-    const withSpareFood: StockItem[] = [...items, { id: 'f3', name: 'Tørrmat', category: 'food', personDays: 10 }];
-    const kinds = nextActions(household, withSpareFood, today).map((a) =>
-      a.kind === 'replace' ? `replace ${a.item.id} ${a.dayChange}` : a.kind,
-    );
-    expect(kinds).toEqual([
-      'buyWater',
       'replace w1 -1',
-      'getEssential',
-      'getEssential',
-      'getEssential',
+      'get torch',
+      'get batteries',
+      'get candles',
+      'get powerBank',
+      'get firstAidKit',
+      'get medicines',
+      'get iodine',
+      'get wetWipes',
+      'get toiletPaper',
       'replace f1 0',
     ]);
   });
 
+  it('reports what each amount does to the number, honestly', () => {
+    const [water, food] = nextActions(two, items, today);
+    // 12 more litres lifts water to 7 days, but food then holds the household at 6.
+    expect(water).toEqual({ kind: 'buyWater', litres: 12, dayChange: 1 });
+    // Food alone changes nothing while water is the limit. It suggests the food types they have none of.
+    expect(food).toMatchObject({ kind: 'buyFood', meals: 6, days: 1, dayChange: 0 });
+    expect(food?.kind === 'buyFood' && food.suggestions.map((t) => t.id)).toEqual(['oats', 'driedFruitNuts']);
+  });
+
+  it('puts a missing heat source right after the amounts, since it holds the number at zero', () => {
+    const cold = items.filter((i) => i.type !== 'heatSource');
+    expect(nextActions(two, cold, today).slice(0, 3).map(label)).toEqual(['buyWater', 'buyFood', 'get heatSource']);
+  });
+
+  it('asks for baby food and pet food when the household needs them', () => {
+    const labels = nextActions({ ...two, infants: 1, dogs: 1 }, items, today).map(label);
+    expect(labels).toContain('get petFood');
+    expect(labels).not.toContain('get babyFood'); // covered by «Kjøp mat» while meals are short
+    const fed = [...items, item('f3', { type: 'cannedMeals', meals: 100 }), item('w3', { type: 'drinkingWater', litres: 100 })];
+    expect(nextActions({ ...two, infants: 1 }, fed, today).map(label)).toContain('get babyFood');
+  });
+
   it('has nothing to suggest for a fully stocked household', () => {
-    const full: StockItem[] = [
-      { id: 'w', name: 'Vann', category: 'water', litres: 42 },
-      { id: 'f', name: 'Mat', category: 'food', personDays: 14 },
-      { id: 'r', name: 'Radio', category: 'radio' },
-      { id: 'l', name: 'Lommelykt', category: 'heatAndLight' },
-      { id: 'a', name: 'Førstehjelp', category: 'firstAid' },
-      { id: 'c', name: 'Kontanter', category: 'hygieneAndCash' },
+    const full = [
+      item('w', { type: 'drinkingWater', litres: 42 }),
+      item('f', { type: 'cannedMeals', meals: 42 }),
+      ...['purificationTablets', 'crispbread', 'oats', 'driedFruitNuts', 'heatSource', 'woolBlankets', 'matches', 'torch',
+        'batteries', 'candles', 'powerBank', 'radio', 'cash', 'firstAidKit', 'medicines', 'iodine', 'wetWipes', 'toiletPaper',
+      ].map((type) => item(type, { type: type as StockItem['type'], meals: 0 })),
     ];
-    expect(nextActions(household, full, today)).toEqual([]);
-  });
-});
-
-describe('assessScenarios', () => {
-  const snapshot: PreparednessSnapshot = {
-    household,
-    items,
-    emergencyContacts: 2,
-    hasMeetingPlace: true,
-    offlineDocuments: 3,
-    rooms: [
-      { name: 'Stue', filmed: true },
-      { name: 'Soverom', filmed: false },
-    ],
-  };
-
-  it('reads each scenario in its own terms, with no overall score', () => {
-    const [power, water, network, damage] = assessScenarios(snapshot, today);
-    expect(power).toMatchObject({ id: 'winterPowerOutage', status: { kind: 'days', days: 5 } });
-    expect(power!.gaps).toContainEqual({ kind: 'essential', category: 'heatAndLight' });
-    expect(water).toEqual({
-      id: 'noTapWater',
-      status: { kind: 'days', days: 5 },
-      gaps: [{ kind: 'water', litres: 12 }],
-    });
-    expect(network).toEqual({ id: 'noNetwork', status: { kind: 'ready' }, gaps: [] });
-    expect(damage).toEqual({
-      id: 'homeDamage',
-      status: { kind: 'partial' },
-      gaps: [{ kind: 'roomNotFilmed', room: 'Soverom' }],
-    });
-  });
-
-  it('says what is missing for the offline scenario', () => {
-    const [, , network] = assessScenarios({ ...snapshot, hasMeetingPlace: false }, today);
-    expect(network).toEqual({ id: 'noNetwork', status: { kind: 'partial' }, gaps: [{ kind: 'meetingPlace' }] });
-  });
-
-  it('has not started on home damage before any room is filmed', () => {
-    const [, , , damage] = assessScenarios({ ...snapshot, rooms: [] }, today);
-    expect(damage!.status).toEqual({ kind: 'notStarted' });
+    expect(nextActions(two, full, today)).toEqual([]);
   });
 });
 

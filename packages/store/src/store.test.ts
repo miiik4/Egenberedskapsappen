@@ -46,12 +46,36 @@ beforeEach(async () => {
   await store.migrate();
 });
 
-const onboard = () => store.completeOnboarding({ name: ' Kari ', people: 2, address: 'Storgata 12' });
+const two = { adults: 2, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 };
+const onboard = () => store.completeOnboarding({ members: two, items: [] });
+const item = { quantity: 1, remind: true, location: '' };
 
 describe('migrations', () => {
   it('brings a new database to the current version, and is safe to run again', async () => {
     await store.migrate();
     expect(sqlite.prepare('PRAGMA user_version').get()).toEqual({ user_version: SCHEMA_VERSION });
+  });
+
+  it('gives version 3 items a type, and counts their food in meals', async () => {
+    const old = new DatabaseSync(':memory:');
+    await migrate(nodeExecutor(old), 3);
+    old.exec(`
+      INSERT INTO settings (key, value, updated_at) VALUES ('people', '3', '2026-10-01T10:00:00.000Z');
+      INSERT INTO stock_items (id, name, category, person_days, created_at, updated_at, pushed_at)
+        VALUES ('f1', 'Hermetikk', 'food', 4, '2026-10-01T10:00:00.000Z', '2026-10-01T10:00:00.000Z', '2026-10-01T10:00:00.000Z'),
+               ('l1', 'Lommelykt', 'heatAndLight', NULL, '2026-10-01T10:00:00.000Z', '2026-10-01T10:00:00.000Z', NULL);
+    `);
+    const upgraded = createStore({ db: nodeExecutor(old), newId: () => 'x', now: () => new Date(), today: () => today });
+    await upgraded.migrate();
+    const data = await upgraded.load();
+    expect(data.stock).toEqual([
+      { id: 'f1', name: 'Hermetikk', type: 'cannedMeals', meals: 12, ...item },
+      { id: 'l1', name: 'Lommelykt', type: 'torch', ...item },
+    ]);
+    // The old head count reads as adults.
+    expect(data.household).toMatchObject({ adults: 3, seniors: 0, children: 0 });
+    // Every item goes up again in the new shape.
+    expect(old.prepare('SELECT COUNT(*) AS n FROM stock_items WHERE pushed_at IS NULL').get()).toEqual({ n: 2 });
   });
 
   it('upgrades a version 1 database without losing data', async () => {
@@ -70,8 +94,7 @@ describe('migrations', () => {
     await upgraded.migrate();
     const data = await upgraded.load();
     expect(old.prepare('PRAGMA user_version').get()).toEqual({ user_version: SCHEMA_VERSION });
-    expect(data.profile.name).toBe('Kari');
-    expect(data.stock).toEqual([{ id: 'w1', name: 'Vann', category: 'water', litres: 30 }]);
+    expect(data.stock).toEqual([{ id: 'w1', name: 'Vann', type: 'drinkingWater', litres: 30, ...item }]);
     expect(data.lastQuarterlyCheck).toBe('2026-10-01');
     expect(data.documents).toEqual([]);
   });
@@ -90,18 +113,28 @@ describe('first launch', () => {
     const data = await store.load();
     expect(data.onboarded).toBe(true);
     expect(data.onboardedOn).toBe('2026-10-02');
-    expect(data.profile).toEqual({ name: 'Kari', people: 2 });
-    expect(data.household.people).toBe(2);
-    expect(data.properties).toEqual([{ id: 'id1', name: 'Storgata 12', shortName: 'Hjemme' }]);
+    expect(data.household).toEqual({ id: 'household', ...two });
+    expect(data.properties).toEqual([{ id: 'id1', name: 'Hjemme', shortName: 'Hjemme' }]);
     expect(data.selectedPropertyId).toBe('id1');
     expect(data.rooms.map((r) => r.name)).toEqual(DEFAULT_ROOMS);
   });
 
+  it('saves what they already have', async () => {
+    await store.completeOnboarding({
+      members: two,
+      items: [{ name: 'Vann på kanner', type: 'drinkingWater', litres: 20, ...item }],
+    });
+    expect((await store.load()).stock).toMatchObject([{ type: 'drinkingWater', litres: 20 }]);
+  });
+
   it('writes nothing if onboarding is invalid', async () => {
-    await expect(store.completeOnboarding({ name: 'Kari', people: 0, address: 'Storgata 12' })).rejects.toThrow(
-      ValidationError,
-    );
+    const nobody = { ...two, adults: 0, dogs: 1 };
+    await expect(store.completeOnboarding({ members: nobody, items: [] })).rejects.toThrow(ValidationError);
+    await expect(
+      store.completeOnboarding({ members: two, items: [{ name: 'Vann', type: 'drinkingWater', ...item }] }),
+    ).rejects.toThrow('litres');
     expect((await store.load()).properties).toEqual([]);
+    expect((await store.load()).stock).toEqual([]);
   });
 });
 
@@ -109,38 +142,43 @@ describe('stockpile', () => {
   beforeEach(onboard);
 
   it('feeds the days number straight from what is stored', async () => {
-    await store.saveStockItem({ name: 'Vann', category: 'water', litres: 30, expiresOn: '2026-12-01' });
-    await store.saveStockItem({ name: 'Hermetikk', category: 'food', personDays: 14 });
+    await store.saveStockItem({ name: 'Vann', type: 'drinkingWater', litres: 30, expiresOn: '2026-12-01', ...item });
+    await store.saveStockItem({ name: 'Hermetikk', type: 'cannedMeals', meals: 42, ...item, quantity: 6, location: ' Bod ' });
+    await store.saveStockItem({ name: 'Ovn', type: 'heatSource', ...item, remind: false, boughtOn: '2026-01-02' });
     const data = await store.load();
     expect(data.stock).toEqual([
-      { id: 'id8', name: 'Vann', category: 'water', litres: 30, expiresOn: '2026-12-01' },
-      { id: 'id9', name: 'Hermetikk', category: 'food', personDays: 14 },
+      { id: 'id8', name: 'Vann', type: 'drinkingWater', litres: 30, expiresOn: '2026-12-01', ...item },
+      { id: 'id9', name: 'Hermetikk', type: 'cannedMeals', meals: 42, quantity: 6, remind: true, location: 'Bod' },
+      { id: 'id10', name: 'Ovn', type: 'heatSource', quantity: 1, boughtOn: '2026-01-02', remind: false, location: '' },
     ]);
     expect(computeCoverage(data.household, data.stock, today).days).toBe(5);
   });
 
   it('edits in place and can clear an expiry date', async () => {
-    const id = await store.saveStockItem({ name: 'Vann', category: 'water', litres: 6, expiresOn: '2026-10-03' });
-    await store.saveStockItem({ id, name: 'Vann, byttet', category: 'water', litres: 6 });
-    expect((await store.load()).stock).toEqual([{ id, name: 'Vann, byttet', category: 'water', litres: 6 }]);
+    const id = await store.saveStockItem({ name: 'Vann', type: 'drinkingWater', litres: 6, expiresOn: '2026-10-03', ...item });
+    await store.saveStockItem({ id, name: 'Vann, byttet', type: 'drinkingWater', litres: 6, ...item });
+    expect((await store.load()).stock).toEqual([{ id, name: 'Vann, byttet', type: 'drinkingWater', litres: 6, ...item }]);
   });
 
   it('keeps quantities only where they mean something', async () => {
-    await store.saveStockItem({ name: 'Radio', category: 'radio' });
-    const row = sqlite.prepare('SELECT litres, person_days FROM stock_items').get();
-    expect(row).toEqual({ litres: null, person_days: null });
+    await store.saveStockItem({ name: 'Radio', type: 'radio', litres: 3, meals: 2, ...item });
+    const row = sqlite.prepare('SELECT litres, meals FROM stock_items').get();
+    expect(row).toEqual({ litres: null, meals: null });
   });
 
-  it('rejects water without litres, a blank name and a malformed date', async () => {
-    await expect(store.saveStockItem({ name: 'Vann', category: 'water', litres: 0 })).rejects.toThrow('litres');
-    await expect(store.saveStockItem({ name: '  ', category: 'radio' })).rejects.toThrow('name');
-    await expect(store.saveStockItem({ name: 'Mat', category: 'food', personDays: 2, expiresOn: '2/10' })).rejects.toThrow(
+  it('rejects water without litres, food without meals, a blank name, a bad count, type or date', async () => {
+    await expect(store.saveStockItem({ name: 'Vann', type: 'drinkingWater', litres: 0, ...item })).rejects.toThrow('litres');
+    await expect(store.saveStockItem({ name: 'Mat', type: 'oats', ...item })).rejects.toThrow('meals');
+    await expect(store.saveStockItem({ name: '  ', type: 'radio', ...item })).rejects.toThrow('name');
+    await expect(store.saveStockItem({ name: 'Radio', type: 'radio', ...item, quantity: 0 })).rejects.toThrow('quantity');
+    await expect(store.saveStockItem({ name: 'Radio', type: 'tv' as 'radio', ...item })).rejects.toThrow('type');
+    await expect(store.saveStockItem({ name: 'Mat', type: 'oats', meals: 2, expiresOn: '2/10', ...item })).rejects.toThrow(
       'expiresOn',
     );
   });
 
   it('soft-deletes, so a later sync can see what was removed', async () => {
-    const id = await store.saveStockItem({ name: 'Radio', category: 'radio' });
+    const id = await store.saveStockItem({ name: 'Radio', type: 'radio', ...item });
     await store.deleteStockItem(id);
     expect((await store.load()).stock).toEqual([]);
     expect(sqlite.prepare('SELECT deleted_at FROM stock_items WHERE id = ?').get(id)).toEqual({
@@ -167,9 +205,12 @@ describe('contacts, meeting place and household', () => {
     expect((await store.load()).meetingPlace).toBeNull();
   });
 
-  it('changes the household size the numbers are measured against', async () => {
-    await store.updateProfile({ name: 'Kari', people: 4 });
-    expect((await store.load()).household.people).toBe(4);
+  it('changes the household the numbers are measured against', async () => {
+    const family = { adults: 2, seniors: 1, children: 1, infants: 0, dogs: 1, cats: 0 };
+    await store.updateHousehold(family);
+    expect((await store.load()).household).toEqual({ id: 'household', ...family });
+    await expect(store.updateHousehold({ ...family, children: -1 })).rejects.toThrow('children');
+    await expect(store.updateHousehold({ ...family, adults: 0, seniors: 0, children: 0 })).rejects.toThrow(ValidationError);
   });
 });
 
@@ -200,11 +241,28 @@ describe('insurance and quarterly check', () => {
   beforeEach(onboard);
 
   it('stores policies with only the fields that were given', async () => {
-    await store.savePolicy({ name: 'Innbo', renewsOn: '2027-01-01', sumKr: 1_000_000, deductibleKr: 4_000 });
-    await store.savePolicy({ name: 'Reise' });
+    await store.savePolicy({
+      name: 'Innboforsikring',
+      propertyId: 'id1',
+      company: 'Fremtind',
+      sumKr: 600_000,
+      deductibleKr: 4_000,
+      alertNearSum: true,
+      alertDismissedKr: 642_000,
+    });
+    await store.savePolicy({ name: 'Reise', alertNearSum: false });
     expect((await store.load()).policies).toEqual([
-      { id: 'id8', name: 'Innbo', renewsOn: '2027-01-01', sumKr: 1_000_000, deductibleKr: 4_000 },
-      { id: 'id9', name: 'Reise' },
+      {
+        id: 'id8',
+        name: 'Innboforsikring',
+        propertyId: 'id1',
+        company: 'Fremtind',
+        sumKr: 600_000,
+        deductibleKr: 4_000,
+        alertNearSum: true,
+        alertDismissedKr: 642_000,
+      },
+      { id: 'id9', name: 'Reise', alertNearSum: false },
     ]);
   });
 
@@ -285,7 +343,8 @@ describe('documents', () => {
 describe('reset', () => {
   it('returns to first launch', async () => {
     await onboard();
-    await store.saveStockItem({ name: 'Radio', category: 'radio' });
+    await store.saveStockItem({ name: 'Radio', type: 'radio', ...item });
+    await store.savePolicy({ name: 'Innboforsikring', propertyId: 'id1', alertNearSum: true });
     await store.reset();
     const data = await store.load();
     expect(data.onboarded).toBe(false);

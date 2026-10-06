@@ -13,23 +13,54 @@ import { todayIso } from './format';
 export async function seedDemoData(actions: Omit<Store, 'load' | 'migrate'>, data: AppData) {
   const inDays = (days: number) => addDays(todayIso(), days);
 
-  if (!data.onboarded) {
-    await actions.completeOnboarding({ name: 'Kari', people: 2, address: 'Storgata 12' });
-  }
-  await actions.saveStockItem({ name: '6 liter vann', category: 'water', litres: 6, expiresOn: inDays(1) });
-  await actions.saveStockItem({ name: 'Vanndunk, 24 l', category: 'water', litres: 24 });
-  await actions.saveStockItem({ name: 'Knekkebrød', category: 'food', personDays: 4, expiresOn: inDays(13) });
-  await actions.saveStockItem({ name: 'Hermetikk og tørrmat', category: 'food', personDays: 10 });
-  await actions.saveStockItem({ name: 'Lommelykt, lys og fyrstikker', category: 'heatAndLight' });
-  await actions.saveStockItem({ name: 'Førstehjelpsskrin', category: 'firstAid' });
-  await actions.saveStockItem({ name: 'Kontanter', category: 'hygieneAndCash' });
+  const home =
+    data.onboarded && data.selectedPropertyId
+      ? data.selectedPropertyId
+      : await actions.completeOnboarding({
+          members: { adults: 2, seniors: 0, children: 1, infants: 0, dogs: 1, cats: 0 },
+          items: [],
+          homeName: 'Storgata 12',
+        });
+  const item = { quantity: 1, remind: true, location: '' };
+  await actions.saveStockItem({
+    ...item,
+    name: 'Drikkevann',
+    type: 'drinkingWater',
+    litres: 70,
+    boughtOn: addDays(inDays(9), -365),
+    expiresOn: inDays(9),
+    location: 'Bod',
+  });
+  await actions.saveStockItem({ ...item, name: 'Lapskaus', type: 'cannedMeals', quantity: 3, meals: 3, expiresOn: inDays(21) });
+  await actions.saveStockItem({ ...item, name: 'Bønner i tomatsaus', type: 'cannedMeals', quantity: 4, meals: 2, expiresOn: '2028-03-01' });
+  await actions.saveStockItem({ ...item, name: 'Tomatsuppe', type: 'cannedMeals', quantity: 4, meals: 2, expiresOn: '2027-06-01' });
+  await actions.saveStockItem({ ...item, name: 'Makrell i tomat', type: 'cannedMeals', quantity: 2, meals: 1, expiresOn: '2028-05-01' });
+  await actions.saveStockItem({ ...item, name: 'Knekkebrød', type: 'crispbread', quantity: 2, meals: 4, expiresOn: inDays(13) });
+  await actions.saveStockItem({ ...item, name: 'Tørrfôr', type: 'petFood', remind: false });
+  await actions.saveStockItem({ ...item, name: 'Vedovn og ved', type: 'heatSource' });
+  await actions.saveStockItem({ ...item, name: 'Ullpledd', type: 'woolBlankets', quantity: 3 });
+  await actions.saveStockItem({ ...item, name: 'Fyrstikker', type: 'matches' });
+  await actions.saveStockItem({ ...item, name: 'Hodelykt', type: 'torch' });
+  await actions.saveStockItem({ ...item, name: 'Stearinlys', type: 'candles', quantity: 10 });
+  await actions.saveStockItem({ ...item, name: 'Powerbank', type: 'powerBank' });
+  await actions.saveStockItem({ ...item, name: 'DAB-radio', type: 'radio' });
+  await actions.saveStockItem({ ...item, name: 'Førstehjelpsskrin', type: 'firstAidKit' });
+  await actions.saveStockItem({ ...item, name: 'Faste medisiner', type: 'medicines' });
+  await actions.saveStockItem({ ...item, name: 'Våtservietter', type: 'wetWipes' });
+  await actions.saveStockItem({ ...item, name: 'Toalettpapir', type: 'toiletPaper', quantity: 12 });
 
   await actions.saveContact({ name: 'Ola Nordmann', relation: 'Partner', phone: '+47 900 00 000' });
   await actions.saveContact({ name: 'Eva Hansen', relation: 'Nabo, har reservenøkkel', phone: '+47 900 00 001' });
   await actions.setMeetingPlace({ name: 'Skolegården', address: 'Storgata 40' });
 
-  await actions.savePolicy({ name: 'Innbo, Storgata 12', renewsOn: '2027-01-01', sumKr: 1_000_000, deductibleKr: 4_000 });
-  await actions.savePolicy({ name: 'Hus, Storgata 12', renewsOn: '2027-01-01', deductibleKr: 8_000 });
+  await actions.savePolicy({
+    name: 'Innboforsikring',
+    propertyId: home,
+    company: 'Fremtind',
+    sumKr: 600_000,
+    deductibleKr: 4_000,
+    alertNearSum: true,
+  });
   await actions.saveProperty({ name: 'Hafjell', shortName: 'Hytta' });
 
   // Two documents with real files, so the document pages and the viewer can be checked.

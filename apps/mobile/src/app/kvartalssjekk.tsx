@@ -7,7 +7,7 @@ import { Icon } from '@/components/ui/icon';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { useNotifications } from '@/notifications/notifications-provider';
-import { formatDate, todayIso } from '@/lib/format';
+import { formatDate, householdLabel, todayIso } from '@/lib/format';
 
 /** «Påminn meg» comes back a week later. */
 const EXPIRY_REVIEW_AFTER_DAYS = 7;
@@ -34,7 +34,7 @@ export default function Kvartalssjekk() {
   const steps: Step[] = [
     {
       key: 'household',
-      question: `Er dere fortsatt ${household.people} i husstanden?`,
+      question: `Er dere fortsatt ${householdLabel(household)}?`,
       answers: ['Ja', 'Nei, endre'],
       fix: '/husstand',
     },
@@ -48,7 +48,7 @@ export default function Kvartalssjekk() {
       answers: ['Byttet', 'Påminn meg'],
     },
     { key: 'equipment', question: 'Test lommelykt og radio', answers: ['Virker', 'Må fikses'] },
-    { key: 'contacts', question: 'Stemmer nødkontaktene?', answers: ['Ja', 'Endre'], fix: '/dokumenter' },
+    { key: 'contacts', question: 'Stemmer nødkontaktene?', answers: ['Ja', 'Endre'], fix: '/nodinfo' },
   ];
 
   const [answers, setAnswers] = useState<string[]>([]);

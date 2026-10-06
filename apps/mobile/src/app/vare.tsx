@@ -1,89 +1,159 @@
-import { WATER_LITRES_PER_PERSON_PER_DAY, type StockCategory } from '@egenberedskap/core';
+import {
+  CATEGORIES,
+  CATEGORY_NAMES,
+  isStockType,
+  MEALS_PER_PERSON_PER_DAY,
+  stockType,
+  suggestType,
+  typesFor,
+  WATER_LITRES_PER_PERSON_PER_DAY,
+  type StockCategory,
+  type StockType,
+} from '@egenberedskap/core';
 import type { StockDraft } from '@egenberedskap/store';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
+import { Switch } from 'react-native';
 
-import { ChoiceRow, DateField, confirmDelete, DestructiveButton, NumberField, parseNumber, TextField } from '@/components/form/fields';
+import { confirmDelete, CountField, DateField, DestructiveButton, NumberField, parseNumber, TextField } from '@/components/form/fields';
+import { MenuField } from '@/components/form/menu-field';
 import { FormSheet } from '@/components/form/sheet';
-import { Section } from '@/components/ui/list';
+import { Row, Section } from '@/components/ui/list';
+import { Colors } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
-import { categoryName } from '@/lib/format';
 
-const CATEGORIES: StockCategory[] = ['water', 'food', 'radio', 'heatAndLight', 'firstAid', 'hygieneAndCash'];
+type Params = { id?: string; type?: string; category?: string; litres?: string; meals?: string };
 
 /**
- * Add or edit a stockpile item. Tasks on Home open this prefilled, e.g. `?category=water&litres=12`,
- * so doing the task is the same as recording it.
+ * «Ny vare», the same sheet from every «+» and «Legg til», and for editing. Category and type
+ * are menus so the item lands in the right place; a type is suggested from the name. Tasks on
+ * Oversikt open it prefilled, e.g. `?type=drinkingWater&litres=12`.
  */
 export default function Vare() {
-  const params = useLocalSearchParams<{ id?: string; category?: StockCategory; litres?: string; personDays?: string }>();
-  const { stock } = useData();
+  const params = useLocalSearchParams<Params>();
+  const { stock, household } = useData();
   const { saveStockItem, deleteStockItem } = useActions();
   const existing = stock.find((item) => item.id === params.id);
 
-  const initialCategory = existing?.category ?? params.category ?? 'water';
-  const [category, setCategory] = useState<StockCategory>(initialCategory);
-  const [name, setName] = useState(existing?.name ?? (params.category ? categoryName[params.category] : ''));
-  const [litres, setLitres] = useState(
-    existing?.category === 'water' ? String(existing.litres) : (params.litres ?? ''),
-  );
-  const [personDays, setPersonDays] = useState(
-    existing?.category === 'food' ? String(existing.personDays) : (params.personDays ?? ''),
-  );
+  const initialType: StockType =
+    existing?.type ??
+    (params.type && isStockType(params.type)
+      ? params.type
+      : (typesFor(household, CATEGORIES.find((c) => c === params.category) ?? 'water')[0]?.id ?? 'drinkingWater'));
+  const [type, setType] = useState<StockType>(initialType);
+  // Once the user picks a type themselves, the name stops steering it.
+  const [typeChosen, setTypeChosen] = useState(existing !== undefined || params.type !== undefined);
+  const [name, setName] = useState(existing?.name ?? '');
+  const [quantity, setQuantity] = useState(existing?.quantity ?? 1);
+  const [litres, setLitres] = useState(existing?.litres !== undefined ? String(existing.litres) : (params.litres ?? ''));
+  const [meals, setMeals] = useState(existing?.meals !== undefined ? String(existing.meals) : (params.meals ?? ''));
   const [expiresOn, setExpiresOn] = useState(existing?.expiresOn);
+  const [remind, setRemind] = useState(existing?.remind ?? true);
+  const [location, setLocation] = useState(existing?.location ?? '');
 
-  const quantityOk =
-    category === 'water'
+  const info = stockType(type);
+  const category = info.category;
+  // Types the household doesn't list (baby food without small children) stay pickable for an item that has one.
+  const typeOptions = typesFor(household, category).some((t) => t.id === type)
+    ? typesFor(household, category)
+    : [...typesFor(household, category), info];
+
+  const changeName = (text: string) => {
+    setName(text);
+    const guess = !typeChosen && suggestType(text);
+    if (guess) setType(guess);
+  };
+  const changeCategory = (next: StockCategory) => {
+    setType(typesFor(household, next)[0]!.id);
+    setTypeChosen(true);
+  };
+
+  const amountOk =
+    info.measure === 'litres'
       ? (parseNumber(litres) ?? 0) > 0
-      : category === 'food'
-        ? (parseNumber(personDays) ?? 0) > 0
+      : info.measure === 'meals'
+        ? (parseNumber(meals) ?? 0) > 0
         : true;
-  const canSave = name.trim() !== '' && quantityOk;
 
   const save = async () => {
-    const base = { id: existing?.id, name, ...(expiresOn && { expiresOn }) };
-    const draft: StockDraft =
-      category === 'water'
-        ? { ...base, category, litres: parseNumber(litres)! }
-        : category === 'food'
-          ? { ...base, category, personDays: parseNumber(personDays)! }
-          : { ...base, category };
+    const draft: StockDraft = {
+      id: existing?.id,
+      name: name.trim() || info.name,
+      type,
+      quantity,
+      ...(info.measure === 'litres' && { litres: parseNumber(litres)! }),
+      ...(info.measure === 'meals' && { meals: parseNumber(meals)! }),
+      ...(expiresOn && { expiresOn }),
+      ...(existing?.boughtOn && { boughtOn: existing.boughtOn }),
+      remind,
+      location,
+    };
     await saveStockItem(draft);
     router.back();
   };
 
-
   return (
-    <FormSheet title={existing ? 'Rediger vare' : 'Ny vare'} canSave={canSave} onSave={save}>
-      <Section>
-        <TextField label="Navn" value={name} onChange={setName} placeholder="F.eks. vann på flaske" autoFocus={!existing && !params.category} />
+    <FormSheet title={existing ? 'Rediger vare' : 'Ny vare'} canSave={amountOk} onSave={save}>
+      <Section header="Vare">
+        <TextField label="Navn" value={name} onChange={changeName} placeholder={info.name} autoFocus={!existing && !params.type} />
+        <MenuField
+          label="Kategori"
+          value={category}
+          options={CATEGORIES.map((c) => ({ value: c, label: CATEGORY_NAMES[c] }))}
+          onChange={changeCategory}
+        />
+        <MenuField
+          label="Type"
+          value={type}
+          options={typeOptions.map((t) => ({ value: t.id, label: t.name }))}
+          onChange={(next) => {
+            setType(next);
+            setTypeChosen(true);
+          }}
+        />
       </Section>
 
-      <Section header="Kategori">
-        {CATEGORIES.map((c) => (
-          <ChoiceRow key={c} label={categoryName[c]} selected={c === category} onPress={() => setCategory(c)} />
-        ))}
+      <Section
+        header="Mengde"
+        footer={
+          info.measure === 'litres'
+            ? `Regnestykket bruker ${WATER_LITRES_PER_PERSON_PER_DAY} liter per person per døgn, til drikke og matlaging.`
+            : info.measure === 'meals'
+              ? `Omtrent hvor mange måltider alt dette gir. ${MEALS_PER_PERSON_PER_DAY} måltider er ett døgn for én person.`
+              : existing
+                ? undefined
+                : 'Vi foreslår type ut fra navnet.'
+        }>
+        {info.measure === 'litres' ? (
+          <NumberField label="Antall liter" value={litres} onChange={setLitres} unit="l" decimals />
+        ) : (
+          <CountField label="Antall" value={quantity} onChange={setQuantity} max={99} />
+        )}
+        {info.measure === 'meals' && (
+          <NumberField label="Rekker til" value={meals} onChange={setMeals} unit="måltider" decimals />
+        )}
       </Section>
 
-      {category === 'water' && (
-        <Section footer={`Regnestykket bruker ${WATER_LITRES_PER_PERSON_PER_DAY} liter per person per døgn, til drikke og matlaging.`}>
-          <NumberField label="Mengde" value={litres} onChange={setLitres} unit="l" decimals />
-        </Section>
-      )}
-      {category === 'food' && (
-        <Section footer="Omtrent hvor mange dager dette kan mette én voksen. To personer i tre dager er 6.">
-          <NumberField label="Persondøgn" value={personDays} onChange={setPersonDays} decimals />
-        </Section>
-      )}
-
-      <Section footer="Varen slutter å telle dagen etter at den har gått ut.">
-        <DateField label="Utløpsdato" value={expiresOn} onChange={setExpiresOn} />
+      <Section header="Holdbarhet" footer="Varen slutter å telle dagen etter at den har gått ut.">
+        <DateField label="Går ut" value={expiresOn} onChange={setExpiresOn} />
+        <Row
+          title="Påminnelse"
+          trailing={
+            <Switch value={remind} onValueChange={setRemind} accessibilityLabel="Påminnelse" trackColor={{ true: Colors.accent }} />
+          }
+        />
       </Section>
 
-      {existing && <DestructiveButton
+      <Section header="Plassering">
+        <TextField label="Hvor" value={location} onChange={setLocation} placeholder="F.eks. bod" />
+      </Section>
+
+      {existing && (
+        <DestructiveButton
           label="Slett vare"
           onPress={() => confirmDelete('Slette varen?', existing.name, () => deleteStockItem(existing.id))}
-        />}
+        />
+      )}
     </FormSheet>
   );
 }

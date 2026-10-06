@@ -1,9 +1,8 @@
-import type { Household, IsoDate, StockCategory, StockItem } from '@egenberedskap/core';
+import { isStockType, peopleIn, stockType, type Household, type HouseholdMembers, type IsoDate, type StockItem } from '@egenberedskap/core';
 
 import { migrate } from './schema';
 import type { SqlExecutor, SqlValue } from './sql';
 
-export type Profile = { name: string; people: number };
 export type MeetingPlace = { name: string; address: string };
 export type Property = { id: string; name: string; shortName: string };
 export type Room = { id: string; propertyId: string; name: string };
@@ -11,9 +10,16 @@ export type Contact = { id: string; name: string; relation: string; phone: strin
 export type Policy = {
   id: string;
   name: string;
+  /** The home it insures. Policies from before properties had one have none. */
+  propertyId?: string;
+  company?: string;
   renewsOn?: IsoDate;
   sumKr?: number;
   deductibleKr?: number;
+  /** «Varsle ved 90 %». */
+  alertNearSum: boolean;
+  /** «Ikke nå» on the underinsurance warning, at this documented value. */
+  alertDismissedKr?: number;
 };
 export type QuarterlyAnswers = Record<string, string>;
 /** This phone's link to an encrypted backup. The key itself lives in the Keychain, not here. */
@@ -25,7 +31,6 @@ export type StoredDocument = { id: string; name: string; files: DocumentFile[] }
 export type AppData = {
   onboarded: boolean;
   onboardedOn: IsoDate | null;
-  profile: Profile;
   household: Household;
   meetingPlace: MeetingPlace | null;
   properties: Property[];
@@ -45,12 +50,12 @@ export type AppData = {
 
 /** Without an id it's a new record; with one it replaces that record. */
 export type Draft<T extends { id: string }> = Omit<T, 'id'> & { id?: string };
-export type StockDraft =
-  | Draft<Extract<StockItem, { category: 'water' }>>
-  | Draft<Extract<StockItem, { category: 'food' }>>
-  | Draft<Extract<StockItem, { category: Exclude<StockCategory, 'water' | 'food'> }>>;
+export type StockDraft = Draft<StockItem>;
 
-export type OnboardingInput = { name: string; people: number; address: string };
+/** «Kom i gang»: who lives at home and what they already have. The home is «Hjemme» unless named. */
+export type OnboardingInput = { members: HouseholdMembers; items: StockDraft[]; homeName?: string };
+
+const MEMBER_KEYS = ['adults', 'seniors', 'children', 'infants', 'dogs', 'cats'] as const;
 
 export const DEFAULT_ROOMS = ['Stue', 'Kjøkken', 'Soverom', 'Bad', 'Gang', 'Bod'];
 
@@ -68,10 +73,14 @@ type Deps = {
 type StockRow = {
   id: string;
   name: string;
-  category: StockCategory;
+  type: string;
+  quantity: number;
   litres: number | null;
-  person_days: number | null;
+  meals: number | null;
   expires_on: string | null;
+  bought_on: string | null;
+  remind: number;
+  location: string;
 };
 
 export type Store = ReturnType<typeof createStore>;
@@ -119,13 +128,23 @@ export function createStore({ db, newId, now, today }: Deps) {
     return db.run(`UPDATE ${table} SET deleted_at = ?, updated_at = ? WHERE id = ?`, [at, at, id]);
   };
 
+  async function writeMembers(members: HouseholdMembers) {
+    for (const key of MEMBER_KEYS) {
+      const n = members[key];
+      if (!Number.isInteger(n) || n < 0 || n > 50) {
+        throw new ValidationError(key, `${key} must be a whole number from 0 to 50`);
+      }
+    }
+    if (peopleIn(members) < 1) throw new ValidationError('members', 'A household needs at least one person');
+    for (const key of MEMBER_KEYS) await setSetting(key, String(members[key]));
+  }
+
   const store = {
     migrate: () => migrate(db),
 
     async load(): Promise<AppData> {
       const [
         onboardedOn,
-        name,
         people,
         meetingName,
         meetingAddress,
@@ -138,7 +157,6 @@ export function createStore({ db, newId, now, today }: Deps) {
       ] = await Promise.all(
         [
           'onboardedOn',
-          'name',
           'people',
           'meetingPlaceName',
           'meetingPlaceAddress',
@@ -158,8 +176,9 @@ export function createStore({ db, newId, now, today }: Deps) {
       const rooms = await db.all<{ id: string; property_id: string; name: string }>(
         'SELECT id, property_id, name FROM rooms WHERE deleted_at IS NULL ORDER BY sort, created_at',
       );
+      const members = await Promise.all(MEMBER_KEYS.map(getSetting));
       const stock = await db.all<StockRow>(
-        `SELECT id, name, category, litres, person_days, expires_on FROM stock_items
+        `SELECT id, name, type, quantity, litres, meals, expires_on, bought_on, remind, location FROM stock_items
          WHERE deleted_at IS NULL ORDER BY created_at`,
       );
       const contacts = await db.all<Contact>(
@@ -168,10 +187,17 @@ export function createStore({ db, newId, now, today }: Deps) {
       const policies = await db.all<{
         id: string;
         name: string;
+        property_id: string | null;
+        company: string | null;
         renews_on: string | null;
         sum_kr: number | null;
         deductible_kr: number | null;
-      }>('SELECT id, name, renews_on, sum_kr, deductible_kr FROM policies WHERE deleted_at IS NULL ORDER BY created_at');
+        alert_near_sum: number | null;
+        alert_dismissed_kr: number | null;
+      }>(
+        `SELECT id, name, property_id, company, renews_on, sum_kr, deductible_kr, alert_near_sum, alert_dismissed_kr
+         FROM policies WHERE deleted_at IS NULL ORDER BY created_at`,
+      );
       const documents = await db.all<{ id: string; name: string }>(
         'SELECT id, name FROM documents WHERE deleted_at IS NULL ORDER BY created_at',
       );
@@ -183,13 +209,22 @@ export function createStore({ db, newId, now, today }: Deps) {
         'SELECT checked_on FROM quarterly_checks WHERE deleted_at IS NULL ORDER BY checked_on DESC, created_at DESC LIMIT 1',
       );
 
-      const householdPeople = Math.max(1, Number(people ?? 1));
+      // Before age groups there was only a head count; read it as adults.
+      const [adults, seniors, children, infants, dogs, cats] = members.map((value) => Number(value ?? 0));
+      const household: Household = {
+        id: HOUSEHOLD_ID,
+        adults: members[0] === null ? Math.max(1, Number(people ?? 1)) : adults!,
+        seniors: seniors!,
+        children: children!,
+        infants: infants!,
+        dogs: dogs!,
+        cats: cats!,
+      };
       const visibleProperties = properties.map((p) => ({ id: p.id, name: p.name, shortName: p.short_name }));
       return {
         onboarded: onboardedOn !== null,
         onboardedOn: onboardedOn ?? null,
-        profile: { name: name ?? '', people: householdPeople },
-        household: { id: HOUSEHOLD_ID, people: householdPeople },
+        household,
         meetingPlace: meetingName ? { name: meetingName, address: meetingAddress ?? '' } : null,
         properties: visibleProperties,
         // Fall back to the first property if the selected one was removed.
@@ -197,14 +232,18 @@ export function createStore({ db, newId, now, today }: Deps) {
           ? (selected ?? null)
           : (visibleProperties[0]?.id ?? null),
         rooms: rooms.map((r) => ({ id: r.id, propertyId: r.property_id, name: r.name })),
-        stock: stock.map(toStockItem),
+        stock: stock.filter((row) => isStockType(row.type)).map(toStockItem),
         contacts,
         policies: policies.map((p) => ({
           id: p.id,
           name: p.name,
+          ...(p.property_id && { propertyId: p.property_id }),
+          ...(p.company && { company: p.company }),
           ...(p.renews_on && { renewsOn: p.renews_on }),
           ...(p.sum_kr !== null && { sumKr: p.sum_kr }),
           ...(p.deductible_kr !== null && { deductibleKr: p.deductible_kr }),
+          alertNearSum: p.alert_near_sum !== 0,
+          ...(p.alert_dismissed_kr !== null && { alertDismissedKr: p.alert_dismissed_kr }),
         })),
         documents: documents.map((d) => ({
           ...d,
@@ -222,13 +261,14 @@ export function createStore({ db, newId, now, today }: Deps) {
       };
     },
 
-    /** First launch: who's in the household and where they live, with a starter set of rooms. */
-    async completeOnboarding(input: OnboardingInput) {
+    /** First launch: who lives at home and what they have, with a home and a starter set of rooms. Returns the home. */
+    async completeOnboarding(input: OnboardingInput): Promise<string> {
+      let propertyId = '';
       await db.transaction(async () => {
-        await setSetting('name', input.name.trim());
-        await setSetting('people', String(validPeople(input.people)));
-        const propertyId = await upsert('properties', undefined, {
-          name: input.address.trim(),
+        await writeMembers(input.members);
+        for (const item of input.items) await store.saveStockItem(item);
+        propertyId = await upsert('properties', undefined, {
+          name: input.homeName?.trim() || 'Hjemme',
           short_name: 'Hjemme',
         });
         await setSetting('selectedPropertyId', propertyId);
@@ -237,14 +277,10 @@ export function createStore({ db, newId, now, today }: Deps) {
         }
         await setSetting('onboardedOn', today());
       });
+      return propertyId;
     },
 
-    async updateProfile(profile: Profile) {
-      await db.transaction(async () => {
-        await setSetting('name', profile.name.trim());
-        await setSetting('people', String(validPeople(profile.people)));
-      });
-    },
+    updateHousehold: (members: HouseholdMembers) => db.transaction(() => writeMembers(members)),
 
     async setMeetingPlace(place: MeetingPlace | null) {
       await db.transaction(async () => {
@@ -256,19 +292,29 @@ export function createStore({ db, newId, now, today }: Deps) {
     selectProperty: (id: string) => setSetting('selectedPropertyId', id),
 
     async saveStockItem(draft: StockDraft) {
-      const quantity = (value: number | undefined, field: string) => {
+      const amount = (value: number | undefined, field: string) => {
         if (value === undefined || !Number.isFinite(value) || value <= 0) {
           throw new ValidationError(field, `${field} must be a positive number`);
         }
         return value;
       };
+      if (!isStockType(draft.type)) throw new ValidationError('type', `Unknown type: ${draft.type}`);
+      if (!Number.isInteger(draft.quantity) || draft.quantity < 1) {
+        throw new ValidationError('quantity', 'quantity must be a whole number of at least 1');
+      }
       if (draft.expiresOn !== undefined) validDate(draft.expiresOn, 'expiresOn');
+      if (draft.boughtOn !== undefined) validDate(draft.boughtOn, 'boughtOn');
+      const { measure } = stockType(draft.type);
       return upsert('stock_items', draft.id, {
         name: required(draft.name, 'name'),
-        category: draft.category,
-        litres: draft.category === 'water' ? quantity(draft.litres, 'litres') : null,
-        person_days: draft.category === 'food' ? quantity(draft.personDays, 'personDays') : null,
+        type: draft.type,
+        quantity: draft.quantity,
+        litres: measure === 'litres' ? amount(draft.litres, 'litres') : null,
+        meals: measure === 'meals' ? amount(draft.meals, 'meals') : null,
         expires_on: draft.expiresOn ?? null,
+        bought_on: draft.boughtOn ?? null,
+        remind: draft.remind ? 1 : 0,
+        location: draft.location.trim(),
       });
     },
     deleteStockItem: (id: string) => softDelete('stock_items', id),
@@ -318,9 +364,13 @@ export function createStore({ db, newId, now, today }: Deps) {
       if (draft.renewsOn !== undefined) validDate(draft.renewsOn, 'renewsOn');
       return upsert('policies', draft.id, {
         name: required(draft.name, 'name'),
+        property_id: draft.propertyId ?? null,
+        company: draft.company?.trim() || null,
         renews_on: draft.renewsOn ?? null,
         sum_kr: draft.sumKr ?? null,
         deductible_kr: draft.deductibleKr ?? null,
+        alert_near_sum: draft.alertNearSum ? 1 : 0,
+        alert_dismissed_kr: draft.alertDismissedKr ?? null,
       });
     },
     deletePolicy: (id: string) => softDelete('policies', id),
@@ -389,13 +439,14 @@ export function createStore({ db, newId, now, today }: Deps) {
     /** Wipes everything back to first launch. Only reachable from developer settings. */
     async reset() {
       await db.transaction(async () => {
+        // Children before the rows they point to: rooms and policies before properties.
         for (const table of [
           'settings',
           'rooms',
+          'policies',
           'properties',
           'stock_items',
           'contacts',
-          'policies',
           'quarterly_checks',
           'document_files',
           'documents',
@@ -425,13 +476,6 @@ function required(value: string, field: string): string {
   return trimmed;
 }
 
-function validPeople(people: number): number {
-  if (!Number.isInteger(people) || people < 1 || people > 50) {
-    throw new ValidationError('people', 'people must be a whole number from 1 to 50');
-  }
-  return people;
-}
-
 function validDate(date: string, field: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new ValidationError(field, `${field} must be YYYY-MM-DD`);
 }
@@ -448,14 +492,18 @@ export function monotonicStamp(now: () => Date) {
   };
 }
 
+/** Rows of a type this version doesn't know (from a newer phone) are left out by the caller. */
 function toStockItem(row: StockRow): StockItem {
-  const base = { id: row.id, name: row.name, ...(row.expires_on && { expiresOn: row.expires_on }) };
-  switch (row.category) {
-    case 'water':
-      return { ...base, category: 'water', litres: row.litres ?? 0 };
-    case 'food':
-      return { ...base, category: 'food', personDays: row.person_days ?? 0 };
-    default:
-      return { ...base, category: row.category };
-  }
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.type as StockItem['type'],
+    quantity: row.quantity,
+    ...(row.litres !== null && { litres: row.litres }),
+    ...(row.meals !== null && { meals: row.meals }),
+    ...(row.expires_on && { expiresOn: row.expires_on }),
+    ...(row.bought_on && { boughtOn: row.bought_on }),
+    remind: row.remind !== 0,
+    location: row.location,
+  };
 }

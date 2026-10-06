@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDate, formatDateWithYear, formatDayChange, formatKr, formatTime, greeting, initials, todayIso } from './format';
+import {
+  formatDate,
+  formatDateWithYear,
+  formatDays,
+  formatIn,
+  formatKr,
+  formatMeals,
+  formatMonthYear,
+  formatShortDate,
+  formatTime,
+  householdLabel,
+  initials,
+  todayIso,
+} from './format';
 
 describe('format', () => {
   it('writes dates the Norwegian way', () => {
@@ -19,19 +32,31 @@ describe('format', () => {
     expect(formatKr(0)).toBe('0 kr');
   });
 
-  it('signs day changes with a real minus, and says nothing for zero', () => {
-    expect(formatDayChange(2)).toBe('+2 døgn');
-    expect(formatDayChange(-1)).toBe('−1 døgn');
-    expect(formatDayChange(0)).toBeUndefined();
-  });
-
   it('uses the local calendar date, not UTC', () => {
     expect(todayIso(new Date(2026, 9, 2, 23, 30))).toBe('2026-10-02');
   });
 
-  it('greets by time of day and makes initials', () => {
-    expect(greeting(new Date(2026, 9, 2, 8))).toBe('God morgen');
-    expect(greeting(new Date(2026, 9, 2, 20))).toBe('God kveld');
+  it('writes days, meals and expiry the way the screens say them', () => {
+    expect(formatDays(4)).toBe('4 døgn');
+    expect(formatDays(7)).toBe('7 døgn');
+    expect(formatDays(10)).toBe('7+ døgn');
+    expect(formatMeals(1)).toBe('1 måltid');
+    expect(formatMeals(2.5)).toBe('2,5 måltider');
+    expect(formatMonthYear('2028-05-01')).toBe('mai 2028');
+    expect(formatShortDate('2025-10-14')).toBe('14. okt. 2025');
+    expect(formatShortDate('2025-06-01')).toBe('1. juni 2025');
+    expect(formatIn(9)).toBe('om 9 dager');
+    expect(formatIn(21)).toBe('om 3 uker');
+    expect(formatIn(1)).toBe('i morgen');
+  });
+
+  it('describes the household in counts only', () => {
+    const none = { adults: 0, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 };
+    expect(householdLabel({ ...none, adults: 2, children: 1, dogs: 1 })).toBe('3 personer og 1 hund');
+    expect(householdLabel({ ...none, adults: 1, dogs: 2, cats: 1 })).toBe('1 person, 2 hunder og 1 katt');
+  });
+
+  it('makes initials', () => {
     expect(initials('Ola Nordmann')).toBe('ON');
     expect(initials('kari')).toBe('K');
   });

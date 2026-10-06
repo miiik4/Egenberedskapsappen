@@ -21,16 +21,53 @@ export type SyncedFile = { id: string; fileName: string; deleted: boolean; uploa
 const TABLES: Record<string, string[]> = {
   properties: ['name', 'short_name'],
   rooms: ['property_id', 'name', 'sort'],
-  stock_items: ['name', 'category', 'litres', 'person_days', 'expires_on'],
+  stock_items: ['name', 'type', 'quantity', 'litres', 'meals', 'expires_on', 'bought_on', 'remind', 'location'],
   contacts: ['name', 'relation', 'phone'],
-  policies: ['name', 'renews_on', 'sum_kr', 'deductible_kr'],
+  policies: ['name', 'property_id', 'company', 'renews_on', 'sum_kr', 'deductible_kr', 'alert_near_sum', 'alert_dismissed_kr'],
   quarterly_checks: ['checked_on', 'answers'],
   documents: ['name'],
   document_files: ['document_id', 'file_name', 'mime_type', 'size'],
 };
 
-/** Household settings follow the household. The rest (selected property, lock, sync state) belong to one phone. */
-const SYNCED_SETTINGS = ['name', 'people', 'meetingPlaceName', 'meetingPlaceAddress', 'expiryReviewOn'];
+/**
+ * Household settings follow the household. The rest (selected property, lock, sync state) belong
+ * to one phone. `people` is the head count from before age groups, still read from old backups.
+ */
+const SYNCED_SETTINGS = [
+  'adults',
+  'seniors',
+  'children',
+  'infants',
+  'dogs',
+  'cats',
+  'people',
+  'meetingPlaceName',
+  'meetingPlaceAddress',
+  'expiryReviewOn',
+];
+
+/** Before version 4 an item had a category and person-days; the migration in schema.ts, for one row. */
+const LEGACY_TYPES: Record<string, string> = {
+  water: 'drinkingWater',
+  food: 'cannedMeals',
+  radio: 'radio',
+  heatAndLight: 'torch',
+  firstAid: 'firstAidKit',
+  hygieneAndCash: 'wetWipes',
+};
+
+function upgradeFields(type: string, fields: Record<string, SqlValue>): Record<string, SqlValue> {
+  if (type !== 'stock_items' || fields.type !== undefined || fields.category === undefined) return fields;
+  const personDays = fields.person_days;
+  return {
+    ...fields,
+    type: LEGACY_TYPES[String(fields.category)] ?? 'wetWipes',
+    quantity: 1,
+    meals: typeof personDays === 'number' ? personDays * 3 : null,
+    remind: 1,
+    location: '',
+  };
+}
 
 export const SETTINGS_TYPE = 'settings';
 export const SYNC_ORDER = [SETTINGS_TYPE, ...Object.keys(TABLES)];
@@ -114,9 +151,10 @@ export function createSyncSource(db: SqlExecutor) {
 
       const name = table(change.type);
       const columns = TABLES[name]!;
+      const fields = upgradeFields(name, change.fields);
       const local = await db.first<{ updated_at: string }>(`SELECT updated_at FROM ${name} WHERE id = ?`, [change.id]);
       if (local && local.updated_at >= change.updatedAt) return false;
-      const values = columns.map((c) => change.fields[c] ?? null);
+      const values = columns.map((c) => fields[c] ?? null);
       await db.run(
         `INSERT INTO ${name} (id, ${columns.join(', ')}, created_at, updated_at, deleted_at, pushed_at)
          VALUES (?, ${columns.map(() => '?').join(', ')}, ?, ?, ?, ?)

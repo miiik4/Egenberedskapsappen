@@ -4,18 +4,21 @@ import { MAX_REMINDERS, planReminders } from './reminders';
 import type { StockItem } from './types';
 
 const today = '2026-10-02';
-const water = (id: string, expiresOn?: string): StockItem => ({
+const water = (id: string, expiresOn?: string, remind = true): StockItem => ({
   id,
   name: `Vann ${id}`,
-  category: 'water',
+  type: 'drinkingWater',
+  quantity: 1,
   litres: 6,
+  remind,
+  location: '',
   ...(expiresOn && { expiresOn }),
 });
 
 describe('planReminders', () => {
-  it('warns two weeks before something expires', () => {
+  it('warns a week before something expires', () => {
     const plan = planReminders({ items: [water('a', '2026-11-01')], lastQuarterlyCheck: '2026-10-02', expiryReviewOn: null, today });
-    expect(plan[0]).toEqual({ kind: 'expiring', on: '2026-10-18', expiresOn: '2026-11-01', items: [water('a', '2026-11-01')] });
+    expect(plan[0]).toEqual({ kind: 'expiring', on: '2026-10-25', expiresOn: '2026-11-01', items: [water('a', '2026-11-01')] });
   });
 
   it('groups everything expiring the same day into one reminder', () => {
@@ -27,14 +30,14 @@ describe('planReminders', () => {
     });
     const expiring = plan.filter((r) => r.kind === 'expiring');
     expect(expiring.map((r) => [r.on, r.items.map((i) => i.id)])).toEqual([
-      ['2026-10-18', ['a', 'b']],
-      ['2026-11-17', ['c']],
+      ['2026-10-25', ['a', 'b']],
+      ['2026-11-24', ['c']],
     ]);
   });
 
   it('leaves out warnings already past, and items without a date', () => {
     const plan = planReminders({
-      items: [water('soon', '2026-10-10'), water('never')],
+      items: [water('soon', '2026-10-08'), water('never')],
       lastQuarterlyCheck: '2026-10-02',
       expiryReviewOn: null,
       today,
@@ -43,8 +46,13 @@ describe('planReminders', () => {
   });
 
   it('still reminds on the warning day itself', () => {
-    const plan = planReminders({ items: [water('a', '2026-10-16')], lastQuarterlyCheck: '2026-10-02', expiryReviewOn: null, today });
+    const plan = planReminders({ items: [water('a', '2026-10-09')], lastQuarterlyCheck: '2026-10-02', expiryReviewOn: null, today });
     expect(plan[0]).toMatchObject({ kind: 'expiring', on: '2026-10-02' });
+  });
+
+  it('skips items the user turned the reminder off for', () => {
+    const plan = planReminders({ items: [water('a', '2026-11-01', false)], lastQuarterlyCheck: '2026-10-02', expiryReviewOn: null, today });
+    expect(plan.filter((r) => r.kind === 'expiring')).toEqual([]);
   });
 
   it('reminds when the quarterly check falls due, but not once it is overdue', () => {
@@ -64,7 +72,7 @@ describe('planReminders', () => {
     expect(plan.map((r) => `${r.kind} ${r.on}`)).toEqual([
       'expiryReview 2026-10-05',
       'quarterlyCheck 2026-10-09',
-      'expiring 2026-10-18',
+      'expiring 2026-10-25',
     ]);
   });
 

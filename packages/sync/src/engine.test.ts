@@ -112,26 +112,43 @@ beforeEach(async () => {
   b = await phone('b', 500_000);
 });
 
+const two = { adults: 2, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 };
+const item = { quantity: 1, remind: true, location: '' };
+
 describe('sync between two phones', () => {
   it('restores a whole household onto a new phone', async () => {
-    await a.store.completeOnboarding({ name: 'Kari', people: 3, address: 'Storgata 12' });
-    await a.store.saveStockItem({ name: 'Vann', category: 'water', litres: 30, expiresOn: '2026-12-01' });
+    await a.store.completeOnboarding({ members: { ...two, adults: 3, dogs: 1 }, items: [] });
+    await a.store.saveStockItem({ name: 'Vann', type: 'drinkingWater', litres: 30, expiresOn: '2026-12-01', ...item });
     await a.store.saveContact({ name: 'Ola', relation: 'Partner', phone: '900' });
     await a.store.setMeetingPlace({ name: 'Skolegården', address: 'Storgata 40' });
 
     expect((await sync(a)).pushed).toBeGreaterThan(0);
     await sync(b);
     const restored = await b.store.load();
-    expect(restored.profile).toEqual({ name: 'Kari', people: 3 });
-    expect(restored.properties.map((p) => p.name)).toEqual(['Storgata 12']);
+    expect(restored.household).toMatchObject({ adults: 3, dogs: 1 });
+    expect(restored.properties.map((p) => p.name)).toEqual(['Hjemme']);
     expect(restored.rooms).toHaveLength(6);
-    expect(restored.stock).toEqual([{ id: 'a-8', name: 'Vann', category: 'water', litres: 30, expiresOn: '2026-12-01' }]);
+    expect(restored.stock).toEqual([
+      { id: 'a-8', name: 'Vann', type: 'drinkingWater', litres: 30, expiresOn: '2026-12-01', ...item },
+    ]);
     expect(restored.contacts.map((c) => c.name)).toEqual(['Ola']);
     expect(restored.meetingPlace).toEqual({ name: 'Skolegården', address: 'Storgata 40' });
   });
 
+  it('reads items from a phone or backup that still has categories and person-days', async () => {
+    const legacy = {
+      type: 'stock_items',
+      id: 'old-1',
+      updatedAt: '2026-10-01T10:00:00.000Z',
+      deleted: false,
+      fields: { name: 'Hermetikk', category: 'food', litres: null, person_days: 4, expires_on: null },
+    };
+    expect(await b.source.apply(legacy)).toBe(true);
+    expect((await b.store.load()).stock).toEqual([{ id: 'old-1', name: 'Hermetikk', type: 'cannedMeals', meals: 12, ...item }]);
+  });
+
   it('keeps phone-specific settings on the phone', async () => {
-    await a.store.completeOnboarding({ name: 'Kari', people: 2, address: 'Storgata 12' });
+    await a.store.completeOnboarding({ members: two, items: [] });
     await a.store.setDocumentLock(false);
     await sync(a);
     await sync(b);
@@ -149,7 +166,7 @@ describe('sync between two phones', () => {
   });
 
   it('carries deletions across', async () => {
-    const id = await a.store.saveStockItem({ name: 'Radio', category: 'radio' });
+    const id = await a.store.saveStockItem({ name: 'Radio', type: 'radio', ...item });
     await sync(a);
     await sync(b);
     await b.store.deleteStockItem(id);

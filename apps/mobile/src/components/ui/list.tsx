@@ -8,11 +8,14 @@ import { Icon, type IconName } from './icon';
 /** An iOS inset grouped section: uppercase header, rounded card, hairline separators, footnote. */
 export function Section({
   header,
+  headerDetail,
   footer,
   separatorInset = Spacing.rowInset,
   children,
 }: {
   header?: string;
+  /** Right-aligned next to the header, not uppercased: «1 av 2». */
+  headerDetail?: string;
   footer?: string;
   /** Where separators start, so they line up with the row text rather than its icon. */
   separatorInset?: number;
@@ -21,7 +24,12 @@ export function Section({
   const rows = Children.toArray(children).filter(Boolean);
   return (
     <View style={styles.section}>
-      {header && <Text style={styles.header}>{header.toUpperCase()}</Text>}
+      {header && (
+        <View style={styles.headerRow}>
+          <Text style={styles.header}>{header.toUpperCase()}</Text>
+          {headerDetail && <Text style={styles.header}>{headerDetail}</Text>}
+        </View>
+      )}
       <View style={styles.card}>
         {rows.map((row, i) => (
           <Fragment key={i}>
@@ -98,15 +106,6 @@ export function EmptyRow({ text }: { text: string }) {
   return <Text style={styles.empty}>{text}</Text>;
 }
 
-/** A single tappable card, like «Kvartalssjekk om 9 dager» on Home. */
-export function CardButton(props: Parameters<typeof Row>[0]) {
-  return (
-    <View style={[styles.card, styles.cardButton]}>
-      <Row chevron {...props} />
-    </View>
-  );
-}
-
 /** A coloured rounded square behind a white glyph, as in Settings. */
 export function IconTile({ name, color, glyph }: { name?: IconName; color: ColorValue; glyph?: string }) {
   return (
@@ -118,10 +117,10 @@ export function IconTile({ name, color, glyph }: { name?: IconName; color: Color
 
 const styles = StyleSheet.create({
   section: { marginHorizontal: Spacing.screen, gap: 7 },
-  header: { marginHorizontal: Spacing.rowInset, fontSize: 13, color: Colors.secondaryLabel, letterSpacing: 0.3 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: Spacing.rowInset },
+  header: { fontSize: 13, color: Colors.secondaryLabel, letterSpacing: 0.3 },
   footer: { marginHorizontal: Spacing.rowInset, fontSize: 13, color: Colors.secondaryLabel, lineHeight: 18 },
   card: { backgroundColor: Colors.card, borderRadius: Radius.card, borderCurve: 'continuous', overflow: 'hidden' },
-  cardButton: { marginHorizontal: Spacing.screen },
   separator: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.separator },
   row: {
     flexDirection: 'row',

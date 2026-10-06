@@ -22,25 +22,14 @@ export const Colors = {
   destructive: system('systemRed', '#D70015'),
   success: system('systemGreen', '#248A3D'),
   successSoft: 'rgba(52,199,89,0.16)',
+
+  /** The one warning colour: the dot by something about to expire, and an overfull bar. */
+  warning: '#FF9F0A',
   warningText: '#A35200',
   warningSoft: 'rgba(255,159,10,0.16)',
-
-  // Icon tiles, like in Settings.
-  tileOrange: '#FF9F0A',
-  tileRed: '#FF3B30',
-  tileBlue: '#0E5FC0',
-
-  // The days card on Home stays dark in both modes.
-  hero: {
-    background: '#0B2B4A',
-    text: '#FFFFFF',
-    muted: '#BBD6F2',
-    soft: '#DCEBFA',
-    track: '#23517C',
-    bar: '#5FA3F0',
-    caption: '#A9C5DD',
-    divider: '#2D5D8A',
-  },
+  /** Text on a pale fill, for the second avatar and similar quiet badges. */
+  indigo: '#5E5CE6',
+  indigoSoft: 'rgba(94,92,230,0.14)',
 } as const;
 
 export const Radius = {

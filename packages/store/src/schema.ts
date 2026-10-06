@@ -120,6 +120,49 @@ const MIGRATIONS: string[] = [
   ALTER TABLE document_files ADD COLUMN pushed_at TEXT;
   ALTER TABLE document_files ADD COLUMN uploaded_at TEXT;
   `,
+  // 4: items get a type from DSB's list, which gives the category, so the category goes.
+  // Food is counted in meals (three a day) rather than person-days. The table is rebuilt to
+  // drop the old CHECK on category; type is checked by the store, so new types need no rebuild.
+  // Rows are marked as not uploaded so the new shape reaches the backup. Policies belong to a
+  // property, for the underinsurance warning.
+  `
+  CREATE TABLE stock_items_v4 (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    litres REAL,
+    meals REAL,
+    expires_on TEXT,
+    bought_on TEXT,
+    remind INTEGER NOT NULL DEFAULT 1,
+    location TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT,
+    pushed_at TEXT
+  );
+  INSERT INTO stock_items_v4 (id, name, type, litres, meals, expires_on, created_at, updated_at, deleted_at)
+    SELECT id, name,
+      CASE category
+        WHEN 'water' THEN 'drinkingWater'
+        WHEN 'food' THEN 'cannedMeals'
+        WHEN 'radio' THEN 'radio'
+        WHEN 'heatAndLight' THEN 'torch'
+        WHEN 'firstAid' THEN 'firstAidKit'
+        ELSE 'wetWipes'
+      END,
+      litres, person_days * 3, expires_on, created_at, updated_at, deleted_at
+    FROM stock_items;
+  DROP TABLE stock_items;
+  ALTER TABLE stock_items_v4 RENAME TO stock_items;
+
+  ALTER TABLE policies ADD COLUMN property_id TEXT REFERENCES properties(id);
+  ALTER TABLE policies ADD COLUMN company TEXT;
+  -- Null means on: rows from phones on an older version arrive without it.
+  ALTER TABLE policies ADD COLUMN alert_near_sum INTEGER;
+  ALTER TABLE policies ADD COLUMN alert_dismissed_kr INTEGER;
+  `,
 ];
 
 export const SCHEMA_VERSION = MIGRATIONS.length;

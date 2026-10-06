@@ -214,20 +214,6 @@ function StepButton({
   );
 }
 
-/** Pick one of a few options, as a list with a checkmark on the chosen one. */
-export function ChoiceRow({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="radio"
-      accessibilityState={{ selected }}
-      style={({ pressed }) => [styles.row, pressed && { backgroundColor: Colors.fill }]}>
-      <Text style={[styles.label, styles.choice]}>{label}</Text>
-      {selected && <Icon name={{ ios: 'checkmark', android: 'check' }} size={16} color={Colors.accent} />}
-    </Pressable>
-  );
-}
-
 /** «Slett gjenstand» etc., alone in its own card at the bottom of a form. */
 export function DestructiveButton({ label, onPress }: { label: string; onPress: () => void }) {
   return (
@@ -249,7 +235,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.rowInset,
   },
   label: { fontSize: 17, color: Colors.label },
-  choice: { flex: 1 },
   value: { flex: 1, alignItems: 'flex-end' },
   input: { alignSelf: 'stretch', textAlign: 'right', fontSize: 17, color: Colors.secondaryLabel, paddingVertical: 12 },
   numberRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },

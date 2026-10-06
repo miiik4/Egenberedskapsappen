@@ -1,5 +1,6 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { StyleSheet, useColorScheme } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { BackupProvider } from '@/backup/backup-provider';
 import { DataProvider, useData } from '@/data/data-provider';
@@ -10,17 +11,19 @@ export default function RootLayout() {
   const dark = useColorScheme() === 'dark';
 
   return (
-    <ThemeProvider value={dark ? DarkTheme : DefaultTheme}>
-      <DataProvider>
-        <NotificationsProvider>
-          <DocumentLockProvider>
-            <BackupProvider>
-              <Routes />
-            </BackupProvider>
-          </DocumentLockProvider>
-        </NotificationsProvider>
-      </DataProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+      <ThemeProvider value={dark ? DarkTheme : DefaultTheme}>
+        <DataProvider>
+          <NotificationsProvider>
+            <DocumentLockProvider>
+              <BackupProvider>
+                <Routes />
+              </BackupProvider>
+            </DocumentLockProvider>
+          </NotificationsProvider>
+        </DataProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -43,7 +46,6 @@ function Routes() {
         <Stack.Screen name="vare" options={sheet} />
         <Stack.Screen name="kontakt" options={sheet} />
         <Stack.Screen name="motested" options={sheet} />
-        <Stack.Screen name="husstand" options={sheet} />
         <Stack.Screen name="rom" options={sheet} />
         <Stack.Screen name="eiendom" options={sheet} />
         <Stack.Screen name="forsikring" options={sheet} />

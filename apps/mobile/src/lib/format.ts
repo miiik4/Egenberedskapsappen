@@ -1,4 +1,12 @@
-import type { IsoDate, NextAction, ScenarioGap, ScenarioId, StockCategory } from '@egenberedskap/core';
+import {
+  CATEGORY_NAMES,
+  peopleIn,
+  TARGET_DAYS,
+  type ChecklistType,
+  type HouseholdMembers,
+  type IsoDate,
+  type NextAction,
+} from '@egenberedskap/core';
 
 const MONTHS = [
   'januar', 'februar', 'mars', 'april', 'mai', 'juni',
@@ -33,67 +41,85 @@ export function formatKr(amount: number): string {
   return `${Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} kr`;
 }
 
-/** "+2 døgn", "−1 døgn" (with a real minus sign); undefined when nothing changes. */
-export function formatDayChange(change: number): string | undefined {
-  if (change === 0) return undefined;
-  return `${change > 0 ? '+' : '−'}${Math.abs(change)} døgn`;
+/** «7 døgn», and «7+ døgn» past DSB's week, where the exact number stops mattering. */
+export function formatDays(days: number): string {
+  return days > TARGET_DAYS ? `${TARGET_DAYS}+ døgn` : `${days} døgn`;
 }
 
-export const categoryName: Record<StockCategory, string> = {
-  water: 'Vann',
-  food: 'Mat',
-  radio: 'Radio og batterier',
-  heatAndLight: 'Varme og lys',
-  firstAid: 'Førstehjelp og medisiner',
-  hygieneAndCash: 'Hygiene og kontanter',
-};
+/** «1 måltid», «8 måltider», with a decimal comma when needed. */
+export function formatMeals(meals: number): string {
+  return `${formatNumber(meals)} ${meals === 1 ? 'måltid' : 'måltider'}`;
+}
 
-const essentialTask: Record<StockCategory, string> = {
-  water: 'Skaff vann',
-  food: 'Skaff mat',
-  radio: 'Skaff radio på batteri',
-  heatAndLight: 'Skaff lommelykt og lys',
-  firstAid: 'Lag et førstehjelpsskrin',
-  hygieneAndCash: 'Legg av kontanter og hygieneartikler',
-};
+export function formatNumber(n: number): string {
+  return String(Math.round(n * 10) / 10).replace('.', ',');
+}
 
+/** «mai 2028», for expiry dates far enough off that the day doesn't matter. */
+export function formatMonthYear(date: IsoDate): string {
+  return `${MONTHS[Number(date.slice(5, 7)) - 1]} ${date.slice(0, 4)}`;
+}
+
+/** «14. okt. 2025», as in the native date picker. */
+export function formatShortDate(date: IsoDate): string {
+  const [year, month, day] = date.split('-').map(Number);
+  const name = MONTHS[month! - 1]!;
+  return `${day}. ${name.length > 4 ? `${name.slice(0, 3)}.` : name} ${year}`;
+}
+
+/** «i dag», «i morgen», «om 9 dager», «om 3 uker», «om 2 måneder». */
+export function formatIn(days: number): string {
+  if (days <= 0) return 'i dag';
+  if (days === 1) return 'i morgen';
+  if (days < 21) return `om ${days} dager`;
+  if (days < 60) return `om ${Math.round(days / 7)} uker`;
+  return `om ${Math.round(days / 30)} måneder`;
+}
+
+/** «1 uke», «2 uker», «10 dager». */
+export function formatDuration(days: number): string {
+  if (days % 7 === 0) return `${days / 7} ${days === 7 ? 'uke' : 'uker'}`;
+  return `${days} ${days === 1 ? 'dag' : 'dager'}`;
+}
+
+/** «3 personer og 1 hund», «1 person, 2 hunder og 1 katt». */
+export function householdLabel(members: HouseholdMembers): string {
+  const people = peopleIn(members);
+  const parts = [
+    `${people} ${people === 1 ? 'person' : 'personer'}`,
+    members.dogs > 0 && `${members.dogs} ${members.dogs === 1 ? 'hund' : 'hunder'}`,
+    members.cats > 0 && `${members.cats} ${members.cats === 1 ? 'katt' : 'katter'}`,
+  ].filter((part): part is string => Boolean(part));
+  return listWords(parts);
+}
+
+/** «a», «a og b», «a, b og c». */
+export function listWords(words: string[]): string {
+  return words.length <= 1 ? (words[0] ?? '') : `${words.slice(0, -1).join(', ')} og ${words.at(-1)}`;
+}
+
+/** Title and the grey line under it for a row in «Neste å gjøre». */
 export function describeAction(action: NextAction): { title: string; subtitle: string } {
   switch (action.kind) {
     case 'buyWater':
-      return { title: `Kjøp ${action.litres} liter vann`, subtitle: 'Beredskapslager' };
+      return { title: `Kjøp ${formatNumber(action.litres)} liter vann`, subtitle: 'Drikkevann på kanner' };
     case 'buyFood':
-      return { title: `Kjøp mat for ${action.personDays} persondøgn`, subtitle: 'Beredskapslager' };
+      return {
+        title: `Kjøp mat for ${action.days} døgn til`,
+        subtitle:
+          action.suggestions.length > 0
+            ? capitalize(listWords(action.suggestions.map((t) => t.name.toLowerCase())))
+            : formatMeals(action.meals),
+      };
     case 'replace':
       return { title: `Bytt ${action.item.name.toLowerCase()}`, subtitle: `Går ut ${formatDate(action.expiresOn)}` };
-    case 'getEssential':
-      return { title: essentialTask[action.category], subtitle: 'Strømbrudd om vinteren' };
+    case 'getType':
+      return { title: action.type.task, subtitle: action.type.hint || CATEGORY_NAMES[action.type.category] };
   }
 }
 
-export const scenarioName: Record<ScenarioId, string> = {
-  winterPowerOutage: 'Strømbrudd om vinteren',
-  noTapWater: 'Uten vann i springen',
-  noNetwork: 'Uten mobilnett og internett',
-  homeDamage: 'Skade på hjemmet',
-};
-
-export function describeGap(gap: ScenarioGap): string {
-  switch (gap.kind) {
-    case 'water':
-      return `${gap.litres} liter vann`;
-    case 'food':
-      return `Mat for ${gap.personDays} persondøgn`;
-    case 'essential':
-      return categoryName[gap.category];
-    case 'emergencyContacts':
-      return 'Nødkontakter';
-    case 'meetingPlace':
-      return 'Møtested';
-    case 'offlineDocuments':
-      return 'Dokumenter uten nett';
-    case 'roomNotFilmed':
-      return `${gap.room} ikke filmet`;
-  }
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 export function initials(name: string): string {
@@ -105,10 +131,10 @@ export function initials(name: string): string {
     .toUpperCase();
 }
 
-export function greeting(now = new Date()): string {
-  const hour = now.getHours();
-  if (hour < 5) return 'God natt';
-  if (hour < 10) return 'God morgen';
-  if (hour < 18) return 'God dag';
-  return 'God kveld';
+/** «4 varer · 8 måltider» */
+export function describeType(type: Pick<ChecklistType, 'items' | 'measure'>): string {
+  const count = `${type.items.length} ${type.items.length === 1 ? 'vare' : 'varer'}`;
+  if (type.measure === 'meals') return `${count} · ${formatMeals(type.items.reduce((n, i) => n + (i.meals ?? 0), 0))}`;
+  if (type.measure === 'litres') return `${count} · ${formatNumber(type.items.reduce((n, i) => n + (i.litres ?? 0), 0))} l`;
+  return count;
 }

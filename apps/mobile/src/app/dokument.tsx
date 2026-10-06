@@ -24,7 +24,7 @@ export default function Dokument() {
     const savedId = await saveDocument({ id: existing?.id, name });
     router.back();
     // A new document opens straight away, ready for its first file.
-    if (!existing) router.push({ pathname: '/dokumenter/[id]', params: { id: savedId } });
+    if (!existing) router.push({ pathname: '/nodinfo/[id]', params: { id: savedId } });
   };
 
   return (

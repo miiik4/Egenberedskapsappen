@@ -1,27 +1,40 @@
+import { CATEGORIES, stockType, typesFor, type StockTypeInfo } from './catalogue';
 import { daysBetween } from './dates';
 import {
   EXPIRY_WARNING_DAYS,
+  MEALS_PER_PERSON_PER_DAY,
   SCALE_MAX_DAYS,
   TARGET_DAYS,
+  WATER_LITRES_PER_CAT_PER_DAY,
+  WATER_LITRES_PER_DOG_PER_DAY,
   WATER_LITRES_PER_PERSON_PER_DAY,
 } from './guidance';
-import type { Household, IsoDate, StockCategory, StockItem } from './types';
+import type { HouseholdMembers, IsoDate, StockCategory, StockItem } from './types';
+
+/** The three things that run out, each counted in days. */
+export type DayKind = 'water' | 'food' | 'heat';
 
 export type Coverage = {
-  /** Days the household manages without power and running water, capped at the scale's end. */
+  /** Days the household manages without power and running water, capped at SCALE_MAX_DAYS. */
   days: number;
   waterDays: number;
   foodDays: number;
-  /** What holds the number down. Water wins a tie, since it runs out faster in practice. */
-  limitedBy: 'water' | 'food';
+  /** Heat isn't counted up: a source that works without power covers the week, none covers nothing. */
+  heatDays: number;
+  /** What holds the number down. Water wins a tie, then food, since they run out faster in practice. */
+  limitedBy: DayKind;
+  litres: number;
+  litresPerDay: number;
+  meals: number;
+  mealsPerDay: number;
   /** What it takes to reach TARGET_DAYS. Zero once there. */
   waterLitresShort: number;
-  foodPersonDaysShort: number;
-  /** Categories with nothing usable in them. Water and food are covered by the numbers above. */
-  missing: StockCategory[];
+  mealsShort: number;
 };
 
-const ESSENTIALS: StockCategory[] = ['radio', 'heatAndLight', 'firstAid', 'hygieneAndCash'];
+export function peopleIn(members: HouseholdMembers): number {
+  return members.adults + members.seniors + members.children + members.infants;
+}
 
 /** An item still counts on the day it expires and stops counting the day after. */
 export function isExpired(item: StockItem, today: IsoDate): boolean {
@@ -34,46 +47,82 @@ export function isExpiringSoon(item: StockItem, today: IsoDate): boolean {
   return left >= 0 && left <= EXPIRY_WARNING_DAYS;
 }
 
-export function computeCoverage(household: Household, items: StockItem[], today: IsoDate): Coverage {
-  if (!Number.isInteger(household.people) || household.people < 1) {
-    throw new Error(`A household needs at least one person, got ${household.people}`);
+export function computeCoverage(members: HouseholdMembers, items: StockItem[], today: IsoDate): Coverage {
+  const people = peopleIn(members);
+  if (!Number.isInteger(people) || people < 1) {
+    throw new Error(`A household needs at least one person, got ${people}`);
   }
   const usable = items.filter((item) => !isExpired(item, today));
 
   let litres = 0;
-  let personDays = 0;
-  const present = new Set<StockCategory>();
+  let meals = 0;
+  let heat = false;
   for (const item of usable) {
-    if (item.category === 'water') litres += item.litres;
-    else if (item.category === 'food') personDays += item.personDays;
-    present.add(item.category);
+    const { measure } = stockType(item.type);
+    if (measure === 'litres') litres += item.litres ?? 0;
+    else if (measure === 'meals') meals += item.meals ?? 0;
+    if (item.type === 'heatSource') heat = true;
   }
 
-  const litresPerDay = WATER_LITRES_PER_PERSON_PER_DAY * household.people;
+  const litresPerDay =
+    WATER_LITRES_PER_PERSON_PER_DAY * people +
+    WATER_LITRES_PER_DOG_PER_DAY * members.dogs +
+    WATER_LITRES_PER_CAT_PER_DAY * members.cats;
+  const mealsPerDay = MEALS_PER_PERSON_PER_DAY * people;
   const waterDays = Math.floor(litres / litresPerDay);
-  const foodDays = Math.floor(personDays / household.people);
+  const foodDays = Math.floor(meals / mealsPerDay);
+  const heatDays = heat ? SCALE_MAX_DAYS : 0;
+  const days = Math.min(waterDays, foodDays, heatDays, SCALE_MAX_DAYS);
 
   return {
-    days: Math.min(waterDays, foodDays, SCALE_MAX_DAYS),
+    days,
     waterDays,
     foodDays,
-    limitedBy: waterDays <= foodDays ? 'water' : 'food',
-    waterLitresShort: Math.max(0, TARGET_DAYS * litresPerDay - litres),
-    foodPersonDaysShort: Math.max(0, TARGET_DAYS * household.people - personDays),
-    missing: ESSENTIALS.filter((category) => !present.has(category)),
+    heatDays,
+    limitedBy: waterDays <= foodDays && waterDays <= heatDays ? 'water' : foodDays <= heatDays ? 'food' : 'heat',
+    litres,
+    litresPerDay,
+    meals,
+    mealsPerDay,
+    waterLitresShort: Math.max(0, Math.ceil(TARGET_DAYS * litresPerDay - litres)),
+    mealsShort: Math.max(0, TARGET_DAYS * mealsPerDay - meals),
   };
 }
 
 /**
- * How many days the number drops when this item goes, e.g. "Bytt 6 liter vann · −1 døgn".
+ * How many days the number drops when this item goes, e.g. «Bytt vannet · −1 døgn».
  * Returns 0 or a negative number.
  */
 export function dayImpactOfLosing(
-  household: Household,
+  members: HouseholdMembers,
   items: StockItem[],
   itemId: string,
   today: IsoDate,
 ): number {
   const without = items.filter((item) => item.id !== itemId);
-  return computeCoverage(household, without, today).days - computeCoverage(household, items, today).days;
+  return computeCoverage(members, without, today).days - computeCoverage(members, items, today).days;
+}
+
+export type ChecklistType = StockTypeInfo & {
+  /** This type's items, expired ones included so they can be replaced. */
+  items: StockItem[];
+  /** Ticked off: something of this type that hasn't expired. */
+  have: boolean;
+};
+
+export type ChecklistCategory = { category: StockCategory; types: ChecklistType[] };
+
+/** DSB's list for this household, each type ticked off as soon as it has an item. */
+export function checklist(members: HouseholdMembers, items: StockItem[], today: IsoDate): ChecklistCategory[] {
+  return CATEGORIES.map((category) => ({
+    category,
+    types: typesFor(members, category).map((type) => {
+      const own = items.filter((item) => item.type === type.id);
+      return { ...type, items: own, have: own.some((item) => !isExpired(item, today)) };
+    }),
+  }));
+}
+
+export function missingTypes(members: HouseholdMembers, items: StockItem[], today: IsoDate): StockTypeInfo[] {
+  return checklist(members, items, today).flatMap((c) => c.types.filter((t) => !t.have));
 }

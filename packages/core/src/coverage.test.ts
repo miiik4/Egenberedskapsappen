@@ -1,69 +1,119 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeCoverage, dayImpactOfLosing, isExpired, isExpiringSoon } from './coverage';
-import type { Household, StockItem } from './types';
+import { checklist, computeCoverage, dayImpactOfLosing, isExpired, isExpiringSoon, missingTypes, peopleIn } from './coverage';
+import { item } from './test-items';
+import type { HouseholdMembers, StockItem } from './types';
 
 const today = '2026-09-30';
-const kari: Household = { id: 'h1', people: 2 };
+const none: HouseholdMembers = { adults: 0, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 };
+const two: HouseholdMembers = { ...none, adults: 2 };
 
-// The stockpile from the design: 2 people, 30 of 42 litres, food for 5 of 7 days.
-const designStock: StockItem[] = [
-  { id: 'w1', name: 'Vann på flaske, 6 l', category: 'water', litres: 6, expiresOn: '2026-10-02' },
-  { id: 'w2', name: 'Vanndunk', category: 'water', litres: 24 },
-  { id: 'f1', name: 'Knekkebrød', category: 'food', personDays: 4, expiresOn: '2026-10-14' },
-  { id: 'f2', name: 'Hermetikk', category: 'food', personDays: 8 },
-  { id: 'r1', name: 'DAB-radio på batteri', category: 'radio' },
-  { id: 'l1', name: 'Lommelykt', category: 'heatAndLight' },
-  { id: 'a1', name: 'Førstehjelpsskrin', category: 'firstAid' },
-  { id: 'c1', name: 'Kontanter', category: 'hygieneAndCash' },
+// Two adults: 30 of 42 litres (5 days), 36 meals (6 days) and a stove.
+const stock: StockItem[] = [
+  item('w1', { type: 'drinkingWater', litres: 6, expiresOn: '2026-10-02' }),
+  item('w2', { type: 'drinkingWater', litres: 24 }),
+  item('f1', { type: 'crispbread', meals: 12, expiresOn: '2026-10-14' }),
+  item('f2', { type: 'cannedMeals', meals: 24 }),
+  item('h1', { type: 'heatSource' }),
+  item('r1', { type: 'radio' }),
 ];
 
 describe('computeCoverage', () => {
-  it('reproduces the design: about 5 days, held back by water', () => {
-    const c = computeCoverage(kari, designStock, today);
-    expect(c.days).toBe(5);
-    expect(c.waterDays).toBe(5);
-    expect(c.foodDays).toBe(6);
-    expect(c.limitedBy).toBe('water');
-    expect(c.waterLitresShort).toBe(12); // "Kjøp 12 liter vann"
-    expect(c.missing).toEqual([]);
+  it('counts water, food and heat, and the lowest sets the number', () => {
+    const c = computeCoverage(two, stock, today);
+    expect(c).toMatchObject({ days: 5, waterDays: 5, foodDays: 6, heatDays: 10, limitedBy: 'water' });
+    expect(c.waterLitresShort).toBe(12);
+    expect(c.mealsShort).toBe(6);
   });
 
-  it('is zero with an empty stockpile, and lists every essential as missing', () => {
-    const c = computeCoverage(kari, [], today);
+  it('counts three meals per person a day', () => {
+    expect(computeCoverage({ ...none, adults: 3 }, stock, today).foodDays).toBe(4);
+  });
+
+  it('has no heat without a source that works without power, and that holds the number at zero', () => {
+    const c = computeCoverage(two, stock.filter((i) => i.type !== 'heatSource'), today);
+    expect(c).toMatchObject({ heatDays: 0, days: 0, limitedBy: 'heat' });
+  });
+
+  it('gives pets water too', () => {
+    // 6 + 1 for the dog + 0.25 for the cat = 7.25 litres a day.
+    const c = computeCoverage({ ...two, dogs: 1, cats: 1 }, stock, today);
+    expect(c.litresPerDay).toBe(7.25);
+    expect(c.waterDays).toBe(4);
+    expect(c.waterLitresShort).toBe(21);
+  });
+
+  it('counts everyone, of every age, as a person', () => {
+    const family = { adults: 1, seniors: 1, children: 1, infants: 1, dogs: 2, cats: 0 };
+    expect(peopleIn(family)).toBe(4);
+    expect(computeCoverage(family, stock, today).mealsPerDay).toBe(12);
+  });
+
+  it('is zero with an empty stockpile', () => {
+    const c = computeCoverage(two, [], today);
     expect(c.days).toBe(0);
     expect(c.waterLitresShort).toBe(42);
-    expect(c.foodPersonDaysShort).toBe(14);
-    expect(c.missing).toEqual(['radio', 'heatAndLight', 'firstAid', 'hygieneAndCash']);
+    expect(c.mealsShort).toBe(42);
   });
 
-  it('caps the headline at the end of the scale but keeps the real figures', () => {
-    const plenty: StockItem[] = [
-      { id: 'w', name: 'Vann', category: 'water', litres: 300 },
-      { id: 'f', name: 'Mat', category: 'food', personDays: 100 },
+  it('caps the number at the end of the scale but keeps the real figures', () => {
+    const plenty = [
+      item('w', { type: 'drinkingWater', litres: 300 }),
+      item('f', { type: 'cannedMeals', meals: 300 }),
+      item('h', { type: 'heatSource' }),
     ];
-    const c = computeCoverage(kari, plenty, today);
+    const c = computeCoverage(two, plenty, today);
     expect(c.days).toBe(10);
     expect(c.waterDays).toBe(50);
     expect(c.waterLitresShort).toBe(0);
   });
 
   it('stops counting an item the day after it expires', () => {
-    expect(computeCoverage(kari, designStock, '2026-10-02').waterDays).toBe(5);
-    expect(computeCoverage(kari, designStock, '2026-10-03').waterDays).toBe(4);
+    expect(computeCoverage(two, stock, '2026-10-02').waterDays).toBe(5);
+    expect(computeCoverage(two, stock, '2026-10-03').waterDays).toBe(4);
   });
 
-  it('scales with the household', () => {
-    expect(computeCoverage({ id: 'h', people: 1 }, designStock, today).waterDays).toBe(10);
+  it('rejects a household with nobody in it, pets or not', () => {
+    expect(() => computeCoverage({ ...none, dogs: 1 }, stock, today)).toThrow();
+  });
+});
+
+describe('checklist', () => {
+  it('ticks a type off once it has an item that has not expired', () => {
+    const water = checklist(two, stock, '2026-10-03').find((c) => c.category === 'water')!;
+    expect(water.types.map((t) => [t.id, t.have, t.items.length])).toEqual([
+      ['drinkingWater', true, 2],
+      ['purificationTablets', false, 0],
+    ]);
+    const expired = [item('w', { type: 'purificationTablets', expiresOn: '2026-09-01' })];
+    expect(checklist(two, expired, today)[0]!.types[1]).toMatchObject({ have: false, items: expired });
   });
 
-  it('rejects a household with nobody in it', () => {
-    expect(() => computeCoverage({ id: 'h', people: 0 }, designStock, today)).toThrow();
+  it('lists baby food only with small children, and pet food only with pets', () => {
+    const food = (m: HouseholdMembers) => checklist(m, [], today).find((c) => c.category === 'food')!.types.map((t) => t.id);
+    expect(food(two)).toEqual(['cannedMeals', 'crispbread', 'oats', 'driedFruitNuts']);
+    expect(food({ ...two, infants: 1, cats: 1 })).toEqual([
+      'cannedMeals',
+      'crispbread',
+      'oats',
+      'driedFruitNuts',
+      'babyFood',
+      'petFood',
+    ]);
+  });
+
+  it('lists what is missing in list order', () => {
+    expect(missingTypes(two, stock, today).map((t) => t.id).slice(0, 4)).toEqual([
+      'purificationTablets',
+      'oats',
+      'driedFruitNuts',
+      'woolBlankets',
+    ]);
   });
 });
 
 describe('expiry', () => {
-  const water = designStock[0]!;
+  const water = stock[0]!;
 
   it('warns in the two weeks up to and including the expiry day', () => {
     expect(isExpiringSoon(water, '2026-09-17')).toBe(false);
@@ -74,16 +124,16 @@ describe('expiry', () => {
   });
 
   it('never expires an item without a date', () => {
-    expect(isExpired(designStock[1]!, '2099-01-01')).toBe(false);
+    expect(isExpired(stock[1]!, '2099-01-01')).toBe(false);
   });
 });
 
 describe('dayImpactOfLosing', () => {
-  it('shows what replacing the expiring water is worth: "−1 døgn"', () => {
-    expect(dayImpactOfLosing(kari, designStock, 'w1', today)).toBe(-1);
+  it('shows what replacing the expiring water is worth: «−1 døgn»', () => {
+    expect(dayImpactOfLosing(two, stock, 'w1', today)).toBe(-1);
   });
 
-  it('is zero for an essential, which does not count in days', () => {
-    expect(dayImpactOfLosing(kari, designStock, 'r1', today)).toBe(0);
+  it('is zero for something that is not counted in days', () => {
+    expect(dayImpactOfLosing(two, stock, 'r1', today)).toBe(0);
   });
 });
