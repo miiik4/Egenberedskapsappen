@@ -30,7 +30,8 @@
         "APP_VARIANT": "development"
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease -PreactNativeArchitectures=arm64-v8a"
       },
       "channel": "preview"
     },
