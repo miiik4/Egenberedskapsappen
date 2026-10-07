@@ -6,9 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useBackup } from '@/backup/backup-provider';
 import { expoCrypto } from '@/backup/crypto';
-import { deleteDataKey } from '@/backup/keychain';
-import { useActions, useData } from '@/data/data-provider';
-import { deleteAllStoredFiles } from '@/documents/files';
+import { useActions } from '@/data/data-provider';
+import { deleteEverything } from '@/data/delete-everything';
 import { seedDemoData } from '@/lib/demo-data';
 import { Text } from '@/components/ui/text';
 
@@ -24,7 +23,6 @@ import { Text } from '@/components/ui/text';
 export default function Utvikling() {
   const { handling, kode } = useLocalSearchParams<{ handling?: string; kode?: string }>();
   const actions = useActions();
-  const data = useData();
   const backup = useBackup();
   // Each link's result is kept with the link it answers, so a new link shows «Arbeider …» until it's done.
   const run = `${handling}|${kode}`;
@@ -47,13 +45,13 @@ export default function Utvikling() {
             break;
           }
           case 'gjenopprett':
-            await wipe(actions);
+            await deleteEverything(actions.reset);
             await backup.restore(kode ?? '');
             report(['GJENOPPRETTET']);
             break;
           default:
-            await wipe(actions);
-            await seedDemoData(actions, { ...data, onboarded: false });
+            await deleteEverything(actions.reset);
+            await seedDemoData(actions);
             setDone(true);
         }
       } catch (error) {
@@ -74,12 +72,6 @@ export default function Utvikling() {
       </ScrollView>
     </SafeAreaView>
   );
-}
-
-async function wipe(actions: ReturnType<typeof useActions>) {
-  await actions.reset();
-  deleteAllStoredFiles();
-  await deleteDataKey();
 }
 
 /** Known answers from Node's WebCrypto: the phone must read them, and read its own writing back. */

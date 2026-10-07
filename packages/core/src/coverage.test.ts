@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { checklist, computeCoverage, dayImpactOfLosing, isExpired, isExpiringSoon, missingTypes, peopleIn } from './coverage';
+import { checklist, computeCoverage, dayImpactOfLosing, isExpired, isExpiringSoon, itemsToReplace, missingTypes, peopleIn } from './coverage';
 import { item } from './test-items';
 import type { HouseholdMembers, StockItem } from './types';
 
@@ -125,6 +125,12 @@ describe('expiry', () => {
 
   it('never expires an item without a date', () => {
     expect(isExpired(stock[1]!, '2099-01-01')).toBe(false);
+  });
+
+  it('lists what wants replacing, expired first, then the soonest', () => {
+    const at = (id: string, expiresOn?: string) => ({ ...water, id, expiresOn });
+    const items = [at('later', '2026-10-10'), at('none'), at('past', '2026-09-30'), at('soon', '2026-10-05'), at('far', '2027-01-01')];
+    expect(itemsToReplace(items, '2026-10-01').map((i) => i.id)).toEqual(['past', 'soon', 'later']);
   });
 });
 

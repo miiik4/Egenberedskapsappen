@@ -1,4 +1,4 @@
-import { checklist, isExpired, isExpiringSoon, CATEGORY_NAMES, daysBetween, type ChecklistType } from '@egenberedskap/core';
+import { checklist, itemsToReplace, CATEGORY_NAMES, daysBetween, type ChecklistType } from '@egenberedskap/core';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
@@ -9,7 +9,7 @@ import { Segmented } from '@/components/ui/segmented';
 import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
-import { formatIn, todayIso } from '@/lib/format';
+import { capitalize, formatExpiry, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 type Filter = 'alle' | 'mangler';
@@ -70,12 +70,10 @@ export default function Lager() {
 }
 
 function TypeRow({ type, today }: { type: ChecklistType; today: string }) {
-  const expiring = type.items
-    .filter((item) => isExpiringSoon(item, today) || isExpired(item, today))
-    .sort((a, b) => a.expiresOn!.localeCompare(b.expiresOn!))[0];
-  const left = expiring && daysBetween(today, expiring.expiresOn!);
-  const subtitle =
-    left === undefined ? type.hint || undefined : left < 0 ? 'Har gått ut' : `Går ut ${formatIn(left)}`;
+  const expiring = itemsToReplace(type.items, today)[0];
+  const subtitle = expiring?.expiresOn
+    ? capitalize(formatExpiry(daysBetween(today, expiring.expiresOn)))
+    : type.hint || undefined;
 
   return (
     <Row

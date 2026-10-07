@@ -38,7 +38,7 @@ Only our app may reach the backend. The functions require App Check and take eac
 
 «Film et rom» sends photos of a room to Gemini on Vertex AI, which lists the things in them with a category, an estimated value and where each one is (`functions/src/analysis`). It is the one place content leaves the phone unencrypted, so:
 
-- Only photos go up, never video or sound. They are deleted as soon as the analysis is done, and a sweep every hour removes anything left behind.
+- Only photos go up, never video or sound: when a room is filmed, the phone takes still frames from the recording and deletes it. The photos are deleted as soon as the analysis is done, and a sweep every hour removes anything left behind.
 - The answer is text only, encrypted to a key made on the phone for that one analysis (X25519, `packages/sync/src/analysis.ts`). The phone cuts each thing's picture from its own copy of the photo.
 - It runs in the EU and needs a vault with a current entitlement: the insurer pays for it as for backup. One analysis at a time per household, at most 20 a day.
 

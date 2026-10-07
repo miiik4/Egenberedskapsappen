@@ -6,7 +6,7 @@
  * From Idimy's crop.js, which took several rounds on real footage to get right: crop tight to
  * the box with a margin, at the thing's own shape, and letterbox it into a square later, so a
  * wide keyboard isn't a thin strip lost in a square of desk. functions/src/analysis/crop.ts is
- * a copy for the server's own check of the crops; a test keeps the two the same.
+ * a copy for the server, which also reads the model's boxes; a test keeps the two the same.
  */
 
 /** [ymin, xmin, ymax, xmax], each 0–1000 of the photo's height or width, as the model gives it. */
@@ -14,19 +14,6 @@ export type Box = { ymin: number; xmin: number; ymax: number; xmax: number };
 
 export function clamp(value: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, value));
-}
-
-/** Accepts the model's box as an array or an object; null unless it's a real box with area. */
-export function normBox(raw: unknown): Box | null {
-  let values: unknown[];
-  if (Array.isArray(raw) && raw.length === 4) values = raw;
-  else if (raw && typeof raw === 'object') {
-    const b = raw as Record<string, unknown>;
-    values = [b.ymin, b.xmin, b.ymax, b.xmax];
-  } else return null;
-  const [ymin, xmin, ymax, xmax] = values.map(Number) as [number, number, number, number];
-  if (![ymin, xmin, ymax, xmax].every(Number.isFinite) || xmax <= xmin || ymax <= ymin) return null;
-  return { ymin, xmin, ymax, xmax };
 }
 
 export type CropWindow = { left: number; top: number; width: number; height: number; outSide: number };

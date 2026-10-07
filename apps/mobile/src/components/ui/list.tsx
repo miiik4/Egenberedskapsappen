@@ -108,10 +108,10 @@ export function EmptyRow({ text }: { text: string }) {
 }
 
 /** A coloured rounded square behind a white glyph, as in Settings. */
-export function IconTile({ name, color, glyph }: { name?: IconName; color: ColorValue; glyph?: string }) {
+export function IconTile({ name, color }: { name: IconName; color: ColorValue }) {
   return (
     <View style={[styles.tile, { backgroundColor: color }]}>
-      {glyph ? <Text style={styles.tileGlyph}>{glyph}</Text> : name && <Icon name={name} size={15} color="#FFFFFF" />}
+      <Icon name={name} size={15} color="#FFFFFF" />
     </View>
   );
 }
@@ -152,5 +152,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tileGlyph: { color: '#FFFFFF', fontWeight: '700', fontSize: 17 },
 });

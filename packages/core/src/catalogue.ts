@@ -99,11 +99,6 @@ export function stockType(id: StockType): StockTypeInfo {
   return info;
 }
 
-/** The category an item belongs to, through its type. */
-export function categoryOf(item: Pick<StockItem, 'type'>): StockCategory {
-  return stockType(item.type).category;
-}
-
 export function isStockType(id: string): id is StockType {
   return BY_ID.has(id as StockType);
 }

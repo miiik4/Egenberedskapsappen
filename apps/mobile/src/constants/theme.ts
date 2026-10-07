@@ -17,11 +17,7 @@ export const Colors = {
   /** Steppers, segmented controls, date pills, round buttons. */
   fill: color('#E6EDF4', '#1B324B'),
   label: color('#0B2B4A', '#EAF2FA'),
-  /** Running text: explanations, alert bodies. */
-  body: color('#33506A', '#C3D3E3'),
   secondaryLabel: color('#5B7285', '#9DB2C6'),
-  /** Subtitles of tasks, quieter than secondary. */
-  quietLabel: color('#7A8FA3', '#8299AF'),
   tertiaryLabel: color('#B4C3D2', '#4E6781'),
   separator: color('#E3EAF1', '#1D3550'),
 
@@ -29,7 +25,6 @@ export const Colors = {
   accentSoft: color('#E6EFFA', '#173A63'),
   destructive: color('#D70015', '#FF5A50'),
   success: color('#248A3D', '#3DD068'),
-  successSoft: color('rgba(52,199,89,0.16)', 'rgba(52,199,89,0.22)'),
 
   /** The one warning colour: the dot by something about to expire, an overfull bar. */
   warning: '#D08A1C',

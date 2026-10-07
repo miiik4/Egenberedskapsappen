@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { categoryOf, renewedDates, STOCK_TYPES, suggestType } from './catalogue';
+import { renewedDates, STOCK_TYPES, suggestType } from './catalogue';
 import { item } from './test-items';
 import { addMonths } from './dates';
 import { featuredGuide } from './guides';
@@ -11,7 +11,6 @@ describe('catalogue', () => {
     for (const type of STOCK_TYPES) {
       expect(type.name).not.toBe('');
       expect(type.task).not.toBe('');
-      expect(categoryOf({ type: type.id })).toBe(type.category);
     }
   });
 

@@ -4,9 +4,10 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { excludeFromBackup } from '../../modules/backup-exclusion';
 
 /**
- * Documents live in the app's own documents folder, which survives restarts and updates
- * and is included in the phone's backup. Only file names are stored in the database: on
- * iOS the folder's full path changes between installs, so it's resolved here every time.
+ * Documents live in the app's own documents folder, which survives restarts and updates but
+ * is kept out of the phone's backup (`ensureFolder`). Only file names are stored in the
+ * database: on iOS the folder's full path changes between installs, so it's resolved here
+ * every time.
  */
 const folder = () => new Directory(Paths.document, 'dokumenter');
 
@@ -41,6 +42,24 @@ export async function importFile(sourceUri: string, mimeType: string) {
   const destination = new File(dir, `${randomUUID()}.${extension}`);
   await new File(sourceUri).copy(destination);
   return { fileName: `${destination.uri.split('/').pop()}`, size: destination.size ?? 0 };
+}
+
+/**
+ * Copies a picked file in and records it with `record`. If recording fails, the copy is
+ * deleted again, so no file is left behind that nothing points to.
+ */
+export async function importAndRecord<T>(
+  sourceUri: string,
+  mimeType: string,
+  record: (file: { fileName: string; size: number }) => Promise<T>,
+): Promise<T> {
+  const file = await importFile(sourceUri, mimeType);
+  try {
+    return await record(file);
+  } catch (error) {
+    deleteStoredFiles([file.fileName]);
+    throw error;
+  }
 }
 
 /** Deletes every stored document file, for «Slett alle data». */

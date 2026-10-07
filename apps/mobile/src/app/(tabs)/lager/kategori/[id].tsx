@@ -13,6 +13,7 @@ import {
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
+import { DAY_ROWS } from '@/components/preparedness/day-rows';
 import { Card } from '@/components/ui/card';
 import { Row, Section } from '@/components/ui/list';
 import { ProgressBar } from '@/components/ui/progress';
@@ -86,9 +87,9 @@ function TypeRow({ type }: { type: ChecklistType }) {
 
 /** How far the category goes towards DSB's week, and the sum behind it. Only water, food and heat count in days. */
 function DaysCard({ category, coverage, people }: { category: StockCategory; coverage: Coverage; people: number }) {
-  const days =
-    category === 'water' ? coverage.waterDays : category === 'food' ? coverage.foodDays : category === 'heat' ? coverage.heatDays : null;
-  if (days === null) return null;
+  const row = DAY_ROWS.find((r) => r.kind === category);
+  if (!row) return null;
+  const days = row.days(coverage);
 
   const persons = `${people} ${people === 1 ? 'person' : 'personer'}`;
   const explanation =

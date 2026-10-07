@@ -22,7 +22,7 @@ import { Row, Section } from '@/components/ui/list';
 import { Colors } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 
-type Params = { id?: string; type?: string; category?: string; litres?: string; meals?: string };
+type Params = { id?: string; type?: string; litres?: string; meals?: string };
 
 /**
  * «Ny vare», the same sheet from every «+» and «Legg til», and for editing. Category and type
@@ -39,7 +39,7 @@ export default function Vare() {
     existing?.type ??
     (params.type && isStockType(params.type)
       ? params.type
-      : (typesFor(household, CATEGORIES.find((c) => c === params.category) ?? 'water')[0]?.id ?? 'drinkingWater'));
+      : (typesFor(household, 'water')[0]?.id ?? 'drinkingWater'));
   const [type, setType] = useState<StockType>(initialType);
   // Once the user picks a type themselves, the name stops steering it.
   const [typeChosen, setTypeChosen] = useState(existing !== undefined || params.type !== undefined);

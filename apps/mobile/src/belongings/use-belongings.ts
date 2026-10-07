@@ -2,7 +2,7 @@ import type { Belonging } from '@egenberedskap/core';
 import type { BelongingFileKind, Draft } from '@egenberedskap/store';
 
 import { useActions } from '@/data/data-provider';
-import { deleteStoredFiles, importFile } from '@/documents/files';
+import { deleteStoredFiles, importAndRecord } from '@/documents/files';
 import type { Picked } from '@/documents/use-documents';
 
 /** A photo or receipt chosen in the sheet: a new file to copy in, or the old one to remove. */
@@ -21,14 +21,10 @@ export function useBelongings() {
       if (currentId) deleteStoredFiles(await actions.removeBelongingFile(currentId));
       return;
     }
-    const { fileName, size } = await importFile(change.uri, change.mimeType);
-    try {
-      deleteStoredFiles(await actions.setBelongingFile({ belongingId, kind, fileName, mimeType: change.mimeType, size }));
-    } catch (error) {
-      // Don't leave a copied file behind that nothing points to.
-      deleteStoredFiles([fileName]);
-      throw error;
-    }
+    const replaced = await importAndRecord(change.uri, change.mimeType, (file) =>
+      actions.setBelongingFile({ belongingId, kind, ...file, mimeType: change.mimeType }),
+    );
+    deleteStoredFiles(replaced);
   };
 
   return {

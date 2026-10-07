@@ -10,7 +10,8 @@ import { router, Stack, type Href } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { DaysHero } from '@/components/preparedness/days-hero';
-import { useHomeInsurance } from '@/components/preparedness/home-insurance';
+import { DAY_ROWS } from '@/components/preparedness/day-rows';
+import { INSURANCE_ALERT_TITLE, useHomeInsurance } from '@/components/preparedness/home-insurance';
 import { CheckCircle, WarningDot } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
 import { LinkText } from '@/components/ui/link-text';
@@ -25,8 +26,6 @@ import { describeAction, formatDate, formatIn, formatKr, householdLabel, todayIs
 import { Text } from '@/components/ui/text';
 
 const TASKS_SHOWN = 3;
-/** «Utstyr» on Oversikt: the categories that aren't counted in days. */
-const GEAR = ['light', 'communication', 'firstAid', 'hygiene'];
 
 /**
  * The front page. Colour only where it means something: everything is blue or grey, and the
@@ -38,7 +37,8 @@ export default function Oversikt() {
   const today = todayIso();
   const coverage = computeCoverage(household, stock, today);
   const actions = nextActions(household, stock, today).slice(0, TASKS_SHOWN);
-  const gearMissing = missingTypes(household, stock, today).filter((t) => GEAR.includes(t.category)).length;
+  // «Utstyr»: the categories that aren't counted in days.
+  const gearMissing = missingTypes(household, stock, today).filter((t) => !DAY_ROWS.some((r) => r.kind === t.category)).length;
   const guide = GUIDES[featuredGuide(household, Number(today.slice(5, 7)))];
   // The first check falls due a quarter after the household was set up.
   const checkIn = daysUntilQuarterlyCheck(data.lastQuarterlyCheck ?? data.onboardedOn ?? today, today);
@@ -110,7 +110,7 @@ export default function Oversikt() {
             <Section header="Neste å gjøre" separatorInset={56}>
               {alert && (
                 <Row
-                  title={alert === 'over' ? 'Innboet kan være underforsikret' : 'Innboet nærmer seg forsikringssummen'}
+                  title={INSURANCE_ALERT_TITLE[alert]}
                   subtitle="Se over forsikringssummen"
                   leading={<CheckCircle on={false} />}
                   onPress={() => router.push('/forsikring')}

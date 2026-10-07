@@ -24,7 +24,7 @@ const TABLES: Record<string, string[]> = {
   belongings: ['room_id', 'name', 'category', 'value_kr', 'value_estimated'],
   stock_items: ['name', 'type', 'quantity', 'litres', 'meals', 'expires_on', 'bought_on', 'remind', 'location'],
   contacts: ['name', 'relation', 'phone'],
-  policies: ['name', 'property_id', 'company', 'renews_on', 'sum_kr', 'deductible_kr', 'alert_near_sum', 'alert_dismissed_kr'],
+  policies: ['name', 'property_id', 'company', 'sum_kr', 'deductible_kr', 'alert_near_sum', 'alert_dismissed_kr'],
   quarterly_checks: ['checked_on', 'answers'],
   documents: ['name'],
   document_files: ['document_id', 'file_name', 'mime_type', 'size'],

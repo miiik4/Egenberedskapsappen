@@ -1,5 +1,5 @@
 import { addDays } from '@egenberedskap/core';
-import type { AppData, Store } from '@egenberedskap/store';
+import type { Store } from '@egenberedskap/store';
 import { File, Paths } from 'expo-file-system';
 
 import { importFile } from '@/documents/files';
@@ -10,17 +10,14 @@ import { todayIso } from './format';
  * Development only: fills a fresh install with the household from the iOS design, with
  * dates relative to today, so every screen can be checked without typing it all in.
  */
-export async function seedDemoData(actions: Omit<Store, 'load' | 'migrate'>, data: AppData) {
+export async function seedDemoData(actions: Omit<Store, 'load' | 'migrate'>) {
   const inDays = (days: number) => addDays(todayIso(), days);
 
-  const home =
-    data.onboarded && data.selectedPropertyId
-      ? data.selectedPropertyId
-      : await actions.completeOnboarding({
-          members: { adults: 2, seniors: 0, children: 1, infants: 0, dogs: 1, cats: 0 },
-          items: [],
-          homeName: 'Storgata 12',
-        });
+  const home = await actions.completeOnboarding({
+    members: { adults: 2, seniors: 0, children: 1, infants: 0, dogs: 1, cats: 0 },
+    items: [],
+    homeName: 'Storgata 12',
+  });
   const item = { quantity: 1, remind: true, location: '' };
   await actions.saveStockItem({
     ...item,

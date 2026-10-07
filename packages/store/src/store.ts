@@ -24,7 +24,6 @@ export type Policy = {
   /** The home it insures. Policies from before properties had one have none. */
   propertyId?: string;
   company?: string;
-  renewsOn?: IsoDate;
   sumKr?: number;
   deductibleKr?: number;
   /** «Varsle ved 90 %». */
@@ -289,13 +288,12 @@ export function createStore({ db, newId, now, today }: Deps) {
         name: string;
         property_id: string | null;
         company: string | null;
-        renews_on: string | null;
         sum_kr: number | null;
         deductible_kr: number | null;
         alert_near_sum: number | null;
         alert_dismissed_kr: number | null;
       }>(
-        `SELECT id, name, property_id, company, renews_on, sum_kr, deductible_kr, alert_near_sum, alert_dismissed_kr
+        `SELECT id, name, property_id, company, sum_kr, deductible_kr, alert_near_sum, alert_dismissed_kr
          FROM policies WHERE deleted_at IS NULL ORDER BY created_at`,
       );
       const documents = await db.all<{ id: string; name: string }>(
@@ -429,7 +427,6 @@ export function createStore({ db, newId, now, today }: Deps) {
           name: p.name,
           ...(p.property_id && { propertyId: p.property_id }),
           ...(p.company && { company: p.company }),
-          ...(p.renews_on && { renewsOn: p.renews_on }),
           ...(p.sum_kr !== null && { sumKr: p.sum_kr }),
           ...(p.deductible_kr !== null && { deductibleKr: p.deductible_kr }),
           alertNearSum: p.alert_near_sum !== 0,
@@ -672,12 +669,10 @@ export function createStore({ db, newId, now, today }: Deps) {
     },
 
     async savePolicy(draft: Draft<Policy>) {
-      if (draft.renewsOn !== undefined) validDate(draft.renewsOn, 'renewsOn');
       return upsert('policies', draft.id, {
         name: required(draft.name, 'name'),
         property_id: draft.propertyId ?? null,
         company: draft.company?.trim() || null,
-        renews_on: draft.renewsOn ?? null,
         sum_kr: draft.sumKr ?? null,
         deductible_kr: draft.deductibleKr ?? null,
         alert_near_sum: draft.alertNearSum ? 1 : 0,

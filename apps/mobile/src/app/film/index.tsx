@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useAnalysis } from '@/analysis/analysis-provider';
+import { analyseWithConsent } from '@/analysis/consent';
 import { analysisErrorText } from '@/analysis/messages';
 import { loadFirebase } from '@/backup/load-firebase';
 import { FormSheet } from '@/components/form/sheet';
@@ -36,7 +37,7 @@ export default function Film() {
   if (!ready) return <NotAvailable />;
 
   const add = async (source: Source) => {
-    const picked = await pickFiles(source, { single: source === 'camera' });
+    const picked = await pickFiles(source);
     setPhotos((current) => [...current, ...picked.map((p) => p.uri)].slice(0, MAX_PHOTOS));
   };
 
@@ -52,24 +53,8 @@ export default function Film() {
     }
   };
 
-  const confirmAndAnalyse = () => {
-    if (analysisConsent) return void analyse();
-    Alert.alert(
-      'Bildene sendes til analyse',
-      'For å finne gjenstandene sendes bildene til en KI-tjeneste i EU. De slettes så snart analysen er ferdig. ' +
-        'Svaret er kryptert, så bare denne telefonen kan lese det.',
-      [
-        { text: 'Avbryt', style: 'cancel' },
-        {
-          text: 'Fortsett',
-          onPress: async () => {
-            await giveAnalysisConsent();
-            await analyse();
-          },
-        },
-      ],
-    );
-  };
+  const confirmAndAnalyse = () =>
+    analyseWithConsent({ consented: analysisConsent, giveConsent: giveAnalysisConsent, source: 'photos' }, analyse);
 
   return (
     <View style={styles.root}>

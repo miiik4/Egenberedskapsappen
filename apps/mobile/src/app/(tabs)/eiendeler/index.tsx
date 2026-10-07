@@ -4,7 +4,7 @@ import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
-import { useHomeInsurance } from '@/components/preparedness/home-insurance';
+import { INSURANCE_ALERT_TITLE, useHomeInsurance } from '@/components/preparedness/home-insurance';
 import { Card } from '@/components/ui/card';
 import { WarningDot } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
@@ -92,9 +92,7 @@ function Innbo() {
         <Card gap={10}>
           <View style={styles.alertHead}>
             <Icon name={{ ios: 'exclamationmark.triangle', android: 'warning' }} size={18} color={Colors.warning} />
-            <Text style={styles.alertTitle}>
-              {alert === 'over' ? 'Innboet kan være underforsikret' : 'Innboet nærmer seg forsikringssummen'}
-            </Text>
+            <Text style={styles.alertTitle}>{INSURANCE_ALERT_TITLE[alert]}</Text>
           </View>
           <Text style={styles.alertBody}>
             Dere har dokumentert {formatKr(documentedKr)}, og forsikringssummen er {formatKr(sumKr)}. Ved en stor skade

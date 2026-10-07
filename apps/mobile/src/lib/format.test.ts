@@ -4,11 +4,11 @@ import {
   formatDate,
   formatDateWithYear,
   formatDays,
+  formatExpiry,
   formatIn,
   formatKr,
   formatMeals,
   formatMonthYear,
-  formatShortDate,
   formatTime,
   householdLabel,
   initials,
@@ -43,11 +43,12 @@ describe('format', () => {
     expect(formatMeals(1)).toBe('1 måltid');
     expect(formatMeals(2.5)).toBe('2,5 måltider');
     expect(formatMonthYear('2028-05-01')).toBe('mai 2028');
-    expect(formatShortDate('2025-10-14')).toBe('14. okt. 2025');
-    expect(formatShortDate('2025-06-01')).toBe('1. juni 2025');
     expect(formatIn(9)).toBe('om 9 dager');
     expect(formatIn(21)).toBe('om 3 uker');
     expect(formatIn(1)).toBe('i morgen');
+    expect(formatExpiry(9)).toBe('går ut om 9 dager');
+    expect(formatExpiry(0)).toBe('går ut i dag');
+    expect(formatExpiry(-1)).toBe('har gått ut');
   });
 
   it('describes the household in counts only', () => {

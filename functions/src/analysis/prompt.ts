@@ -5,7 +5,7 @@ import { normBox, type Box } from './crop.js';
  * confidence floor are Idimy's, tuned on real recordings of homes and luggage.
  */
 
-/** Same list as BELONGING_CATEGORIES in packages/core/src/belongings.ts. */
+/** Same list as BELONGING_CATEGORIES in packages/core/src/belongings.ts; a test there keeps them the same. */
 export const CATEGORIES = [
   'Elektronikk',
   'Møbler',

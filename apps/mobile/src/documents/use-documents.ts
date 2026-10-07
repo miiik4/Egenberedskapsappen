@@ -5,7 +5,7 @@ import { Alert, Linking } from 'react-native';
 
 import { useActions } from '@/data/data-provider';
 
-import { deleteStoredFiles, importFile } from './files';
+import { deleteStoredFiles, importAndRecord } from './files';
 
 export type Source = 'camera' | 'photos' | 'files';
 
@@ -52,14 +52,9 @@ export function useDocumentFiles() {
   return {
     async addFrom(documentId: string, source: Source) {
       for (const picked of await pickFiles(source)) {
-        const { fileName, size } = await importFile(picked.uri, picked.mimeType);
-        try {
-          await addDocumentFile({ documentId, fileName, mimeType: picked.mimeType, size });
-        } catch (error) {
-          // Don't leave a copied file behind that nothing points to.
-          deleteStoredFiles([fileName]);
-          throw error;
-        }
+        await importAndRecord(picked.uri, picked.mimeType, (file) =>
+          addDocumentFile({ documentId, ...file, mimeType: picked.mimeType }),
+        );
       }
     },
 

@@ -60,13 +60,6 @@ export function formatMonthYear(date: IsoDate): string {
   return `${MONTHS[Number(date.slice(5, 7)) - 1]} ${date.slice(0, 4)}`;
 }
 
-/** «14. okt. 2025», as in the native date picker. */
-export function formatShortDate(date: IsoDate): string {
-  const [year, month, day] = date.split('-').map(Number);
-  const name = MONTHS[month! - 1]!;
-  return `${day}. ${name.length > 4 ? `${name.slice(0, 3)}.` : name} ${year}`;
-}
-
 /** «i dag», «i morgen», «om 9 dager», «om 3 uker», «om 2 måneder». */
 export function formatIn(days: number): string {
   if (days <= 0) return 'i dag';
@@ -74,6 +67,11 @@ export function formatIn(days: number): string {
   if (days < 21) return `om ${days} dager`;
   if (days < 60) return `om ${Math.round(days / 7)} uker`;
   return `om ${Math.round(days / 30)} måneder`;
+}
+
+/** «går ut om 9 dager», «går ut i dag», «har gått ut», for an item `days` from its expiry date. */
+export function formatExpiry(days: number): string {
+  return days < 0 ? 'har gått ut' : `går ut ${formatIn(days)}`;
 }
 
 /** «1 gjenstand», «31 gjenstander». */
@@ -123,7 +121,7 @@ export function describeAction(action: NextAction): { title: string; subtitle: s
   }
 }
 
-function capitalize(text: string): string {
+export function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 

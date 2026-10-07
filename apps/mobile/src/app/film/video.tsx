@@ -6,6 +6,7 @@ import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-n
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAnalysis } from '@/analysis/analysis-provider';
+import { analyseWithConsent } from '@/analysis/consent';
 import { analysisErrorText } from '@/analysis/messages';
 import { PrimaryButton } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
@@ -94,24 +95,8 @@ export default function FilmVideo() {
     }
   };
 
-  const confirmAndAnalyse = () => {
-    if (analysisConsent) return void analyse();
-    Alert.alert(
-      'Bilder fra filmen sendes til analyse',
-      'For å finne gjenstandene sendes stillbilder fra filmen, uten lyd, til en KI-tjeneste i EU. De slettes så snart analysen er ferdig. ' +
-        'Svaret er kryptert, så bare denne telefonen kan lese det.',
-      [
-        { text: 'Avbryt', style: 'cancel' },
-        {
-          text: 'Fortsett',
-          onPress: async () => {
-            await giveAnalysisConsent();
-            await analyse();
-          },
-        },
-      ],
-    );
-  };
+  const confirmAndAnalyse = () =>
+    analyseWithConsent({ consented: analysisConsent, giveConsent: giveAnalysisConsent, source: 'video' }, analyse);
 
   return (
     <View style={styles.root}>

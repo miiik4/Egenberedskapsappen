@@ -1,9 +1,9 @@
 import {
   CATEGORY_NAMES,
   daysBetween,
-  isExpired,
   isExpiringSoon,
   isStockType,
+  itemsToReplace,
   stockType,
   type StockItem,
 } from '@egenberedskap/core';
@@ -17,7 +17,7 @@ import { SwipeToDelete } from '@/components/ui/swipe-delete';
 import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
-import { describeType, formatIn, formatMeals, formatMonthYear, formatNumber, todayIso } from '@/lib/format';
+import { describeType, formatExpiry, formatMeals, formatMonthYear, formatNumber, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 /** One type with the household's items: what's about to expire on top, then the rest. */
@@ -30,9 +30,7 @@ export default function Type() {
   const type = stockType(id);
   const today = todayIso();
   const items = stock.filter((item) => item.type === id);
-  const soon = items
-    .filter((item) => isExpiringSoon(item, today) || isExpired(item, today))
-    .sort((a, b) => a.expiresOn!.localeCompare(b.expiresOn!));
+  const soon = itemsToReplace(items, today);
   const rest = items.filter((item) => !soon.includes(item));
 
   const row = (item: StockItem) => (
@@ -79,7 +77,7 @@ function describeItem(item: StockItem, today: string): string | undefined {
   let expiry: string | undefined;
   if (item.expiresOn) {
     const left = daysBetween(today, item.expiresOn);
-    expiry = left < 0 ? 'har gått ut' : isExpiringSoon(item, today) ? `går ut ${formatIn(left)}` : formatMonthYear(item.expiresOn);
+    expiry = left < 0 || isExpiringSoon(item, today) ? formatExpiry(left) : formatMonthYear(item.expiresOn);
   }
   return [amount, expiry].filter(Boolean).join(' · ') || undefined;
 }

@@ -6,14 +6,12 @@ import { Text } from '@/components/ui/text';
 const tones = {
   accent: { background: Colors.accentSoft, text: Colors.accent },
   warning: { background: Colors.warningSoft, text: Colors.warningText },
-  success: { background: Colors.successSoft, text: Colors.success },
-  neutral: { background: Colors.fill, text: Colors.secondaryLabel },
 } as const;
 
 export type PillTone = keyof typeof tones;
 
 /** Small capsule for a status or a day change, e.g. «+2 døgn» or «12 liter vann». */
-export function Pill({ label, tone = 'neutral', onPress }: { label: string; tone?: PillTone; onPress?: () => void }) {
+export function Pill({ label, tone, onPress }: { label: string; tone: PillTone; onPress?: () => void }) {
   const { background, text } = tones[tone];
   const body = (
     <View style={[styles.pill, { backgroundColor: background }]}>

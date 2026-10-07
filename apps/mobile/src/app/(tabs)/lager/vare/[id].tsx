@@ -20,7 +20,7 @@ import { EmptyRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
-import { formatDate, formatDays, formatDuration, formatIn, formatMeals, formatNumber, todayIso } from '@/lib/format';
+import { capitalize, formatDate, formatDays, formatDuration, formatExpiry, formatMeals, formatNumber, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 /** One item: how much, how long it keeps, and where it is. Dates and the reminder change in place. */
@@ -138,7 +138,7 @@ function ExpiryCard({ item, today }: { item: StockItem; today: string }) {
       <View style={styles.expiry}>
         <WarningDot />
         <View style={styles.expiryText}>
-          <Text style={styles.expiryTitle}>{left < 0 ? 'Har gått ut' : `Går ut ${formatIn(left)}`}</Text>
+          <Text style={styles.expiryTitle}>{capitalize(formatExpiry(left))}</Text>
           <Text style={styles.expirySub}>
             {left < 0
               ? 'Teller ikke lenger med i døgnene'

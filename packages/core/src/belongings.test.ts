@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { documentedValue, isBelongingCategory, summarizeRooms, type Belonging } from './belongings';
+// The server's copy of the categories, which the model is asked to choose from.
+import { CATEGORIES as SERVER_CATEGORIES } from '../../../functions/src/analysis/prompt';
+import { BELONGING_CATEGORIES, documentedValue, isBelongingCategory, summarizeRooms, type Belonging } from './belongings';
 
 const thing = (id: string, roomId: string, valueKr?: number): Belonging => ({
   id,
@@ -30,5 +32,9 @@ describe('belongings', () => {
   it('knows its categories', () => {
     expect(isBelongingCategory('Smykker')).toBe(true);
     expect(isBelongingCategory('Bil')).toBe(false);
+  });
+
+  it('asks the model for the same categories as the app knows', () => {
+    expect(SERVER_CATEGORIES).toEqual(BELONGING_CATEGORIES);
   });
 });

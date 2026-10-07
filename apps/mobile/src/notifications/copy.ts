@@ -1,6 +1,6 @@
 import { EXPIRY_REMINDER_DAYS, type Reminder } from '@egenberedskap/core';
 
-import { formatDate, formatDuration } from '@/lib/format';
+import { formatDate, formatDuration, listWords } from '@/lib/format';
 
 const LEAD = formatDuration(EXPIRY_REMINDER_DAYS);
 
@@ -43,5 +43,5 @@ export function reminderMessage(reminder: Reminder): ReminderMessage {
 /** "a", "a og b", "a, b og c", "a, b og 3 til" */
 function listNames(names: string[]): string {
   const shown = names.length > 3 ? [...names.slice(0, 2), `${names.length - 2} til`] : names;
-  return shown.length === 1 ? shown[0]! : `${shown.slice(0, -1).join(', ')} og ${shown.at(-1)}`;
+  return listWords(shown);
 }

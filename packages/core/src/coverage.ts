@@ -47,6 +47,13 @@ export function isExpiringSoon(item: StockItem, today: IsoDate): boolean {
   return left >= 0 && left <= EXPIRY_WARNING_DAYS;
 }
 
+/** What has expired or is about to, soonest first: what wants replacing. */
+export function itemsToReplace<T extends StockItem>(items: T[], today: IsoDate): T[] {
+  return items
+    .filter((item) => isExpired(item, today) || isExpiringSoon(item, today))
+    .sort((a, b) => (a.expiresOn ?? '').localeCompare(b.expiresOn ?? ''));
+}
+
 export function computeCoverage(members: HouseholdMembers, items: StockItem[], today: IsoDate): Coverage {
   const people = peopleIn(members);
   if (!Number.isInteger(people) || people < 1) {

@@ -7,10 +7,8 @@ import { Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
-import { deleteAllAnalysisFolders } from '@/analysis/photos';
+import { deleteEverything } from '@/data/delete-everything';
 import { useBackup } from '@/backup/backup-provider';
-import { deleteDataKey } from '@/backup/keychain';
-import { deleteAllStoredFiles } from '@/documents/files';
 import { useDocumentLock } from '@/documents/lock';
 import { useNotifications } from '@/notifications/notifications-provider';
 import { householdLabel } from '@/lib/format';
@@ -42,10 +40,7 @@ export default function Husstand() {
         style: 'destructive',
         onPress: async () => {
           router.back();
-          await reset();
-          deleteAllStoredFiles();
-          deleteAllAnalysisFolders();
-          await deleteDataKey();
+          await deleteEverything(reset);
         },
       },
     ]);

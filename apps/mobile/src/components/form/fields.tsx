@@ -66,14 +66,12 @@ export function NumberField({
   value,
   onChange,
   unit,
-  placeholder = '0',
   decimals = false,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   unit?: string;
-  placeholder?: string;
   decimals?: boolean;
 }) {
   return (
@@ -82,7 +80,7 @@ export function NumberField({
         <TextInput
           value={value}
           onChangeText={(text) => onChange(text.replace(decimals ? /[^\d,.]/g : /\D/g, ''))}
-          placeholder={placeholder}
+          placeholder="0"
           placeholderTextColor={Colors.tertiaryLabel}
           keyboardType={decimals ? 'decimal-pad' : 'number-pad'}
           accessibilityLabel={label}
@@ -172,15 +170,14 @@ export function CountField({
   label,
   value,
   onChange,
-  min = 1,
   max = 20,
 }: {
   label: string;
   value: number;
   onChange: (value: number) => void;
-  min?: number;
   max?: number;
 }) {
+  const min = 1;
   const step = (delta: number) => onChange(Math.min(max, Math.max(min, value + delta)));
   return (
     <FieldRow label={label}>

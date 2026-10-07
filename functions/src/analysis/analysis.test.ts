@@ -3,10 +3,21 @@ import { describe, it } from 'node:test';
 
 import sharp from 'sharp';
 
+import { normBox } from './crop.js';
 import type { VisionModel } from './model.js';
 import { pickSharpest, runPipeline } from './pipeline.js';
 import { CONFIDENCE_MIN, readItems } from './prompt.js';
 import { admit, DAILY_LIMIT, release, STALE_AFTER_MS } from './usage.js';
+
+describe('normBox', () => {
+  it('reads the model’s box as an array or an object, and refuses a box without area', () => {
+    assert.deepEqual(normBox([100, 200, 300, 400]), { ymin: 100, xmin: 200, ymax: 300, xmax: 400 });
+    assert.deepEqual(normBox({ ymin: '100', xmin: 200, ymax: 300, xmax: 400 }), { ymin: 100, xmin: 200, ymax: 300, xmax: 400 });
+    assert.equal(normBox([100, 400, 300, 200]), null);
+    assert.equal(normBox([1, 2, 3]), null);
+    assert.equal(normBox('box'), null);
+  });
+});
 
 describe('readItems', () => {
   it('keeps what makes sense and drops what does not', () => {
