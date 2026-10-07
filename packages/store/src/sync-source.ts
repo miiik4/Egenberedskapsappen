@@ -21,13 +21,18 @@ export type SyncedFile = { id: string; fileName: string; deleted: boolean; uploa
 const TABLES: Record<string, string[]> = {
   properties: ['name', 'short_name'],
   rooms: ['property_id', 'name', 'sort'],
+  belongings: ['room_id', 'name', 'category', 'value_kr', 'value_estimated'],
   stock_items: ['name', 'type', 'quantity', 'litres', 'meals', 'expires_on', 'bought_on', 'remind', 'location'],
   contacts: ['name', 'relation', 'phone'],
   policies: ['name', 'property_id', 'company', 'renews_on', 'sum_kr', 'deductible_kr', 'alert_near_sum', 'alert_dismissed_kr'],
   quarterly_checks: ['checked_on', 'answers'],
   documents: ['name'],
   document_files: ['document_id', 'file_name', 'mime_type', 'size'],
+  belonging_files: ['belonging_id', 'kind', 'file_name', 'mime_type', 'size'],
 };
+
+/** Tables whose rows each stand for an encrypted file that syncs separately. */
+const FILE_TABLES = ['document_files', 'belonging_files'];
 
 /**
  * Household settings follow the household. The rest (selected property, lock, sync state) belong
@@ -44,6 +49,8 @@ const SYNCED_SETTINGS = [
   'meetingPlaceName',
   'meetingPlaceAddress',
   'expiryReviewOn',
+  'ownerName',
+  'ownerBirthDate',
 ];
 
 /** Before version 4 an item had a category and person-days; the migration in schema.ts, for one row. */
@@ -149,7 +156,10 @@ export function createSyncSource(db: SqlExecutor) {
         return true;
       }
 
-      const name = table(change.type);
+      // A table from a newer version: skip it rather than stop syncing. The cursor moves past it
+      // anyway, so the migration that adds a synced table must clear the cursor (see schema.ts).
+      if (!(change.type in TABLES)) return false;
+      const name = change.type;
       const columns = TABLES[name]!;
       const fields = upgradeFields(name, change.fields);
       const local = await db.first<{ updated_at: string }>(`SELECT updated_at FROM ${name} WHERE id = ?`, [change.id]);
@@ -165,10 +175,10 @@ export function createSyncSource(db: SqlExecutor) {
       return true;
     },
 
-    /** Document files with their upload state, deleted ones included. */
+    /** Document and belonging files with their upload state, deleted ones included. */
     async files(): Promise<SyncedFile[]> {
       const rows = await db.all<{ id: string; file_name: string; deleted_at: string | null; uploaded_at: string | null }>(
-        'SELECT id, file_name, deleted_at, uploaded_at FROM document_files',
+        FILE_TABLES.map((t) => `SELECT id, file_name, deleted_at, uploaded_at FROM ${t}`).join(' UNION ALL '),
       );
       return rows.map((r) => ({
         id: r.id,
@@ -178,8 +188,10 @@ export function createSyncSource(db: SqlExecutor) {
       }));
     },
 
-    setUploaded: (id: string, uploadedAt: string | null) =>
-      db.run('UPDATE document_files SET uploaded_at = ? WHERE id = ?', [uploadedAt, id]),
+    /** Ids are UUIDs, so the id alone finds the row in whichever table holds it. */
+    async setUploaded(id: string, uploadedAt: string | null) {
+      for (const t of FILE_TABLES) await db.run(`UPDATE ${t} SET uploaded_at = ? WHERE id = ?`, [uploadedAt, id]);
+    },
 
     /** Where the last download left off, by server time. Stays on this phone. */
     async cursor(): Promise<string | null> {

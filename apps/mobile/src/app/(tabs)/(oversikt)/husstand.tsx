@@ -7,6 +7,7 @@ import { Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
+import { deleteAllAnalysisFolders } from '@/analysis/photos';
 import { useBackup } from '@/backup/backup-provider';
 import { deleteDataKey } from '@/backup/keychain';
 import { deleteAllStoredFiles } from '@/documents/files';
@@ -42,6 +43,7 @@ export default function Husstand() {
           router.back();
           await reset();
           deleteAllStoredFiles();
+          deleteAllAnalysisFolders();
           await deleteDataKey();
         },
       },

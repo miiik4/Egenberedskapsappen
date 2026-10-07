@@ -1,4 +1,11 @@
-import { isStockType, peopleIn, stockType, type Household, type HouseholdMembers, type IsoDate, type StockItem } from '@egenberedskap/core';
+import {
+  isBelongingCategory,
+  isStockType,
+  peopleIn,
+  stockType,
+  type Belonging,
+  type Household,
+  type Suggestion, type HouseholdMembers, type IsoDate, type StockItem } from '@egenberedskap/core';
 
 import { migrate } from './schema';
 import type { SqlExecutor, SqlValue } from './sql';
@@ -26,6 +33,28 @@ export type QuarterlyAnswers = Record<string, string>;
 export type BackupState = { vaultId: string; entitledUntil: string; lastSyncedAt: string | null };
 export type DocumentFile = { id: string; fileName: string; mimeType: string; size: number };
 export type StoredDocument = { id: string; name: string; files: DocumentFile[] };
+/** A belonging's photo, or the receipt that proves what it cost. At most one of each. */
+export type BelongingFileKind = 'photo' | 'receipt';
+export type BelongingFile = DocumentFile & { kind: BelongingFileKind };
+export type StoredBelonging = Belonging & { photo?: BelongingFile; receipt?: BelongingFile };
+export type Owner = { name: string; birthDate?: IsoDate };
+
+/**
+ * An AI analysis this phone started: photos being uploaded, the answer awaited, suggestions to
+ * look over, or a failure to explain. The private key stays out of here; see analysisSecret.
+ */
+export type Analysis = {
+  id: string;
+  roomId: string;
+  source: 'photos' | 'video';
+  status: 'uploading' | 'waiting' | 'ready' | 'failed';
+  frameCount: number;
+  /** The analysis's own public key, which the answer is encrypted to. */
+  publicKey: string;
+  error?: string;
+  suggestions?: Suggestion[];
+  createdAt: string;
+};
 
 /** Everything the screens show. Small enough to load whole after every change. */
 export type AppData = {
@@ -40,11 +69,17 @@ export type AppData = {
   contacts: Contact[];
   policies: Policy[];
   documents: StoredDocument[];
+  belongings: StoredBelonging[];
   lastQuarterlyCheck: IsoDate | null;
   /** «Påminn meg» from the quarterly check: when to remind about expiry dates again. */
   expiryReviewOn: IsoDate | null;
   /** Ask for Face ID or the phone's code before showing documents. On unless turned off. */
   documentLock: boolean;
+  /** Who the belongings are documented for, on the report: an insurer needs a person, not just a phone. */
+  owner: Owner;
+  /** The user has read what AI analysis sends, and agreed. Asked once per phone. */
+  analysisConsent: boolean;
+  analyses: Analysis[];
   backup: BackupState | null;
 };
 
@@ -139,6 +174,39 @@ export function createStore({ db, newId, now, today }: Deps) {
     for (const key of MEMBER_KEYS) await setSetting(key, String(members[key]));
   }
 
+  /** Soft-deletes the photos and receipts of these belongings, returning their file names. */
+  async function deleteFilesOf(belongingIds: string[]): Promise<string[]> {
+    if (belongingIds.length === 0) return [];
+    const marks = belongingIds.map(() => '?').join(', ');
+    const files = await db.all<{ file_name: string }>(
+      `SELECT file_name FROM belonging_files WHERE belonging_id IN (${marks}) AND deleted_at IS NULL`,
+      belongingIds,
+    );
+    const at = stamp();
+    await db.run(
+      `UPDATE belonging_files SET deleted_at = ?, updated_at = ? WHERE belonging_id IN (${marks}) AND deleted_at IS NULL`,
+      [at, at, ...belongingIds],
+    );
+    return files.map((f) => f.file_name);
+  }
+
+  async function deleteBelongingsIn(roomIds: string[]): Promise<string[]> {
+    if (roomIds.length === 0) return [];
+    const marks = roomIds.map(() => '?').join(', ');
+    const belongings = await db.all<{ id: string }>(
+      `SELECT id FROM belongings WHERE room_id IN (${marks}) AND deleted_at IS NULL`,
+      roomIds,
+    );
+    const files = await deleteFilesOf(belongings.map((b) => b.id));
+    const at = stamp();
+    await db.run(`UPDATE belongings SET deleted_at = ?, updated_at = ? WHERE room_id IN (${marks}) AND deleted_at IS NULL`, [
+      at,
+      at,
+      ...roomIds,
+    ]);
+    return files;
+  }
+
   const store = {
     migrate: () => migrate(db),
 
@@ -154,6 +222,9 @@ export function createStore({ db, newId, now, today }: Deps) {
         backupVaultId,
         backupEntitledUntil,
         lastSyncedAt,
+        analysisConsent,
+        ownerName,
+        ownerBirthDate,
       ] = await Promise.all(
         [
           'onboardedOn',
@@ -166,6 +237,9 @@ export function createStore({ db, newId, now, today }: Deps) {
           'backupVaultId',
           'backupEntitledUntil',
           'lastSyncedAt',
+          'analysisConsent',
+          'ownerName',
+          'ownerBirthDate',
         ].map(
           getSetting,
         ),
@@ -204,6 +278,53 @@ export function createStore({ db, newId, now, today }: Deps) {
       const files = await db.all<{ id: string; document_id: string; file_name: string; mime_type: string; size: number }>(
         `SELECT id, document_id, file_name, mime_type, size FROM document_files
          WHERE deleted_at IS NULL ORDER BY created_at`,
+      );
+      const belongings = await db.all<{
+        id: string;
+        room_id: string;
+        name: string;
+        category: string;
+        value_kr: number | null;
+        value_estimated: number;
+      }>(
+        `SELECT b.id, b.room_id, b.name, b.category, b.value_kr, b.value_estimated FROM belongings b
+         JOIN rooms r ON r.id = b.room_id
+         WHERE b.deleted_at IS NULL AND r.deleted_at IS NULL ORDER BY b.created_at`,
+      );
+      const belongingFiles = await db.all<{
+        id: string;
+        belonging_id: string;
+        kind: BelongingFileKind;
+        file_name: string;
+        mime_type: string;
+        size: number;
+      }>(
+        `SELECT id, belonging_id, kind, file_name, mime_type, size FROM belonging_files
+         WHERE deleted_at IS NULL ORDER BY created_at`,
+      );
+      // One of each kind per belonging; should two phones each have added one, the newest wins.
+      const filesByBelonging = new Map<string, BelongingFile>();
+      for (const f of belongingFiles) {
+        filesByBelonging.set(`${f.belonging_id}/${f.kind}`, {
+          id: f.id,
+          kind: f.kind,
+          fileName: f.file_name,
+          mimeType: f.mime_type,
+          size: f.size,
+        });
+      }
+      const analyses = await db.all<{
+        id: string;
+        room_id: string;
+        source: Analysis['source'];
+        status: Analysis['status'];
+        frame_count: number;
+        public_key: string;
+        error: string | null;
+        suggestions: string | null;
+        created_at: string;
+      }>(
+        'SELECT id, room_id, source, status, frame_count, public_key, error, suggestions, created_at FROM analyses ORDER BY created_at',
       );
       const lastCheck = await db.first<{ checked_on: string }>(
         'SELECT checked_on FROM quarterly_checks WHERE deleted_at IS NULL ORDER BY checked_on DESC, created_at DESC LIMIT 1',
@@ -251,9 +372,37 @@ export function createStore({ db, newId, now, today }: Deps) {
             .filter((f) => f.document_id === d.id)
             .map((f) => ({ id: f.id, fileName: f.file_name, mimeType: f.mime_type, size: f.size })),
         })),
+        belongings: belongings.map((b) => {
+          const photo = filesByBelonging.get(`${b.id}/photo`);
+          const receipt = filesByBelonging.get(`${b.id}/receipt`);
+          return {
+            id: b.id,
+            roomId: b.room_id,
+            name: b.name,
+            // A category from a newer version reads as «Annet» until this one learns it.
+            category: isBelongingCategory(b.category) ? b.category : 'Annet',
+            ...(b.value_kr !== null && { valueKr: b.value_kr }),
+            valueEstimated: b.value_estimated !== 0,
+            ...(photo && { photo }),
+            ...(receipt && { receipt }),
+          };
+        }),
         lastQuarterlyCheck: lastCheck?.checked_on ?? null,
         expiryReviewOn: expiryReviewOn ?? null,
         documentLock: documentLock !== 'off',
+        analysisConsent: analysisConsent === 'yes',
+        owner: { name: ownerName ?? '', ...(ownerBirthDate && { birthDate: ownerBirthDate }) },
+        analyses: analyses.map((a) => ({
+          id: a.id,
+          roomId: a.room_id,
+          source: a.source,
+          status: a.status,
+          frameCount: a.frame_count,
+          publicKey: a.public_key,
+          ...(a.error && { error: a.error }),
+          ...(a.suggestions && { suggestions: JSON.parse(a.suggestions) as Suggestion[] }),
+          createdAt: a.created_at,
+        })),
         backup:
           backupVaultId && backupEntitledUntil
             ? { vaultId: backupVaultId, entitledUntil: backupEntitledUntil, lastSyncedAt: lastSyncedAt ?? null }
@@ -332,7 +481,10 @@ export function createStore({ db, newId, now, today }: Deps) {
         name: required(draft.name, 'name'),
         short_name: required(draft.shortName, 'shortName'),
       }),
-    async deleteProperty(id: string) {
+    /** Removes a home with its rooms and everything in them. Returns the files to delete, as deleteDocument does. */
+    async deleteProperty(id: string): Promise<string[]> {
+      const rooms = await db.all<{ id: string }>('SELECT id FROM rooms WHERE property_id = ? AND deleted_at IS NULL', [id]);
+      let files: string[] = [];
       await db.transaction(async () => {
         await softDelete('properties', id);
         const at = stamp();
@@ -341,7 +493,9 @@ export function createStore({ db, newId, now, today }: Deps) {
           at,
           id,
         ]);
+        files = await deleteBelongingsIn(rooms.map((r) => r.id));
       });
+      return files;
     },
 
     async saveRoom(draft: Draft<Room>) {
@@ -358,7 +512,67 @@ export function createStore({ db, newId, now, today }: Deps) {
         sort: existing?.sort ?? (last?.sort ?? -1) + 1,
       });
     },
-    deleteRoom: (id: string) => softDelete('rooms', id),
+    /** Removes a room and everything in it. Returns the files to delete. */
+    async deleteRoom(id: string): Promise<string[]> {
+      let files: string[] = [];
+      await db.transaction(async () => {
+        await softDelete('rooms', id);
+        files = await deleteBelongingsIn([id]);
+      });
+      return files;
+    },
+
+    async saveBelonging(draft: Draft<Belonging>) {
+      if (!isBelongingCategory(draft.category)) throw new ValidationError('category', `Unknown category: ${draft.category}`);
+      if (draft.valueKr !== undefined && (!Number.isInteger(draft.valueKr) || draft.valueKr < 0)) {
+        throw new ValidationError('valueKr', 'valueKr must be a whole number of kroner, 0 or more');
+      }
+      return upsert('belongings', draft.id, {
+        room_id: draft.roomId,
+        name: required(draft.name, 'name'),
+        category: draft.category,
+        value_kr: draft.valueKr ?? null,
+        value_estimated: draft.valueEstimated ? 1 : 0,
+      });
+    },
+
+    /** Removes a belonging with its photo and receipt. Returns the files to delete. */
+    async deleteBelonging(id: string): Promise<string[]> {
+      let files: string[] = [];
+      await db.transaction(async () => {
+        files = await deleteFilesOf([id]);
+        await softDelete('belongings', id);
+      });
+      return files;
+    },
+
+    /**
+     * Records a photo or receipt already copied into the app's folder, in place of the one of
+     * that kind it had. Returns the replaced file, to delete.
+     */
+    async setBelongingFile(file: { belongingId: string; kind: BelongingFileKind; fileName: string; mimeType: string; size: number }) {
+      const previous = await db.all<{ id: string; file_name: string }>(
+        'SELECT id, file_name FROM belonging_files WHERE belonging_id = ? AND kind = ? AND deleted_at IS NULL',
+        [file.belongingId, file.kind],
+      );
+      await db.transaction(async () => {
+        for (const p of previous) await softDelete('belonging_files', p.id);
+        await upsert('belonging_files', undefined, {
+          belonging_id: file.belongingId,
+          kind: file.kind,
+          file_name: required(file.fileName, 'fileName'),
+          mime_type: file.mimeType,
+          size: file.size,
+        });
+      });
+      return previous.map((p) => p.file_name);
+    },
+
+    async removeBelongingFile(id: string): Promise<string[]> {
+      const row = await db.first<{ file_name: string }>('SELECT file_name FROM belonging_files WHERE id = ?', [id]);
+      await softDelete('belonging_files', id);
+      return row ? [row.file_name] : [];
+    },
 
     async savePolicy(draft: Draft<Policy>) {
       if (draft.renewsOn !== undefined) validDate(draft.renewsOn, 'renewsOn');
@@ -423,6 +637,45 @@ export function createStore({ db, newId, now, today }: Deps) {
 
     setDocumentLock: (on: boolean) => setSetting('documentLock', on ? 'on' : 'off'),
 
+    async setOwner(owner: Owner) {
+      if (owner.birthDate !== undefined) validDate(owner.birthDate, 'birthDate');
+      await db.transaction(async () => {
+        await setSetting('ownerName', owner.name.trim() || null);
+        await setSetting('ownerBirthDate', owner.birthDate ?? null);
+      });
+    },
+
+    /** Never synced: each phone asks for itself. */
+    giveAnalysisConsent: () => setSetting('analysisConsent', 'yes'),
+
+    async addAnalysis(analysis: Pick<Analysis, 'id' | 'roomId' | 'source' | 'frameCount' | 'publicKey'> & { secretKey: string }) {
+      const at = stamp();
+      await db.run(
+        `INSERT INTO analyses (id, room_id, source, status, secret_key, public_key, frame_count, created_at, updated_at)
+         VALUES (?, ?, ?, 'uploading', ?, ?, ?, ?, ?)`,
+        [analysis.id, analysis.roomId, analysis.source, analysis.secretKey, analysis.publicKey, analysis.frameCount, at, at],
+      );
+    },
+
+    /** The private key for the analysis's answer. Kept out of AppData so it's only read when needed. */
+    async analysisSecret(id: string): Promise<string | null> {
+      return (await db.first<{ secret_key: string }>('SELECT secret_key FROM analyses WHERE id = ?', [id]))?.secret_key ?? null;
+    },
+
+    setAnalysisStatus: (id: string, status: Analysis['status'], error?: string) =>
+      db.run('UPDATE analyses SET status = ?, error = ?, updated_at = ? WHERE id = ?', [status, error ?? null, stamp(), id]),
+
+    /** The answer is in: the suggestions are ready to look over. The key has done its job. */
+    setAnalysisSuggestions: (id: string, suggestions: Suggestion[]) =>
+      db.run("UPDATE analyses SET status = 'ready', suggestions = ?, secret_key = '', updated_at = ? WHERE id = ?", [
+        JSON.stringify(suggestions),
+        stamp(),
+        id,
+      ]),
+
+    /** Accepted or thrown away. The caller removes the photos it kept for it. */
+    deleteAnalysis: (id: string) => db.run('DELETE FROM analyses WHERE id = ?', [id]),
+
     /** Links this phone to a backup vault, or unlinks it with null. Never synced. */
     async setBackup(backup: { vaultId: string; entitledUntil: string } | null) {
       await db.transaction(async () => {
@@ -439,9 +692,12 @@ export function createStore({ db, newId, now, today }: Deps) {
     /** Wipes everything back to first launch. Only reachable from developer settings. */
     async reset() {
       await db.transaction(async () => {
-        // Children before the rows they point to: rooms and policies before properties.
+        // Children before the rows they point to: belongings before rooms, rooms and policies before properties.
         for (const table of [
+          'analyses',
           'settings',
+          'belonging_files',
+          'belongings',
           'rooms',
           'policies',
           'properties',

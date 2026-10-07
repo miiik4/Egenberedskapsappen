@@ -1,9 +1,12 @@
+import { summarizeRooms } from '@egenberedskap/core';
+import { Image } from 'expo-image';
 import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useHomeInsurance } from '@/components/preparedness/home-insurance';
 import { Card } from '@/components/ui/card';
+import { WarningDot } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
 import { AddRow, EmptyRow, Row, Section } from '@/components/ui/list';
 import { ProgressBar } from '@/components/ui/progress';
@@ -12,11 +15,12 @@ import { Segmented } from '@/components/ui/segmented';
 import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
-import { formatKr } from '@/lib/format';
+import { storedFile } from '@/documents/files';
+import { countLabel, formatKr } from '@/lib/format';
 
 type Tab = 'innbo' | 'reise';
 
-const openCamera = () => Alert.alert('Film et rom', 'Filming med KI kommer i en senere versjon.');
+const document = (roomId?: string) => router.push(roomId ? { pathname: '/film', params: { roomId } } : '/film');
 
 export default function Eiendeler() {
   const { properties, selectedPropertyId } = useData();
@@ -52,8 +56,8 @@ export default function Eiendeler() {
           icon={ToolbarIcons.plus}
           variant="prominent"
           tintColor={Colors.accent}
-          accessibilityLabel="Film et rom"
-          onPress={openCamera}
+          accessibilityLabel="Dokumenter et rom med KI"
+          onPress={() => document()}
         />
       </Stack.Toolbar>
 
@@ -73,12 +77,12 @@ export default function Eiendeler() {
 }
 
 function Innbo() {
-  const { rooms } = useData();
+  const { rooms, belongings } = useData();
   const { savePolicy } = useActions();
   const { property, policy, documentedKr, alert } = useHomeInsurance();
   const propertyRooms = rooms.filter((room) => room.propertyId === property?.id);
-  // Belongings come with filming; until then every room is unfilmed and worth nothing on record.
-  const filmed = 0;
+  const summaries = summarizeRooms(belongings);
+  const documented = propertyRooms.filter((room) => summaries.has(room.id)).length;
   const sumKr = policy?.sumKr;
 
   return (
@@ -103,6 +107,8 @@ function Innbo() {
         </Card>
       )}
 
+      <PendingAnalyses />
+
       <Card>
         <View style={styles.sumHead}>
           <Text style={styles.sum}>{formatKr(documentedKr)}</Text>
@@ -114,7 +120,7 @@ function Innbo() {
         />
         <Text style={styles.sumNote}>
           {sumKr !== undefined ? 'av forsikringssummen. ' : 'dokumentert. '}
-          {filmed} av {propertyRooms.length} rom er filmet.
+          {documented} av {propertyRooms.length} rom er dokumentert.
         </Text>
       </Card>
 
@@ -122,20 +128,36 @@ function Innbo() {
         header="Rom"
         separatorInset={74}
         footer="Bruk dette hvis du må melde en skade. Du kan dele en rapport direkte med forsikringsselskapet.">
-        {propertyRooms.map((room) => (
-          <Row
-            key={room.id}
-            title={room.name}
-            subtitle="Ikke filmet"
-            leading={<View style={styles.thumb} />}
-            trailing={
-              <Pressable onPress={openCamera} hitSlop={8} accessibilityRole="button" accessibilityLabel={`Film ${room.name}`}>
-                <Text style={styles.link}>Film</Text>
-              </Pressable>
-            }
-            onPress={() => router.push({ pathname: '/rom', params: { id: room.id } })}
-          />
-        ))}
+        {propertyRooms.map((room) => {
+          const summary = summaries.get(room.id);
+          const cover = belongings.find((b) => b.roomId === room.id && b.photo)?.photo;
+          return (
+            <Row
+              key={room.id}
+              title={room.name}
+              subtitle={summary ? `${countLabel(summary.count)} · ${formatKr(summary.valueKr)}` : 'Ikke dokumentert'}
+              leading={
+                cover ? (
+                  <Image source={{ uri: storedFile(cover.fileName).uri }} style={styles.thumb} contentFit="cover" />
+                ) : (
+                  <View style={styles.thumb} />
+                )
+              }
+              trailing={
+                summary ? undefined : (
+                  <Pressable
+                    onPress={() => document(room.id)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Dokumenter ${room.name}`}>
+                    <Text style={styles.link}>Dokumenter</Text>
+                  </Pressable>
+                )
+              }
+              onPress={() => router.push({ pathname: '/eiendeler/rom/[id]', params: { id: room.id } })}
+            />
+          );
+        })}
         <AddRow title="Legg til rom" onPress={() => router.push('/rom')} />
       </Section>
 
@@ -146,9 +168,44 @@ function Innbo() {
           chevron
           onPress={() => router.push('/forsikring')}
         />
-        <Row title="Meld en skade" chevron onPress={() => Alert.alert('Meld en skade', 'Kommer i en senere versjon.')} />
+        <Row title="Lag innbooversikt (PDF)" chevron onPress={() => router.push('/rapport')} />
+        <Row
+          title="Meld en skade"
+          chevron
+          onPress={() =>
+            Alert.alert('Meld en skade', 'Veiviseren kommer i en senere versjon. Legg gjerne ved en innbooversikt når du melder skaden.')
+          }
+        />
       </Section>
     </>
+  );
+}
+
+/** Analyses on their way, or with suggestions to look over. */
+function PendingAnalyses() {
+  const { analyses, rooms } = useData();
+  if (analyses.length === 0) return null;
+  const describe = (a: (typeof analyses)[number]) =>
+    a.status === 'uploading'
+      ? 'Laster opp bilder'
+      : a.status === 'waiting'
+        ? 'Analyserer'
+        : a.status === 'failed'
+          ? 'Analysen ble ikke ferdig'
+          : `${countLabel(a.suggestions?.length ?? 0)} venter på gjennomgang`;
+  return (
+    <Section header="KI-analyse">
+      {analyses.map((a) => (
+        <Row
+          key={a.id}
+          title={rooms.find((r) => r.id === a.roomId)?.name ?? 'Rom'}
+          subtitle={describe(a)}
+          trailing={a.status === 'ready' ? <WarningDot /> : undefined}
+          chevron
+          onPress={() => router.push({ pathname: '/film/[id]', params: { id: a.id } })}
+        />
+      ))}
+    </Section>
   );
 }
 

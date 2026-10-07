@@ -14,10 +14,14 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@egenberedskap/core": "*",
+    "@egenberedskap/store": "*",
     "@types/node": "^24",
     "typescript": "~6.0.3",
-    "vitest": "^4.1.10",
-    "@egenberedskap/store": "*",
-    "@egenberedskap/core": "*"
+    "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0"
   }
 }

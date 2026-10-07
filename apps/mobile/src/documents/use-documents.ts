@@ -9,16 +9,17 @@ import { deleteStoredFiles, importFile } from './files';
 
 export type Source = 'camera' | 'photos' | 'files';
 
-type Picked = { uri: string; mimeType: string };
+export type Picked = { uri: string; mimeType: string };
 
 /** Photos are scaled down a little: plenty to read a passport, without filling the phone. */
 const PHOTO_QUALITY = 0.8;
 
-async function pick(source: Source): Promise<Picked[]> {
+/** Photos or files picked from the camera, the photo library or Files. `single` for one photo of a thing. */
+export async function pickFiles(source: Source, { single = false } = {}): Promise<Picked[]> {
   if (source === 'files') {
     const result = await DocumentPicker.getDocumentAsync({
       type: ['application/pdf', 'image/*'],
-      multiple: true,
+      multiple: !single,
       copyToCacheDirectory: true,
     });
     return result.canceled ? [] : result.assets.map((a) => ({ uri: a.uri, mimeType: a.mimeType ?? 'application/octet-stream' }));
@@ -26,7 +27,7 @@ async function pick(source: Source): Promise<Picked[]> {
   if (source === 'camera') {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Ingen tilgang til kameraet', 'Gi appen tilgang til kameraet i Innstillinger for å ta bilde av dokumenter.', [
+      Alert.alert('Ingen tilgang til kameraet', 'Gi appen tilgang til kameraet i Innstillinger for å ta bilder i appen.', [
         { text: 'Avbryt', style: 'cancel' },
         { text: 'Åpne Innstillinger', onPress: () => Linking.openSettings() },
       ]);
@@ -39,7 +40,7 @@ async function pick(source: Source): Promise<Picked[]> {
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
     quality: PHOTO_QUALITY,
-    allowsMultipleSelection: true,
+    allowsMultipleSelection: !single,
   });
   return result.canceled ? [] : result.assets.map((a) => ({ uri: a.uri, mimeType: a.mimeType ?? 'image/jpeg' }));
 }
@@ -50,7 +51,7 @@ export function useDocumentFiles() {
 
   return {
     async addFrom(documentId: string, source: Source) {
-      for (const picked of await pick(source)) {
+      for (const picked of await pickFiles(source)) {
         const { fileName, size } = await importFile(picked.uri, picked.mimeType);
         try {
           await addDocumentFile({ documentId, fileName, mimeType: picked.mimeType, size });

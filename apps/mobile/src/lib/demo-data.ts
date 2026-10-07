@@ -61,6 +61,14 @@ export async function seedDemoData(actions: Omit<Store, 'load' | 'migrate'>, dat
     deductibleKr: 4_000,
     alertNearSum: true,
   });
+  // A room of its own, since the starter rooms' ids aren't known here.
+  const office = await actions.saveRoom({ propertyId: home, name: 'Kontor' });
+  const thing = { roomId: office, valueEstimated: false };
+  await actions.saveBelonging({ ...thing, name: 'Bærbar PC', category: 'Elektronikk', valueKr: 18_990 });
+  await actions.saveBelonging({ ...thing, name: 'Skjerm, 27"', category: 'Elektronikk', valueKr: 4_500, valueEstimated: true });
+  await actions.saveBelonging({ ...thing, name: 'Kontorstol', category: 'Møbler', valueKr: 6_200 });
+  await actions.saveBelonging({ ...thing, name: 'Gitar', category: 'Musikkinstrument' });
+
   await actions.saveProperty({ name: 'Hafjell', shortName: 'Hytta' });
 
   // Two documents with real files, so the document pages and the viewer can be checked.

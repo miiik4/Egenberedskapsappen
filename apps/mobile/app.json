@@ -2,7 +2,7 @@
   "expo": {
     "name": "Egenberedskapsappen",
     "slug": "egenberedskapsappen",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
@@ -38,9 +38,17 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Velg bilder av dokumenter du vil ha tilgjengelig uten nett.",
-          "cameraPermission": "Ta bilde av dokumenter du vil ha tilgjengelig uten nett.",
+          "photosPermission": "Velg bilder av dokumenter og rom fra bildebiblioteket.",
+          "cameraPermission": "Ta bilder og film av dokumenter og rom, s\u00e5 de er tilgjengelige uten nett og innboet er dokumentert.",
           "microphonePermission": false
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Ta bilder og film av dokumenter og rom, s\u00e5 de er tilgjengelige uten nett og innboet er dokumentert.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
       ],
       [

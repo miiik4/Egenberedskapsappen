@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { migrate, SCHEMA_VERSION } from './schema';
 import type { SqlExecutor, SqlValue } from './sql';
 import { createStore, DEFAULT_ROOMS, ValidationError, type Store } from './store';
+import { createSyncSource } from './sync-source';
 
 /** Real SQLite in memory, through the same interface the app uses. */
 function nodeExecutor(db: DatabaseSync): SqlExecutor {
@@ -76,6 +77,14 @@ describe('migrations', () => {
     expect(data.household).toMatchObject({ adults: 3, seniors: 0, children: 0 });
     // Every item goes up again in the new shape.
     expect(old.prepare('SELECT COUNT(*) AS n FROM stock_items WHERE pushed_at IS NULL').get()).toEqual({ n: 2 });
+  });
+
+  it('starts the backup download over when a synced table is added', async () => {
+    const old = new DatabaseSync(':memory:');
+    await migrate(nodeExecutor(old), 4);
+    old.exec(`INSERT INTO settings (key, value, updated_at) VALUES ('syncCursor', '2026-10-01T10:00:00Z', '2026-10-01T10:00:00Z')`);
+    await migrate(nodeExecutor(old));
+    expect(old.prepare("SELECT COUNT(*) AS n FROM settings WHERE key = 'syncCursor'").get()).toEqual({ n: 0 });
   });
 
   it('upgrades a version 1 database without losing data', async () => {
@@ -237,6 +246,115 @@ describe('properties and rooms', () => {
   });
 });
 
+describe('belongings', () => {
+  beforeEach(onboard);
+  // Onboarding made the home id1 and its rooms id2 (Stue) to id7 (Bod).
+  const stue = 'id2';
+  const photo = (fileName: string) => ({ kind: 'photo' as const, fileName, mimeType: 'image/jpeg', size: 10 });
+
+  it('stores a thing with its value, and loads it with its photo and receipt', async () => {
+    const tv = await store.saveBelonging({ roomId: stue, name: 'TV', category: 'Elektronikk', valueKr: 12_000, valueEstimated: true });
+    await store.setBelongingFile({ belongingId: tv, ...photo('tv.jpg') });
+    await store.setBelongingFile({ belongingId: tv, kind: 'receipt', fileName: 'kvittering.pdf', mimeType: 'application/pdf', size: 20 });
+    await store.saveBelonging({ roomId: stue, name: 'Lampe', category: 'Møbler', valueEstimated: false });
+    const [first, second] = (await store.load()).belongings;
+    expect(first).toMatchObject({
+      id: tv,
+      roomId: stue,
+      valueKr: 12_000,
+      valueEstimated: true,
+      photo: { fileName: 'tv.jpg', kind: 'photo' },
+      receipt: { fileName: 'kvittering.pdf', mimeType: 'application/pdf' },
+    });
+    expect(second).toEqual({ id: expect.any(String), roomId: stue, name: 'Lampe', category: 'Møbler', valueEstimated: false });
+  });
+
+  it('replaces a photo and hands back the old file to delete', async () => {
+    const tv = await store.saveBelonging({ roomId: stue, name: 'TV', category: 'Elektronikk', valueEstimated: false });
+    await store.setBelongingFile({ belongingId: tv, ...photo('old.jpg') });
+    expect(await store.setBelongingFile({ belongingId: tv, ...photo('new.jpg') })).toEqual(['old.jpg']);
+    const [loaded] = (await store.load()).belongings;
+    expect(loaded!.photo!.fileName).toBe('new.jpg');
+    expect(await store.removeBelongingFile(loaded!.photo!.id)).toEqual(['new.jpg']);
+    expect((await store.load()).belongings[0]!.photo).toBeUndefined();
+  });
+
+  it('rejects an unknown category, a negative or fractional value, and a blank name', async () => {
+    const base = { roomId: stue, name: 'TV', category: 'Elektronikk' as const, valueEstimated: false };
+    await expect(store.saveBelonging({ ...base, category: 'Bil' as 'Annet' })).rejects.toThrow('category');
+    await expect(store.saveBelonging({ ...base, valueKr: -1 })).rejects.toThrow('valueKr');
+    await expect(store.saveBelonging({ ...base, valueKr: 99.5 })).rejects.toThrow('valueKr');
+    await expect(store.saveBelonging({ ...base, name: ' ' })).rejects.toThrow('name');
+  });
+
+  it('removes what a deleted room or home held, files included', async () => {
+    const tv = await store.saveBelonging({ roomId: stue, name: 'TV', category: 'Elektronikk', valueEstimated: false });
+    await store.setBelongingFile({ belongingId: tv, ...photo('tv.jpg') });
+    expect(await store.deleteRoom(stue)).toEqual(['tv.jpg']);
+    expect((await store.load()).belongings).toEqual([]);
+
+    const kitchen = 'id3';
+    const oven = await store.saveBelonging({ roomId: kitchen, name: 'Ovn', category: 'Hvitevarer', valueEstimated: false });
+    await store.setBelongingFile({ belongingId: oven, ...photo('ovn.jpg') });
+    expect(await store.deleteProperty('id1')).toEqual(['ovn.jpg']);
+    expect(sqlite.prepare('SELECT COUNT(*) AS n FROM belonging_files WHERE deleted_at IS NULL').get()).toEqual({ n: 0 });
+  });
+
+  it('deletes a belonging with its files', async () => {
+    const tv = await store.saveBelonging({ roomId: stue, name: 'TV', category: 'Elektronikk', valueEstimated: false });
+    await store.setBelongingFile({ belongingId: tv, ...photo('tv.jpg') });
+    expect(await store.deleteBelonging(tv)).toEqual(['tv.jpg']);
+    expect((await store.load()).belongings).toEqual([]);
+  });
+});
+
+describe('AI analyses', () => {
+  beforeEach(onboard);
+  const start = () =>
+    store.addAnalysis({ id: 'job-1', roomId: 'id2', source: 'photos', frameCount: 4, publicKey: 'pub', secretKey: 'secret' });
+
+  it('follows an analysis from upload to suggestions, keeping the key out of the loaded data', async () => {
+    await start();
+    expect((await store.load()).analyses).toEqual([
+      { id: 'job-1', roomId: 'id2', source: 'photos', status: 'uploading', frameCount: 4, publicKey: 'pub', createdAt: expect.any(String) },
+    ]);
+    expect(JSON.stringify(await store.load())).not.toContain('secret');
+    expect(await store.analysisSecret('job-1')).toBe('secret');
+
+    await store.setAnalysisStatus('job-1', 'waiting');
+    const suggestion = { name: 'Gitar', category: 'Musikkinstrument' as const, valueKr: 4500, selected: true, valueEdited: false };
+    await store.setAnalysisSuggestions('job-1', [suggestion]);
+    expect((await store.load()).analyses[0]).toMatchObject({ status: 'ready', suggestions: [suggestion] });
+    // Once the answer is open, the key is no longer kept.
+    expect(await store.analysisSecret('job-1')).toBe('');
+
+    await store.deleteAnalysis('job-1');
+    expect((await store.load()).analyses).toEqual([]);
+  });
+
+  it('records why one failed', async () => {
+    await start();
+    await store.setAnalysisStatus('job-1', 'failed', 'daily-limit');
+    expect((await store.load()).analyses[0]).toMatchObject({ status: 'failed', error: 'daily-limit' });
+  });
+
+  it('keeps the owner for the report, and clears it', async () => {
+    await store.setOwner({ name: ' Kari Nordmann ', birthDate: '1985-03-14' });
+    expect((await store.load()).owner).toEqual({ name: 'Kari Nordmann', birthDate: '1985-03-14' });
+    await store.setOwner({ name: '' });
+    expect((await store.load()).owner).toEqual({ name: '' });
+    await expect(store.setOwner({ name: 'Kari', birthDate: '14.03.1985' })).rejects.toThrow('birthDate');
+  });
+
+  it('never syncs, and asks for consent on each phone', async () => {
+    await start();
+    await store.giveAnalysisConsent();
+    expect((await store.load()).analysisConsent).toBe(true);
+    const changes = await createSyncSource(nodeExecutor(sqlite)).pending();
+    expect(changes.some((c) => c.type === 'analyses' || c.id === 'analysisConsent')).toBe(false);
+  });
+});
+
 describe('insurance and quarterly check', () => {
   beforeEach(onboard);
 
@@ -345,6 +463,8 @@ describe('reset', () => {
     await onboard();
     await store.saveStockItem({ name: 'Radio', type: 'radio', ...item });
     await store.savePolicy({ name: 'Innboforsikring', propertyId: 'id1', alertNearSum: true });
+    const tv = await store.saveBelonging({ roomId: 'id2', name: 'TV', category: 'Elektronikk', valueEstimated: false });
+    await store.setBelongingFile({ belongingId: tv, kind: 'photo', fileName: 'tv.jpg', mimeType: 'image/jpeg', size: 1 });
     await store.reset();
     const data = await store.load();
     expect(data.onboarded).toBe(false);

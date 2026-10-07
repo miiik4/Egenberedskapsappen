@@ -147,6 +147,23 @@ describe('sync between two phones', () => {
     expect((await b.store.load()).stock).toEqual([{ id: 'old-1', name: 'Hermetikk', type: 'cannedMeals', meals: 12, ...item }]);
   });
 
+  it('carries belongings across, with their photos', async () => {
+    await a.store.completeOnboarding({ members: two, items: [] });
+    const room = (await a.store.load()).rooms[0]!.id;
+    const tv = await a.store.saveBelonging({ roomId: room, name: 'TV', category: 'Elektronikk', valueKr: 12_000, valueEstimated: false });
+    await a.files.write('tv.jpg', new Uint8Array([1, 2, 3]));
+    await a.store.setBelongingFile({ belongingId: tv, kind: 'photo', fileName: 'tv.jpg', mimeType: 'image/jpeg', size: 3 });
+    await sync(a);
+    await sync(b);
+    expect((await b.store.load()).belongings).toMatchObject([{ name: 'TV', valueKr: 12_000, photo: { fileName: 'tv.jpg' } }]);
+    expect(b.files.exists('tv.jpg')).toBe(true);
+  });
+
+  it('skips record types from a newer version instead of stopping', async () => {
+    const future = { type: 'pets', id: 'p1', updatedAt: '2026-10-01T10:00:00.000Z', deleted: false, fields: { name: 'Fido' } };
+    expect(await b.source.apply(future)).toBe(false);
+  });
+
   it('keeps phone-specific settings on the phone', async () => {
     await a.store.completeOnboarding({ members: two, items: [] });
     await a.store.setDocumentLock(false);

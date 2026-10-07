@@ -76,6 +76,11 @@ export function formatIn(days: number): string {
   return `om ${Math.round(days / 30)} måneder`;
 }
 
+/** «1 gjenstand», «31 gjenstander». */
+export function countLabel(count: number): string {
+  return `${count} ${count === 1 ? 'gjenstand' : 'gjenstander'}`;
+}
+
 /** «1 uke», «2 uker», «10 dager». */
 export function formatDuration(days: number): string {
   if (days % 7 === 0) return `${days / 7} ${days === 7 ? 'uke' : 'uker'}`;

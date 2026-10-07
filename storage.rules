@@ -21,6 +21,22 @@ service firebase.storage {
       allow delete: if isMember() && vault().entitledUntil > request.time;
     }
 
+    // Photos for an AI analysis, uploaded by the phone that started the job and only while it
+    // waits for them. Never readable from outside: the functions read them, then delete them.
+    match /analysis/{uid}/{jobId}/{frame} {
+      function job() {
+        return firestore.get(/databases/(default)/documents/analysisJobs/$(jobId)).data;
+      }
+
+      allow create: if request.auth != null && request.auth.uid == uid
+        && frame.matches('^[0-9]{1,2}[.]jpg$')
+        && job().uid == uid
+        && job().status == 'uploading'
+        && int(frame.split('[.]')[0]) < job().frameCount
+        && request.resource.contentType == 'image/jpeg'
+        && request.resource.size < 2 * 1024 * 1024;
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

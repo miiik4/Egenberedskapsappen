@@ -1,17 +1,16 @@
-import { insuranceAlert } from '@egenberedskap/core';
+import { documentedValue, insuranceAlert } from '@egenberedskap/core';
 
 import { useData } from '@/data/data-provider';
 
-/**
- * The selected home's contents insurance and how it compares with what's been documented.
- * Belongings come with filming, which isn't built yet, so nothing is documented so far and
- * the underinsurance warning stays quiet until then.
- */
+/** The selected home's contents insurance and how it compares with what's been documented there. */
 export function useHomeInsurance() {
-  const { properties, selectedPropertyId, policies } = useData();
+  const { properties, selectedPropertyId, policies, rooms, belongings } = useData();
   const property = properties.find((p) => p.id === selectedPropertyId);
   const policy = property && policies.find((p) => p.propertyId === property.id);
-  const documentedKr = 0;
+  const documentedKr = documentedValue(
+    belongings,
+    rooms.filter((r) => r.propertyId === property?.id).map((r) => r.id),
+  );
   const alert = policy
     ? insuranceAlert({
         documentedKr,

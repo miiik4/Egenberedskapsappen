@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { confirmDelete, DestructiveButton, TextField } from '@/components/form/fields';
 import { FormSheet } from '@/components/form/sheet';
 import { Section } from '@/components/ui/list';
+import { useBelongings } from '@/belongings/use-belongings';
 import { useActions, useData } from '@/data/data-provider';
 
 export default function Rom() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { rooms, properties, selectedPropertyId } = useData();
-  const { saveRoom, deleteRoom } = useActions();
+  const { saveRoom } = useActions();
+  const { removeRoom } = useBelongings();
   const existing = rooms.find((r) => r.id === id);
   const propertyId = existing?.propertyId ?? selectedPropertyId!;
   const property = properties.find((p) => p.id === propertyId);
@@ -28,7 +30,7 @@ export default function Rom() {
       </Section>
       {existing && <DestructiveButton
           label="Slett rom"
-          onPress={() => confirmDelete('Slette rommet?', existing.name, () => deleteRoom(existing.id))}
+          onPress={() => confirmDelete('Slette rommet?', `${existing.name} og det som er registrert der blir fjernet.`, () => removeRoom(existing.id))}
         />}
     </FormSheet>
   );

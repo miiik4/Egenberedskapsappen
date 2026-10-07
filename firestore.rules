@@ -39,6 +39,16 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // AI analysis of a room (functions/src/analysis/jobs.ts). The functions create and update
+    // jobs; the phone that started one may watch it, read its encrypted result and delete it.
+    match /analysisJobs/{jobId} {
+      // A job that's gone reads as missing rather than as an error, so the phone learns it was
+      // cancelled or swept away. Job ids are random, so this reveals nothing.
+      allow read: if request.auth != null && (resource == null || resource.data.uid == request.auth.uid);
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow create, update: if false;
+    }
+
     function validRecord(recordId) {
       let r = request.resource.data;
       return r.keys().hasOnly(['type', 'id', 'data', 'deleted', 'updatedAt', 'serverUpdatedAt'])

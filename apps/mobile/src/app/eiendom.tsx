@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { confirmDelete, DestructiveButton, TextField } from '@/components/form/fields';
 import { FormSheet } from '@/components/form/sheet';
 import { Section } from '@/components/ui/list';
+import { useBelongings } from '@/belongings/use-belongings';
 import { useActions, useData } from '@/data/data-provider';
 
 export default function Eiendom() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { properties } = useData();
-  const { saveProperty, deleteProperty, selectProperty } = useActions();
+  const { saveProperty, selectProperty } = useActions();
+  const { removeProperty } = useBelongings();
   const existing = properties.find((p) => p.id === id);
   const [name, setName] = useState(existing?.name ?? '');
   const [shortName, setShortName] = useState(existing?.shortName ?? '');
@@ -29,7 +31,7 @@ export default function Eiendom() {
       </Section>
       {existing && properties.length > 1 && <DestructiveButton
           label="Slett eiendom"
-          onPress={() => confirmDelete('Slette eiendommen?', `${existing.name} og rommene der blir fjernet.`, () => deleteProperty(existing.id))}
+          onPress={() => confirmDelete('Slette eiendommen?', `${existing.name}, rommene og det som er registrert der blir fjernet.`, () => removeProperty(existing.id))}
         />}
     </FormSheet>
   );

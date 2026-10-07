@@ -1,15 +1,11 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 
-import { initializeApp } from 'firebase-admin/app';
-import { FieldValue, getFirestore, Timestamp, type Transaction } from 'firebase-admin/firestore';
-import { setGlobalOptions } from 'firebase-functions/v2';
-import { HttpsError, onCall, type CallableRequest } from 'firebase-functions/v2/https';
+import { FieldValue, Timestamp, type Transaction } from 'firebase-admin/firestore';
+import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
-initializeApp();
-// Next to the database, in Finland.
-setGlobalOptions({ region: 'europe-north1', maxInstances: 10 });
+import { db, HEX_64, PROTECTED, requireString, requireUser, type Vault } from './shared.js';
 
-const db = getFirestore();
+export { onAnalysisDeleted, onAnalysisQueued, startAnalysis, submitAnalysis, sweepAnalyses } from './analysis/jobs.js';
 
 /**
  * Backups are end-to-end encrypted and have no accounts: a vault is found by an id derived
@@ -25,18 +21,8 @@ const db = getFirestore();
  * for a number of days; while it lasts, members may write. Reading is always allowed.
  */
 
-const HEX_64 = /^[0-9a-f]{64}$/;
 /** A vault outliving many reinstalls is fine; hundreds of members would mean abuse. */
 const MAX_MEMBERS = 20;
-
-type Vault = {
-  members: Record<string, boolean>;
-  proofHash: string;
-  wrappedKey: string;
-  partner: string;
-  entitledUntil: Timestamp;
-  createdAt: Timestamp;
-};
 
 type ActivationCode = {
   partner: string;
@@ -54,20 +40,6 @@ export function activationCodeHash(code: string): string {
   return sha256Hex(`egenberedskapsappen/activation-code/v1\n${normalized}`);
 }
 
-function requireUser(request: CallableRequest): string {
-  // consumeAppCheckToken only marks a reused token; refusing it is up to us.
-  if (request.app?.alreadyConsumed) throw new HttpsError('unauthenticated', 'app-check-token-reused');
-  if (!request.auth) throw new HttpsError('unauthenticated', 'sign-in-required');
-  return request.auth.uid;
-}
-
-function requireString(value: unknown, name: string, pattern?: RegExp, maxLength = 200): string {
-  if (typeof value !== 'string' || value.length === 0 || value.length > maxLength || (pattern && !pattern.test(value))) {
-    throw new HttpsError('invalid-argument', `invalid-${name}`);
-  }
-  return value;
-}
-
 /** Checks an activation code and uses it up; returns how long it entitles to. */
 async function redeem(tx: Transaction, code: string): Promise<{ partner: string; days: number }> {
   const ref = db.collection('activationCodes').doc(activationCodeHash(code));
@@ -81,13 +53,6 @@ async function redeem(tx: Transaction, code: string): Promise<{ partner: string;
   tx.update(ref, { uses: FieldValue.increment(1) });
   return { partner: data.partner, days: data.durationDays };
 }
-
-/**
- * Every call must come from our app (App Check: App Attest on iPhone, Play Integrity on
- * Android, debug tokens in development builds). Each token works once, so a recorded request
- * can't be replayed: the app asks for single-use tokens for these calls.
- */
-const PROTECTED = { enforceAppCheck: true, consumeAppCheckToken: true } as const;
 
 const daysFrom = (start: number, days: number) => Timestamp.fromMillis(start + days * 24 * 60 * 60 * 1000);
 

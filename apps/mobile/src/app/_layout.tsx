@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { AnalysisProvider } from '@/analysis/analysis-provider';
 import { BackupProvider } from '@/backup/backup-provider';
 import { DataProvider, useData } from '@/data/data-provider';
 import { DocumentLockProvider } from '@/documents/lock';
@@ -17,7 +18,9 @@ export default function RootLayout() {
           <NotificationsProvider>
             <DocumentLockProvider>
               <BackupProvider>
-                <Routes />
+                <AnalysisProvider>
+                  <Routes />
+                </AnalysisProvider>
               </BackupProvider>
             </DocumentLockProvider>
           </NotificationsProvider>
@@ -47,6 +50,12 @@ function Routes() {
         <Stack.Screen name="kontakt" options={sheet} />
         <Stack.Screen name="motested" options={sheet} />
         <Stack.Screen name="rom" options={sheet} />
+        <Stack.Screen name="gjenstand" options={sheet} />
+        <Stack.Screen name="rapport" options={sheet} />
+        <Stack.Screen name="film/index" options={sheet} />
+        <Stack.Screen name="film/[id]" options={sheet} />
+        <Stack.Screen name="film/forslag" options={sheet} />
+        <Stack.Screen name="film/video" options={{ presentation: 'fullScreenModal' }} />
         <Stack.Screen name="eiendom" options={sheet} />
         <Stack.Screen name="forsikring" options={sheet} />
         <Stack.Screen name="dokument" options={sheet} />

@@ -1,12 +1,14 @@
-import type { RemoteRecord, RemoteVault } from '@egenberedskap/sync';
+import type { AnalysisEnvelope, RemoteRecord, RemoteVault } from '@egenberedskap/sync';
 import { getApp } from '@react-native-firebase/app';
 import { initializeAppCheck, ReactNativeFirebaseAppCheckProvider } from '@react-native-firebase/app-check';
 import { getAuth, signInAnonymously } from '@react-native-firebase/auth';
 import {
   collection,
+  deleteDoc,
   doc,
   getDocs,
   getFirestore,
+  onSnapshot,
   orderBy,
   query,
   serverTimestamp,
@@ -74,7 +76,9 @@ export async function ensureSignedIn() {
 
 type VaultResult = { entitledUntil: string };
 
-export async function callFunction<T>(name: 'createVault' | 'joinVault' | 'extendVault', data: object): Promise<T> {
+type FunctionName = 'createVault' | 'joinVault' | 'extendVault' | 'startAnalysis' | 'submitAnalysis';
+
+export async function callFunction<T>(name: FunctionName, data: object): Promise<T> {
   await ensureSignedIn();
   // Single-use App Check tokens: the functions refuse one they've seen before.
   const result = await httpsCallable<object, T>(getFunctions(getApp(), REGION), name, {
@@ -89,6 +93,48 @@ export const joinVault = (data: { vaultId: string; proof: string }) =>
   callFunction<VaultResult & { wrappedKey: string }>('joinVault', data);
 export const extendVault = (data: { vaultId: string; activationCode: string }) =>
   callFunction<VaultResult>('extendVault', data);
+
+/** AI analysis of a room (functions/src/analysis/jobs.ts): ask, upload the photos, submit. */
+export const startAnalysis = (data: {
+  vaultId: string;
+  source: 'photos' | 'video';
+  scene: 'home' | 'travel';
+  frameCount: number;
+  phoneKey: string;
+}) => callFunction<{ jobId: string; uploadPrefix: string }>('startAnalysis', data);
+
+export const submitAnalysis = (jobId: string) => callFunction<object>('submitAnalysis', { jobId });
+
+export async function uploadAnalysisPhoto(path: string, uri: string) {
+  await ensureSignedIn();
+  await putFile(ref(getStorage(), path), uri, { contentType: 'image/jpeg' });
+}
+
+/** The job as the phone may see it: where it has got to, and the encrypted answer once there. */
+export type RemoteAnalysis = {
+  status: 'uploading' | 'queued' | 'analysing' | 'ready' | 'failed';
+  result?: AnalysisEnvelope;
+  error?: string;
+};
+
+/** Follows a job while the app is open. `null` means it's gone: cancelled, or swept away as too old. */
+export function watchAnalysis(jobId: string, onChange: (job: RemoteAnalysis | null) => void, onError: (error: unknown) => void) {
+  return onSnapshot(
+    doc(getFirestore(), 'analysisJobs', jobId),
+    (snapshot) => onChange(snapshot.exists() ? (snapshot.data() as RemoteAnalysis) : null),
+    onError,
+  );
+}
+
+/** Removes the job and, through the backend, its photos. Fine if it's gone already. */
+export async function deleteAnalysis(jobId: string) {
+  await ensureSignedIn();
+  try {
+    await deleteDoc(doc(getFirestore(), 'analysisJobs', jobId));
+  } catch (error) {
+    if (!/not-found|permission-denied/.test(String((error as { code?: string }).code))) throw error;
+  }
+}
 
 /**
  * Server time as a sortable string that keeps Firestore's full precision, so resuming a

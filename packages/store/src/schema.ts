@@ -6,6 +6,9 @@ import type { SqlExecutor } from './sql';
  *
  * Every record table carries `updated_at` and a soft `deleted_at`, so a later sync to the
  * cloud can tell what changed and what was removed while offline.
+ *
+ * A migration that adds a synced table or synced setting must also clear `syncCursor`: older
+ * phones skip what they don't know, and the cursor has already moved past it.
  */
 const MIGRATIONS: string[] = [
   `
@@ -162,6 +165,62 @@ const MIGRATIONS: string[] = [
   -- Null means on: rows from phones on an older version arrive without it.
   ALTER TABLE policies ADD COLUMN alert_near_sum INTEGER;
   ALTER TABLE policies ADD COLUMN alert_dismissed_kr INTEGER;
+  `,
+  // 5: belongings in each room, for the contents insurance, each with an optional photo and
+  // receipt. Their files sync like document files: pushed_at for the row, uploaded_at for the
+  // encrypted file itself.
+  `
+  CREATE TABLE belongings (
+    id TEXT PRIMARY KEY NOT NULL,
+    room_id TEXT NOT NULL REFERENCES rooms(id),
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    value_kr INTEGER,
+    value_estimated INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT,
+    pushed_at TEXT
+  );
+
+  CREATE TABLE belonging_files (
+    id TEXT PRIMARY KEY NOT NULL,
+    belonging_id TEXT NOT NULL REFERENCES belongings(id),
+    kind TEXT NOT NULL CHECK (kind IN ('photo', 'receipt')),
+    file_name TEXT NOT NULL,
+    mime_type TEXT NOT NULL,
+    size INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT,
+    pushed_at TEXT,
+    uploaded_at TEXT
+  );
+
+  -- A phone on an older version skipped these records while syncing; start the download over
+  -- so it fetches them. Applying is idempotent, so pulling everything again is harmless.
+  DELETE FROM settings WHERE key = 'syncCursor';
+  `,
+  // 6: AI analyses in progress. This phone's own work, never synced: the private key for the
+  // job's encrypted answer, and the suggestions until the user has looked them over. Also the
+  // owner's name and date of birth for the report, which are synced settings.
+  `
+  CREATE TABLE analyses (
+    id TEXT PRIMARY KEY NOT NULL,
+    room_id TEXT NOT NULL,
+    source TEXT NOT NULL CHECK (source IN ('photos', 'video')),
+    status TEXT NOT NULL CHECK (status IN ('uploading', 'waiting', 'ready', 'failed')),
+    secret_key TEXT NOT NULL,
+    public_key TEXT NOT NULL,
+    frame_count INTEGER NOT NULL,
+    error TEXT,
+    suggestions TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+  -- New synced settings (ownerName, ownerBirthDate), skipped by older phones: start over.
+  DELETE FROM settings WHERE key = 'syncCursor';
   `,
 ];
 

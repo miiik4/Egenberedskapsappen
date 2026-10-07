@@ -1,3 +1,4 @@
+export * from './analysis';
 export * from './encoding';
 export * from './engine';
 export type * from './primitives';

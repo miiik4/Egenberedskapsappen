@@ -14,6 +14,7 @@ npm workspaces monorepo: `apps/mobile` (Expo), `packages/core` (domain logic) an
   - Document files live in `dokumenter/`, kept out of iCloud and Android backups (`modules/backup-exclusion`). Never move them somewhere that's backed up.
   - Document screens go inside `<DocumentGate>` (Face ID or code, hidden from the app switcher). Emergency numbers and contacts must never be locked.
   - Nothing sensitive leaves the phone unencrypted. Backup is end-to-end encrypted (`packages/sync`): the data key lives in the Keychain, the cloud only ever holds ciphertext plus record type and timestamps, and the recovery code is never stored or sent.
+  - The one exception is the AI analysis of rooms (`functions/src/analysis`): photos, never video or sound, go to the model in the EU and are deleted when it's done. Its answer is text only, encrypted to a key made on the phone for that job; the phone cuts the pictures itself. Don't widen it: no photos back from the server, no content in logs or push messages.
 - Backup has no accounts. Each install is an anonymous Firebase user; a vault is found and joined through hashes of the recovery code (`vaultIdentity`). Insurers pay through activation codes, checked by the functions in `functions/`. Without an entitlement a vault is readable but not writable.
 - Firebase isn't in Expo Go: anything that touches it must check `firebaseAvailable()` so the rest of the app still runs there.
 - New synced tables go in `TABLES` in `packages/store/src/sync-source.ts`, parents before children.
