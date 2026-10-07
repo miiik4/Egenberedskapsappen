@@ -7,7 +7,7 @@ import { excludeFromBackup } from '../../modules/backup-exclusion';
 /**
  * The photos of an analysis, kept on the phone until the user has looked the suggestions over:
  * the pictures of the things are cut from them here, so none come back from the server. Out of
- * iCloud backups like the documents, since they show the inside of the home.
+ * iCloud and Android backups like the documents, since they show the inside of the home.
  */
 const root = () => new Directory(Paths.document, 'analyse');
 export const analysisFolder = (id: string) => new Directory(root(), id);
