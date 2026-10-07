@@ -1,4 +1,10 @@
-import { addDays, daysBetween, nextQuarterlyCheck } from '@egenberedskap/core';
+import {
+  addDays,
+  daysBetween,
+  EXPIRY_REVIEW_AFTER_DAYS,
+  nextQuarterlyCheck,
+  QUARTERLY_EXPIRY_LOOKAHEAD_DAYS,
+} from '@egenberedskap/core';
 import { router, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -9,9 +15,6 @@ import { useActions, useData } from '@/data/data-provider';
 import { useNotifications } from '@/notifications/notifications-provider';
 import { formatDate, householdLabel, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
-
-/** «Påminn meg» comes back a week later. */
-const EXPIRY_REVIEW_AFTER_DAYS = 7;
 
 type Step = {
   key: string;
@@ -28,9 +31,11 @@ export default function Kvartalssjekk() {
   const { recordQuarterlyCheck, setExpiryReview } = useActions();
   const { permission, requestPermission } = useNotifications();
   const today = todayIso();
-  const expiringThisMonth = stock.filter(
-    (item) => item.expiresOn && daysBetween(today, item.expiresOn) >= 0 && daysBetween(today, item.expiresOn) <= 30,
-  ).length;
+  const expiringThisMonth = stock.filter((item) => {
+    if (!item.expiresOn) return false;
+    const left = daysBetween(today, item.expiresOn);
+    return left >= 0 && left <= QUARTERLY_EXPIRY_LOOKAHEAD_DAYS;
+  }).length;
 
   const steps: Step[] = [
     {

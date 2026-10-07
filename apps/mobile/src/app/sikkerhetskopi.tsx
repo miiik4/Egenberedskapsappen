@@ -15,6 +15,8 @@ import { Text } from '@/components/ui/text';
 
 /** Long enough to be a real code; the server decides whether it is one. */
 const MIN_ACTIVATION_LENGTH = 8;
+/** «Forny» shows this many days before the backup runs out, and after. */
+const RENEW_SHOWN_DAYS = 30;
 
 export default function Sikkerhetskopi() {
   const { backup } = useData();
@@ -180,7 +182,7 @@ function Status() {
         />
       </Section>
 
-      {(status === 'readOnly' || daysLeft < 30) && (
+      {(status === 'readOnly' || daysLeft < RENEW_SHOWN_DAYS) && (
         <>
           <Section header="Forny" footer="Fikk du en ny aktiveringskode fra forsikringsselskapet? Den forlenger fra dagens dato eller fra utløpet, det som er senest.">
             <TextField label="Kode" value={activationCode} onChange={setActivationCode} placeholder="XXXX-XXXX-XXXX" autoCapitalize="none" />

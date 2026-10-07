@@ -7,7 +7,7 @@ export class AnalysisError extends Error {
 
 /** What went wrong, in words the user can act on. */
 const TEXTS: Record<string, string> = {
-  busy: 'En analyse pågår allerede. Vent til den er ferdig.',
+  busy: 'En analyse pågår allerede. Vent til den er gjort.',
   'daily-limit': 'Dere har brukt opp dagens analyser. Prøv igjen i morgen.',
   'not-entitled': 'KI-analysen krever sikkerhetskopi med gyldig avtale fra forsikringsselskapet.',
   'no-backup': 'KI-analysen krever at sikkerhetskopi er slått på.',

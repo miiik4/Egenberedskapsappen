@@ -190,7 +190,7 @@ function PendingAnalyses() {
       : a.status === 'waiting'
         ? 'Analyserer'
         : a.status === 'failed'
-          ? 'Analysen ble ikke ferdig'
+          ? 'Analysen ble ikke fullført'
           : `${countLabel(a.suggestions?.length ?? 0)} venter på gjennomgang`;
   return (
     <Section header="KI-analyse">

@@ -17,7 +17,7 @@ export function analyseWithConsent(
   const { title, what } = SENT[source];
   Alert.alert(
     title,
-    `For å finne gjenstandene sendes ${what} til en KI-tjeneste i EU. De slettes så snart analysen er ferdig. ` +
+    `For å finne gjenstandene sendes ${what} til en KI-tjeneste i EU. De slettes så snart analysen er gjort. ` +
       'Svaret er kryptert, så bare denne telefonen kan lese det.',
     [
       { text: 'Avbryt', style: 'cancel' },

@@ -1,8 +1,6 @@
 import { addDays, daysBetween } from './dates';
+import { QUARTERLY_CHECK_INTERVAL_DAYS } from './guidance';
 import type { IsoDate } from './types';
-
-/** Preparedness drifts as things expire and households change, so it's checked every quarter. */
-export const QUARTERLY_CHECK_INTERVAL_DAYS = 91;
 
 export function nextQuarterlyCheck(lastChecked: IsoDate): IsoDate {
   return addDays(lastChecked, QUARTERLY_CHECK_INTERVAL_DAYS);

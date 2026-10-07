@@ -29,7 +29,7 @@ export default function AnalysisScreen() {
   const { analyses, rooms } = useData();
   const analysis = analyses.find((a) => a.id === id);
   const room = rooms.find((r) => r.id === analysis?.roomId);
-  if (!analysis) return <FormSheet title="Analyse"><EmptyRow text="Analysen er ferdig." /></FormSheet>;
+  if (!analysis) return <FormSheet title="Analyse"><EmptyRow text="Analysen er avsluttet." /></FormSheet>;
 
   const title = room?.name ?? 'Analyse';
   if (analysis.status === 'ready') return <Review analysis={analysis} title={title} />;
@@ -126,7 +126,7 @@ function Failed({ analysis, title }: { analysis: Analysis; title: string }) {
   };
   return (
     <FormSheet title={title}>
-      <Section header="Analysen ble ikke ferdig" footer={analysisErrorText(analysis.error ?? 'failed')}>
+      <Section header="Analysen ble ikke fullført" footer={analysisErrorText(analysis.error ?? 'failed')}>
         <Row title="Prøv igjen" titleColor={Colors.accent} onPress={retry} />
         <Row title="Lukk" onPress={close} />
       </Section>
