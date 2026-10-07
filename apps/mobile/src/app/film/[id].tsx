@@ -3,7 +3,7 @@ import type { Analysis } from '@egenberedskap/store';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { useAnalysis } from '@/analysis/analysis-provider';
 import { analysisErrorText } from '@/analysis/messages';
@@ -15,9 +15,10 @@ import { CheckCircle } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
 import { EmptyRow, Row, Section } from '@/components/ui/list';
 import { ProgressBar } from '@/components/ui/progress';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Fonts, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { countLabel, formatKr } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 /** After this long, say that it can take a few minutes, so the screen never seems stuck. */
 const SLOW_AFTER_S = 60;
@@ -261,7 +262,7 @@ const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(seconds
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.background },
-  roomTitle: { fontSize: 22, fontWeight: '700', color: Colors.label },
+  roomTitle: { fontFamily: Fonts.display, fontSize: 24, color: Colors.label },
   muted: { fontSize: 15, color: Colors.secondaryLabel },
   note: { marginHorizontal: Spacing.screen + Spacing.rowInset, marginTop: -12, fontSize: 13, lineHeight: 18, color: Colors.secondaryLabel },
   lead: { marginHorizontal: Spacing.screen + 4, fontSize: 15, lineHeight: 21, color: Colors.secondaryLabel },

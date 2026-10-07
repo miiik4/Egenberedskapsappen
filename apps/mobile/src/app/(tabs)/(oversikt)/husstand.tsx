@@ -1,5 +1,5 @@
 import { router, Stack } from 'expo-router';
-import { Alert, Linking, StyleSheet, Switch, Text } from 'react-native';
+import { Alert, Linking, StyleSheet, Switch } from 'react-native';
 
 import { DestructiveButton } from '@/components/form/fields';
 import { MembersSection } from '@/components/form/members';
@@ -14,6 +14,7 @@ import { deleteAllStoredFiles } from '@/documents/files';
 import { useDocumentLock } from '@/documents/lock';
 import { useNotifications } from '@/notifications/notifications-provider';
 import { householdLabel } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 /**
  * Who lives here, as counts per age group with steppers, and the settings for the household.

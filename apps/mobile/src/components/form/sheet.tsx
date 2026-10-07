@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Icon, type IconName } from '@/components/ui/icon';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Fonts, Spacing } from '@/constants/theme';
+import { Text } from '@/components/ui/text';
 
 /**
  * A form presented as a sheet, as in the design: a round close button on the left, the
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.screen,
     paddingTop: Platform.OS === 'ios' ? 16 : 24,
   },
-  title: { flex: 1, textAlign: 'center', fontSize: 17, fontWeight: '600', color: Colors.label },
+  title: { flex: 1, textAlign: 'center', fontFamily: Fonts.displaySemibold, fontSize: 17, color: Colors.label },
   spacer: { width: 44 },
   round: {
     width: 44,

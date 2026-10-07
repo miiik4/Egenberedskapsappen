@@ -11,7 +11,7 @@ import {
   type StockItem,
 } from '@egenberedskap/core';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { DateField } from '@/components/form/fields';
 import { WarningDot } from '@/components/ui/check-circle';
@@ -21,6 +21,7 @@ import { Screen } from '@/components/ui/screen';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { formatDate, formatDays, formatDuration, formatIn, formatMeals, formatNumber, todayIso } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 /** One item: how much, how long it keeps, and where it is. Dates and the reminder change in place. */
 export default function Vare() {
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   replaced: {
     marginHorizontal: Spacing.screen,
     height: 52,
-    borderRadius: Radius.card,
+    borderRadius: Radius.pill,
     borderCurve: 'continuous',
     alignItems: 'center',
     justifyContent: 'center',

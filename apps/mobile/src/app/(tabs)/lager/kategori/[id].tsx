@@ -11,16 +11,17 @@ import {
   type StockCategory,
 } from '@egenberedskap/core';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Card } from '@/components/ui/card';
 import { Row, Section } from '@/components/ui/list';
 import { ProgressBar } from '@/components/ui/progress';
 import { Screen } from '@/components/ui/screen';
 import { ToolbarIcons } from '@/components/toolbar-icons';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { describeType, formatDays, formatMeals, formatNumber, todayIso } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 /** One category from DSB's list, split into its types, each with the household's own items. */
 export default function Kategori() {
@@ -118,7 +119,7 @@ function DaysCard({ category, coverage, people }: { category: StockCategory; cov
 const styles = StyleSheet.create({
   add: { fontSize: 17, color: Colors.accent },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  days: { fontSize: 34, fontWeight: '700', letterSpacing: -0.7, color: Colors.label },
+  days: { fontFamily: Fonts.display, fontSize: 32, letterSpacing: -0.6, color: Colors.label },
   of: { fontSize: 15, color: Colors.secondaryLabel },
   explanation: { fontSize: 15, lineHeight: 21, color: Colors.secondaryLabel },
 });

@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Colors, Spacing } from '@/constants/theme';
+import { Text } from '@/components/ui/text';
 
 /**
  * Pick one of a short list. The phones get a native menu (menu-field.ios.tsx and

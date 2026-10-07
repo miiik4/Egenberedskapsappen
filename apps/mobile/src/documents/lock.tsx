@@ -1,12 +1,13 @@
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as ScreenCapture from 'expo-screen-capture';
 import { createContext, use, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { AppState, Platform, StyleSheet, Text, View } from 'react-native';
+import { AppState, Platform, StyleSheet, View } from 'react-native';
 
 import { PrimaryButton } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
+import { Text } from '@/components/ui/text';
 
 type LockContextValue = {
   /** True while documents must stay hidden. */

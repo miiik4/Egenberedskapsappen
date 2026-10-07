@@ -1,7 +1,7 @@
 import { INSURANCE_ALERT_SHARE } from '@egenberedskap/core';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Switch, Text } from 'react-native';
+import { Pressable, StyleSheet, Switch } from 'react-native';
 
 import { confirmDelete, DestructiveButton, NumberField, parseNumber, TextField } from '@/components/form/fields';
 import { MenuField } from '@/components/form/menu-field';
@@ -10,6 +10,7 @@ import { useHomeInsurance } from '@/components/preparedness/home-insurance';
 import { Row, Section } from '@/components/ui/list';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useActions } from '@/data/data-provider';
+import { Text } from '@/components/ui/text';
 
 /**
  * Home insurers in Norway, most chosen first. Bank brands are listed alongside the insurers
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
   report: {
     marginHorizontal: Spacing.screen,
     height: 52,
-    borderRadius: Radius.card,
+    borderRadius: Radius.pill,
     borderCurve: 'continuous',
     alignItems: 'center',
     justifyContent: 'center',

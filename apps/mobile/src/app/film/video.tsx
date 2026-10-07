@@ -2,7 +2,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { File } from 'expo-file-system';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAnalysis } from '@/analysis/analysis-provider';
@@ -11,6 +11,7 @@ import { PrimaryButton } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Radius } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
+import { Text } from '@/components/ui/text';
 
 /** Long enough for any room at a slow walk; the server takes 60 frames from it at most. */
 const MAX_SECONDS = 90;

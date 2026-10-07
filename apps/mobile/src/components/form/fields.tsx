@@ -2,11 +2,13 @@ import { addDays, type IsoDate } from '@egenberedskap/core';
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, Pressable, StyleSheet, Text, TextInput, View, type KeyboardTypeOptions } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, View, type KeyboardTypeOptions } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
+import { CompactDatePicker } from './compact-date-picker';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { formatDate, todayIso } from '@/lib/format';
+import { Text, TextInput } from '@/components/ui/text';
 
 /** Label on the left, value on the right: the row layout iOS uses in Settings and Contacts. */
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -130,7 +132,7 @@ export function DateField({
     <FieldRow label={label}>
       <View style={styles.dateRow}>
         {Platform.OS === 'ios' ? (
-          <DateTimePicker value={date} mode="date" display="compact" locale="nb-NO" onValueChange={(_, d) => pick(d)} />
+          <CompactDatePicker value={date} onChange={pick} />
         ) : (
           <>
             <Pressable onPress={() => setAndroidOpen(true)} hitSlop={8} accessibilityRole="button">
@@ -260,6 +262,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     borderCurve: 'continuous',
     backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
   },
   destructiveText: { fontSize: 17, color: Colors.destructive },
 });

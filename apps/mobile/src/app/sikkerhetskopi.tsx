@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Share, StyleSheet, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Share, StyleSheet, Switch, View } from 'react-native';
 
 import { useBackup } from '@/backup/backup-provider';
 import { backupErrorMessage, cleanActivationCode } from '@/backup/messages';
@@ -11,6 +11,7 @@ import { Row, Section } from '@/components/ui/list';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { formatDateWithYear, formatTime } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 /** Long enough to be a real code; the server decides whether it is one. */
 const MIN_ACTIVATION_LENGTH = 8;

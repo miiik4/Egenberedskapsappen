@@ -1,10 +1,16 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 
 export default function TabsLayout() {
   return (
-    <NativeTabs tintColor={Colors.accent}>
+    <NativeTabs
+      tintColor={Colors.accent}
+      iconColor={{ default: Colors.secondaryLabel, selected: Colors.accent }}
+      labelStyle={{
+        default: { fontFamily: Fonts.body['600'], color: Colors.secondaryLabel },
+        selected: { fontFamily: Fonts.body['600'], color: Colors.accent },
+      }}>
       <NativeTabs.Trigger name="(oversikt)">
         <NativeTabs.Trigger.Label>Oversikt</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'gauge.with.needle', selected: 'gauge.with.needle.fill' }} md="speed" />

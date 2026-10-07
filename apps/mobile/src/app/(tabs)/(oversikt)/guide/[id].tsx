@@ -1,9 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/ui/screen';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Fonts, Spacing } from '@/constants/theme';
 import { GUIDES } from '@/guides/guides';
+import { Text } from '@/components/ui/text';
 
 export default function Guide() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,7 +37,7 @@ export default function Guide() {
 
 const styles = StyleSheet.create({
   body: { marginHorizontal: Spacing.screen + 4, gap: 8 },
-  title: { fontSize: 28, fontWeight: '700', lineHeight: 34, color: Colors.label },
+  title: { fontFamily: Fonts.display, fontSize: 28, lineHeight: 34, color: Colors.label },
   meta: { fontSize: 15, color: Colors.secondaryLabel },
   section: { gap: 8, marginTop: 16 },
   heading: { fontSize: 20, fontWeight: '600', color: Colors.label },

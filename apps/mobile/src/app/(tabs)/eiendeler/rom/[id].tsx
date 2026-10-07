@@ -2,7 +2,7 @@ import { summarizeRooms } from '@egenberedskap/core';
 import type { StoredBelonging } from '@egenberedskap/store';
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AddRow, EmptyRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
@@ -11,6 +11,7 @@ import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { storedFile } from '@/documents/files';
 import { countLabel, formatKr } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 /** One room and what's documented in it. */
 export default function Rom() {

@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { useAnalysis } from '@/analysis/analysis-provider';
 import { analysisErrorText } from '@/analysis/messages';
@@ -13,6 +13,7 @@ import { Row, Section } from '@/components/ui/list';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { pickFiles, type Source } from '@/documents/use-documents';
+import { Text } from '@/components/ui/text';
 
 /** What the server takes in one analysis of photos (functions/src/analysis/prompt.ts MAX_FRAMES). */
 const MAX_PHOTOS = 30;

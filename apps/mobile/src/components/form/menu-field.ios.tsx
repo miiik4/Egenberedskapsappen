@@ -1,8 +1,9 @@
 import { Host, Picker, Text as SwiftText } from '@expo/ui/swift-ui';
 import { pickerStyle, tag, tint } from '@expo/ui/swift-ui/modifiers';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Colors, Spacing } from '@/constants/theme';
+import { Text } from '@/components/ui/text';
 
 /** Pick one of a short list from a menu, as «Kategori: Mat ⌃⌄» in the design: SwiftUI's menu picker. */
 export function MenuField<T extends string>({

@@ -1,39 +1,76 @@
-import { Platform, PlatformColor, type ColorValue } from 'react-native';
+import { DynamicColorIOS, Platform, type ColorValue } from 'react-native';
 
 /**
- * On iOS the neutral colours are the system's semantic colours, so light and dark mode,
- * increased contrast and future iOS looks come for free. Android gets fixed values
- * matching the iOS light appearance until it gets its own pass.
+ * The brand from the original design (Claude Design, «Egenberedskapsappen iOS v2»): navy text
+ * and preparedness cards, soft white cards with a hairline border on a cool grey page, yellow
+ * for what needs attention. On iOS each colour follows light and dark mode; Android gets the
+ * light values until it gets its own pass.
  */
-const system = (ios: string, android: string): ColorValue =>
-  Platform.OS === 'ios' ? PlatformColor(ios) : android;
+const color = (light: string, dark: string): ColorValue =>
+  Platform.OS === 'ios' ? DynamicColorIOS({ light, dark }) : light;
 
 export const Colors = {
-  background: system('systemGroupedBackground', '#F2F2F7'),
-  card: system('secondarySystemGroupedBackground', '#FFFFFF'),
-  fill: system('tertiarySystemFill', '#E5E5EA'),
-  label: system('label', '#000000'),
-  secondaryLabel: system('secondaryLabel', '#6D6D72'),
-  tertiaryLabel: system('tertiaryLabel', '#C4C4C7'),
-  separator: system('separator', '#C6C6C8'),
+  background: color('#F4F7FA', '#08131F'),
+  card: color('#FFFFFF', '#102236'),
+  /** The hairline round every card. */
+  cardBorder: color('#E1E9F1', '#1D3550'),
+  /** Steppers, segmented controls, date pills, round buttons. */
+  fill: color('#E6EDF4', '#1B324B'),
+  label: color('#0B2B4A', '#EAF2FA'),
+  /** Running text: explanations, alert bodies. */
+  body: color('#33506A', '#C3D3E3'),
+  secondaryLabel: color('#5B7285', '#9DB2C6'),
+  /** Subtitles of tasks, quieter than secondary. */
+  quietLabel: color('#7A8FA3', '#8299AF'),
+  tertiaryLabel: color('#B4C3D2', '#4E6781'),
+  separator: color('#E3EAF1', '#1D3550'),
 
-  accent: '#0E5FC0',
-  accentSoft: 'rgba(14,95,192,0.11)',
-  destructive: system('systemRed', '#D70015'),
-  success: system('systemGreen', '#248A3D'),
-  successSoft: 'rgba(52,199,89,0.16)',
+  accent: color('#0E5FC0', '#4C9AF5'),
+  accentSoft: color('#E6EFFA', '#173A63'),
+  destructive: color('#D70015', '#FF5A50'),
+  success: color('#248A3D', '#3DD068'),
+  successSoft: color('rgba(52,199,89,0.16)', 'rgba(52,199,89,0.22)'),
 
-  /** The one warning colour: the dot by something about to expire, and an overfull bar. */
-  warning: '#FF9F0A',
-  warningText: '#A35200',
-  warningSoft: 'rgba(255,159,10,0.16)',
+  /** The one warning colour: the dot by something about to expire, an overfull bar. */
+  warning: '#D08A1C',
+  warningText: color('#8A5300', '#F1B95B'),
+  warningSoft: color('#FFF1D6', '#3A2A0E'),
+  /** The yellow banner, as the quarterly check on Oversikt. */
+  notice: color('#FFF6E5', '#2A2111'),
+  noticeBorder: color('#F3DDB0', '#4A3A1A'),
   /** Text on a pale fill, for the second avatar and similar quiet badges. */
   indigo: '#5E5CE6',
-  indigoSoft: 'rgba(94,92,230,0.14)',
+  indigoSoft: color('#E3E0F5', '#2A2856'),
+
+  /** The navy preparedness card: the days on Oversikt. Navy in both modes. */
+  hero: {
+    background: color('#0B2B4A', '#123A62'),
+    text: '#FFFFFF',
+    muted: '#BBD6F2',
+    soft: '#DCEBFA',
+    track: '#23517C',
+    bar: '#5FA3F0',
+    caption: '#A9C5DD',
+  },
+} as const;
+
+/**
+ * Archivo for titles and figures, Source Sans 3 for everything else. Each weight is its own
+ * font; Text in components/ui/text.tsx picks the file from fontWeight.
+ */
+export const Fonts = {
+  display: 'Archivo_700Bold',
+  displaySemibold: 'Archivo_600SemiBold',
+  body: {
+    '400': 'SourceSans3_400Regular',
+    '500': 'SourceSans3_500Medium',
+    '600': 'SourceSans3_600SemiBold',
+    '700': 'SourceSans3_700Bold',
+  },
 } as const;
 
 export const Radius = {
-  card: 26,
+  card: 20,
   pill: 999,
   tile: 8,
 } as const;

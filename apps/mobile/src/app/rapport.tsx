@@ -1,6 +1,6 @@
 import { buildReport, summarizeRooms } from '@egenberedskap/core';
 import { useState } from 'react';
-import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, StyleSheet, Switch, View } from 'react-native';
 
 import { DateField, TextField } from '@/components/form/fields';
 import { FormSheet } from '@/components/form/sheet';
@@ -11,6 +11,7 @@ import { Colors } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { countLabel, formatKr } from '@/lib/format';
 import { shareReport } from '@/report/make-report';
+import { Text } from '@/components/ui/text';
 
 /**
  * «Innbooversikt» as a PDF for the insurer: who it's for, which rooms, and with or without

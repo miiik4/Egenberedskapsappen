@@ -1,13 +1,14 @@
 import { router, Stack } from 'expo-router';
-import { Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
 import { AddRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { ToolbarIcons } from '@/components/toolbar-icons';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Fonts, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { initials } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 const EMERGENCY_NUMBERS = [
   { number: '110', label: 'Brann' },
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
   },
   // Only the phone numbers are in large type.
-  numberText: { fontSize: 20, lineHeight: 24, fontWeight: '700', color: Colors.label, fontVariant: ['tabular-nums'] },
+  numberText: { fontFamily: Fonts.display, fontSize: 20, lineHeight: 24, color: Colors.label, fontVariant: ['tabular-nums'] },
   numberLong: { fontSize: 17 },
   numberLabel: { fontSize: 12, color: Colors.secondaryLabel },
   avatar: {

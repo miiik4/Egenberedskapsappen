@@ -1,6 +1,6 @@
 import { checklist, isExpired, isExpiringSoon, CATEGORY_NAMES, daysBetween, type ChecklistType } from '@egenberedskap/core';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { CheckCircle, WarningDot } from '@/components/ui/check-circle';
 import { Row, Section } from '@/components/ui/list';
@@ -10,6 +10,7 @@ import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { formatIn, todayIso } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 type Filter = 'alle' | 'mangler';
 

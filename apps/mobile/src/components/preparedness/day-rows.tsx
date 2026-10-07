@@ -1,9 +1,10 @@
 import { TARGET_DAYS, type Coverage, type DayKind } from '@egenberedskap/core';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ProgressBar } from '@/components/ui/progress';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 import { formatDays } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 export const DAY_ROWS: { kind: DayKind; name: string; days: (c: Coverage) => number }[] = [
   { kind: 'water', name: 'Vann', days: (c) => c.waterDays },
@@ -72,6 +73,6 @@ const styles = StyleSheet.create({
   name: { fontSize: 17, color: Colors.label },
   value: { fontSize: 17, color: Colors.secondaryLabel, fontVariant: ['tabular-nums'] },
   headline: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
-  number: { fontWeight: '700', letterSpacing: -1.5, color: Colors.label, fontVariant: ['tabular-nums'] },
+  number: { fontFamily: Fonts.display, letterSpacing: -1.2, color: Colors.label, fontVariant: ['tabular-nums'] },
   of: { fontWeight: '600', color: Colors.label },
 });

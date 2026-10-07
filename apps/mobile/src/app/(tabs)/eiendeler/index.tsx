@@ -2,7 +2,7 @@ import { summarizeRooms } from '@egenberedskap/core';
 import { Image } from 'expo-image';
 import { router, Stack } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { useHomeInsurance } from '@/components/preparedness/home-insurance';
 import { Card } from '@/components/ui/card';
@@ -13,10 +13,11 @@ import { ProgressBar } from '@/components/ui/progress';
 import { Screen } from '@/components/ui/screen';
 import { Segmented } from '@/components/ui/segmented';
 import { ToolbarIcons } from '@/components/toolbar-icons';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { storedFile } from '@/documents/files';
 import { countLabel, formatKr } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 type Tab = 'innbo' | 'reise';
 
@@ -238,7 +239,7 @@ const styles = StyleSheet.create({
   smallText: { fontSize: 15, fontWeight: '600', color: Colors.label },
   smallTextProminent: { color: '#FFFFFF' },
   sumHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  sum: { fontSize: 28, fontWeight: '700', letterSpacing: -0.5, color: Colors.label, fontVariant: ['tabular-nums'] },
+  sum: { fontFamily: Fonts.display, fontSize: 28, letterSpacing: -0.5, color: Colors.label, fontVariant: ['tabular-nums'] },
   sumOf: { fontSize: 15, color: Colors.secondaryLabel },
   sumNote: { fontSize: 15, color: Colors.secondaryLabel },
   link: { fontSize: 17, color: Colors.accent },

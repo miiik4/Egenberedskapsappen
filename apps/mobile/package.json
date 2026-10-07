@@ -5,6 +5,8 @@
   "dependencies": {
     "@egenberedskap/core": "*",
     "@egenberedskap/store": "*",
+    "@expo-google-fonts/archivo": "^0.4.2",
+    "@expo-google-fonts/source-sans-3": "^0.4.2",
     "@expo/ui": "~57.0.21",
     "@react-native-firebase/app": "^26.4.0",
     "@react-native-firebase/app-check": "^26.4.0",

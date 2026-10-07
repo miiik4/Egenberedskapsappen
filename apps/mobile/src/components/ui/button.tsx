@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { Colors, Radius, Spacing } from '@/constants/theme';
+import { Text } from '@/components/ui/text';
 
 /** The one main action on a screen, full width, as «Legg til 3 gjenstander» in the design. */
 export function PrimaryButton({ label, onPress, disabled }: { label: string; onPress: () => void; disabled?: boolean }) {
@@ -20,7 +21,7 @@ const styles = StyleSheet.create({
   button: {
     marginHorizontal: Spacing.screen,
     height: 52,
-    borderRadius: Radius.card,
+    borderRadius: Radius.pill,
     borderCurve: 'continuous',
     alignItems: 'center',
     justifyContent: 'center',

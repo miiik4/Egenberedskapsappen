@@ -8,7 +8,7 @@ import {
   type StockItem,
 } from '@egenberedskap/core';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { WarningDot } from '@/components/ui/check-circle';
 import { EmptyRow, Row, Section } from '@/components/ui/list';
@@ -18,6 +18,7 @@ import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { describeType, formatIn, formatMeals, formatMonthYear, formatNumber, todayIso } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 /** One type with the household's items: what's about to expire on top, then the rest. */
 export default function Type() {

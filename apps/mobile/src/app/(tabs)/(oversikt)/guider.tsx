@@ -1,13 +1,14 @@
 import { featuredGuide } from '@egenberedskap/core';
 import { router, Stack } from 'expo-router';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { GUIDE_LIST, GUIDES, type Guide } from '@/guides/guides';
 import { todayIso } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 const open = (guide: Guide) => router.push({ pathname: '/guide/[id]', params: { id: guide.id } });
 
@@ -51,6 +52,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.card,
   },
   eyebrow: { fontSize: 13, fontWeight: '600', letterSpacing: 0.3, color: Colors.accent },
-  featuredTitle: { fontSize: 22, fontWeight: '700', lineHeight: 27, color: Colors.label },
+  featuredTitle: { fontFamily: Fonts.display, fontSize: 22, lineHeight: 27, color: Colors.label },
   meta: { fontSize: 15, color: Colors.secondaryLabel },
 });

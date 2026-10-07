@@ -16,5 +16,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.card,
     borderCurve: 'continuous',
     backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
   },
 });

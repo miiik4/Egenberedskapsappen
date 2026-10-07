@@ -2,7 +2,7 @@ import { BELONGING_CATEGORIES, type BelongingCategory } from '@egenberedskap/cor
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useBelongings, type FileChange } from '@/belongings/use-belongings';
 import { confirmDelete, DestructiveButton, NumberField, parseNumber, TextField } from '@/components/form/fields';
@@ -14,6 +14,7 @@ import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { storedFile } from '@/documents/files';
 import { pickFiles, type Source } from '@/documents/use-documents';
+import { Text } from '@/components/ui/text';
 
 /**
  * One thing in the home: a photo, what it is, where it is, what it's worth, and the receipt

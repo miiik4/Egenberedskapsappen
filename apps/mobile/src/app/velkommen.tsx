@@ -8,7 +8,7 @@ import {
 import type { StockDraft } from '@egenberedskap/store';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { NumberField, parseNumber } from '@/components/form/fields';
@@ -19,9 +19,10 @@ import { Card } from '@/components/ui/card';
 import { CheckCircle } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
 import { Row, Section } from '@/components/ui/list';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Fonts, Spacing } from '@/constants/theme';
 import { useActions } from '@/data/data-provider';
 import { todayIso } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 /** Six things from DSB's list: enough for a first number without it taking long. */
 const QUICK: { type: StockType; name: string; hint?: string }[] = [
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
   skip: { fontSize: 17, color: Colors.accent },
   content: { paddingTop: 6, paddingBottom: 24, gap: 20 },
   intro: { paddingHorizontal: Spacing.screen + 4, gap: 6 },
-  title: { fontSize: 34, fontWeight: '700', letterSpacing: -0.7, color: Colors.label },
+  title: { fontFamily: Fonts.display, fontSize: 32, letterSpacing: -0.6, color: Colors.label },
   lead: { fontSize: 17, lineHeight: 24, color: Colors.secondaryLabel },
   restore: { textAlign: 'center', fontSize: 17, color: Colors.accent },
   result: { paddingHorizontal: Spacing.screen + 4, paddingTop: 10, gap: 2 },

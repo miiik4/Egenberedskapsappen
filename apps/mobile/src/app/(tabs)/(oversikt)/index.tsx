@@ -7,21 +7,22 @@ import {
   type NextAction,
 } from '@egenberedskap/core';
 import { router, Stack, type Href } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { DaysHeadline, DayRows, limiterText } from '@/components/preparedness/day-rows';
+import { DaysHero } from '@/components/preparedness/days-hero';
 import { useHomeInsurance } from '@/components/preparedness/home-insurance';
-import { Card } from '@/components/ui/card';
-import { CheckCircle } from '@/components/ui/check-circle';
+import { CheckCircle, WarningDot } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
 import { LinkText } from '@/components/ui/link-text';
 import { Row, Section } from '@/components/ui/list';
+import { Pill } from '@/components/ui/pill';
 import { Screen } from '@/components/ui/screen';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { GUIDES } from '@/guides/guides';
 import { useNotifications } from '@/notifications/notifications-provider';
-import { describeAction, formatIn, formatKr, householdLabel, todayIso } from '@/lib/format';
+import { describeAction, formatDate, formatIn, formatKr, householdLabel, todayIso } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 const TASKS_SHOWN = 3;
 /** «Utstyr» on Oversikt: the categories that aren't counted in days. */
@@ -67,18 +68,20 @@ export default function Oversikt() {
           {householdLabel(household)}
         </Text>
 
-        <Card gap={16}>
-          <View style={styles.lead}>
-            <Text style={styles.leadText}>Uten strøm og vann klarer dere dere i</Text>
-            <DaysHeadline days={coverage.days} />
-          </View>
-          <DayRows
+        <View style={styles.top}>
+          <DaysHero
             coverage={coverage}
             // Each day row is also a category of the list: vann, mat, varme.
-            onPress={(kind) => toLager({ pathname: '/lager/kategori/[id]', params: { id: kind } })}
+            onPressKind={(kind) => toLager({ pathname: '/lager/kategori/[id]', params: { id: kind } })}
           />
-          <Text style={styles.limiter}>{limiterText(coverage)}</Text>
-        </Card>
+          <Notice
+            title={checkIn > 0 ? `Kvartalssjekk ${formatIn(checkIn)}` : 'Tid for kvartalssjekk'}
+            subtitle={
+              data.lastQuarterlyCheck ? `Sist sjekket ${formatDate(data.lastQuarterlyCheck)}` : 'Ikke sjekket ennå'
+            }
+            onPress={() => router.push('/kvartalssjekk')}
+          />
+        </View>
 
         <Section>
           <Row
@@ -117,17 +120,11 @@ export default function Oversikt() {
                 <Task key={i} action={action} />
               ))}
             </Section>
-            <LinkText label="Se hele listen" onPress={() => toLager({ pathname: '/lager', params: { filter: 'mangler' } })} />
+            <LinkText strong label="Se hele listen" onPress={() => toLager({ pathname: '/lager', params: { filter: 'mangler' } })} />
           </>
         )}
 
         <Section header="Husstand">
-          <Row
-            title="Kvartalssjekk"
-            detail={checkIn > 0 ? capitalize(formatIn(checkIn)) : 'Nå'}
-            chevron
-            onPress={() => router.push('/kvartalssjekk')}
-          />
           <Row
             title="Innboforsikring"
             detail={policy?.sumKr !== undefined ? formatKr(policy.sumKr) : 'Legg til'}
@@ -158,18 +155,37 @@ function taskHref(action: NextAction): Href {
 function Task({ action }: { action: NextAction }) {
   const { title, subtitle } = describeAction(action);
   const href = taskHref(action);
+  // What doing it does to the number, when it does anything: «+3 døgn», «−1 døgn».
+  const change = action.dayChange !== 0 && (
+    <Pill
+      label={`${action.dayChange > 0 ? '+' : '−'}${Math.abs(action.dayChange)} døgn`}
+      tone={action.dayChange > 0 ? 'accent' : 'warning'}
+    />
+  );
   return (
     <Row
       title={title}
       subtitle={subtitle}
+      bold
+      trailing={change || undefined}
       leading={<CheckCircle on={false} />}
       onPress={() => (action.kind === 'replace' ? router.navigate(href, { withAnchor: true }) : router.push(href))}
     />
   );
 }
 
-function capitalize(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
+/** The yellow banner: something that needs doing soon, here the quarterly check. */
+function Notice({ title, subtitle, onPress }: { title: string; subtitle: string; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.notice, pressed && { opacity: 0.8 }]}>
+      <WarningDot />
+      <View style={styles.noticeText}>
+        <Text style={styles.noticeTitle}>{title}</Text>
+        <Text style={styles.noticeSubtitle}>{subtitle}</Text>
+      </View>
+      <Icon name={{ ios: 'chevron.right', android: 'chevron_right' }} size={13} color={Colors.warningText} />
+    </Pressable>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -182,13 +198,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: Colors.accentSoft,
   },
-  lead: { gap: 2 },
-  leadText: { fontSize: 15, color: Colors.secondaryLabel },
-  limiter: {
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: Colors.separator,
-    fontSize: 15,
-    color: Colors.label,
+  top: { gap: 12 },
+  notice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginHorizontal: Spacing.screen,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 18,
+    borderCurve: 'continuous',
+    borderWidth: 1,
+    borderColor: Colors.noticeBorder,
+    backgroundColor: Colors.notice,
   },
+  noticeText: { flex: 1 },
+  noticeTitle: { fontSize: 16, fontWeight: '600', color: Colors.label },
+  noticeSubtitle: { fontSize: 14, color: Colors.warningText },
 });

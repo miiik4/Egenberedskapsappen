@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Colors, Radius } from '@/constants/theme';
+import { Text } from '@/components/ui/text';
 
 const tones = {
   accent: { background: Colors.accentSoft, text: Colors.accent },

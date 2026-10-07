@@ -1,9 +1,10 @@
 import type { HouseholdMembers } from '@egenberedskap/core';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
 import { Section } from '@/components/ui/list';
 import { Colors, Spacing } from '@/constants/theme';
+import { Text } from '@/components/ui/text';
 
 const GROUPS: { key: keyof HouseholdMembers; label: string; sub?: string }[] = [
   { key: 'adults', label: 'Voksne', sub: '18–66 år' },

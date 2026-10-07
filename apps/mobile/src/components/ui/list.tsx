@@ -1,9 +1,10 @@
 import { Children, Fragment, type ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View, type ColorValue } from 'react-native';
+import { Pressable, StyleSheet, View, type ColorValue } from 'react-native';
 
 import { Colors, Radius, Spacing } from '@/constants/theme';
 
 import { Icon, type IconName } from './icon';
+import { Text } from '@/components/ui/text';
 
 /** An iOS inset grouped section: uppercase header, rounded card, hairline separators, footnote. */
 export function Section({
@@ -118,10 +119,17 @@ export function IconTile({ name, color, glyph }: { name?: IconName; color: Color
 const styles = StyleSheet.create({
   section: { marginHorizontal: Spacing.screen, gap: 7 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: Spacing.rowInset },
-  header: { fontSize: 13, color: Colors.secondaryLabel, letterSpacing: 0.3 },
+  header: { fontSize: 13, fontWeight: '600', color: Colors.secondaryLabel, letterSpacing: 0.8 },
   footer: { marginHorizontal: Spacing.rowInset, fontSize: 13, color: Colors.secondaryLabel, lineHeight: 18 },
-  card: { backgroundColor: Colors.card, borderRadius: Radius.card, borderCurve: 'continuous', overflow: 'hidden' },
-  separator: { height: StyleSheet.hairlineWidth, backgroundColor: Colors.separator },
+  card: {
+    backgroundColor: Colors.card,
+    borderRadius: Radius.card,
+    borderCurve: 'continuous',
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
+    overflow: 'hidden',
+  },
+  separator: { height: 1, backgroundColor: Colors.separator },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,4 +1,11 @@
+import { Archivo_600SemiBold } from '@expo-google-fonts/archivo/600SemiBold';
+import { Archivo_700Bold } from '@expo-google-fonts/archivo/700Bold';
+import { SourceSans3_400Regular } from '@expo-google-fonts/source-sans-3/400Regular';
+import { SourceSans3_500Medium } from '@expo-google-fonts/source-sans-3/500Medium';
+import { SourceSans3_600SemiBold } from '@expo-google-fonts/source-sans-3/600SemiBold';
+import { SourceSans3_700Bold } from '@expo-google-fonts/source-sans-3/700Bold';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { useFonts } from 'expo-font';
 import { StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -10,6 +17,17 @@ import { NotificationsProvider } from '@/notifications/notifications-provider';
 
 export default function RootLayout() {
   const dark = useColorScheme() === 'dark';
+  // The brand's typefaces, bundled with the app. Nothing shows until they're in, so no screen
+  // flashes in the system font first; a font that fails to load falls back to it.
+  const [fontsLoaded, fontError] = useFonts({
+    Archivo_600SemiBold,
+    Archivo_700Bold,
+    SourceSans3_400Regular,
+    SourceSans3_500Medium,
+    SourceSans3_600SemiBold,
+    SourceSans3_700Bold,
+  });
+  if (!fontsLoaded && !fontError) return null;
 
   return (
     <GestureHandlerRootView style={StyleSheet.absoluteFill}>

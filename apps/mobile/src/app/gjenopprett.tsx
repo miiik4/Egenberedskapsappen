@@ -1,7 +1,7 @@
 import { normalizeRecoveryCode } from '@egenberedskap/sync';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 
 import { useBackup } from '@/backup/backup-provider';
 import { backupErrorMessage } from '@/backup/messages';
@@ -10,6 +10,7 @@ import { FormSheet } from '@/components/form/sheet';
 import { PrimaryButton } from '@/components/ui/button';
 import { Section } from '@/components/ui/list';
 import { Colors, Spacing } from '@/constants/theme';
+import { Text } from '@/components/ui/text';
 
 /** On a new phone: the recovery code brings the whole household back, documents included. */
 export default function Gjenopprett() {

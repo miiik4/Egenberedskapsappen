@@ -1,13 +1,14 @@
 import { addDays, daysBetween, nextQuarterlyCheck } from '@egenberedskap/core';
 import { router, type Href } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { useNotifications } from '@/notifications/notifications-provider';
 import { formatDate, householdLabel, todayIso } from '@/lib/format';
+import { Text } from '@/components/ui/text';
 
 /** «Påminn meg» comes back a week later. */
 const EXPIRY_REVIEW_AFTER_DAYS = 7;
@@ -173,17 +174,19 @@ const styles = StyleSheet.create({
   spacer: { width: 44 },
   duration: { fontSize: 15, color: Colors.secondaryLabel },
   intro: { paddingHorizontal: Spacing.screen + 4, gap: 6 },
-  title: { fontSize: 34, fontWeight: '700', color: Colors.label },
+  title: { fontFamily: Fonts.display, fontSize: 32, letterSpacing: -0.6, color: Colors.label },
   lead: { fontSize: 17, lineHeight: 23, color: Colors.secondaryLabel },
   card: {
     marginHorizontal: Spacing.screen,
     borderRadius: Radius.card,
     borderCurve: 'continuous',
     backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
     overflow: 'hidden',
   },
   step: { flexDirection: 'row', gap: 14, paddingHorizontal: Spacing.rowInset, paddingVertical: 13 },
-  stepDivider: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: Colors.separator },
+  stepDivider: { borderTopWidth: 1, borderTopColor: Colors.separator },
   badge: {
     width: 26,
     height: 26,

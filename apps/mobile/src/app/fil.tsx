@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Sharing from 'expo-sharing';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
@@ -11,6 +11,7 @@ import { useActions, useData } from '@/data/data-provider';
 import { deleteStoredFiles, isPdf, storedFile } from '@/documents/files';
 import { DocumentGate } from '@/documents/lock';
 import { useDocumentFiles } from '@/documents/use-documents';
+import { Text } from '@/components/ui/text';
 
 /**
  * One file, full screen: a document's, behind the document lock, or a belonging's receipt.

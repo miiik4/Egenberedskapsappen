@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Icon, type IconName } from '@/components/ui/icon';
 import { IconTile, Row, Section } from '@/components/ui/list';
@@ -12,6 +12,7 @@ import { useData } from '@/data/data-provider';
 import { isPdf, storedFile } from '@/documents/files';
 import { DocumentGate } from '@/documents/lock';
 import { useDocumentFiles, type Source } from '@/documents/use-documents';
+import { Text } from '@/components/ui/text';
 
 const SOURCES: { source: Source; title: string; icon: IconName; color: string }[] = [
   { source: 'camera', title: 'Ta bilde', icon: { ios: 'camera.fill', android: 'photo_camera' }, color: '#5E5CE6' },

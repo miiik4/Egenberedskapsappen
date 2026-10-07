@@ -1,7 +1,7 @@
 import { fromBase64, fromUtf8, utf8 } from '@egenberedskap/sync';
 import { Redirect, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useBackup } from '@/backup/backup-provider';
@@ -10,6 +10,7 @@ import { deleteDataKey } from '@/backup/keychain';
 import { useActions, useData } from '@/data/data-provider';
 import { deleteAllStoredFiles } from '@/documents/files';
 import { seedDemoData } from '@/lib/demo-data';
+import { Text } from '@/components/ui/text';
 
 /**
  * Development only, reached by deep link (`…/--/utvikling` in Expo Go, `<scheme>://utvikling`

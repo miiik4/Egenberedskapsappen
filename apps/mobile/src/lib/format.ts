@@ -110,7 +110,7 @@ export function describeAction(action: NextAction): { title: string; subtitle: s
       return { title: `Kjøp ${formatNumber(action.litres)} liter vann`, subtitle: 'Drikkevann på kanner' };
     case 'buyFood':
       return {
-        title: `Kjøp mat for ${action.days} døgn til`,
+        title: `Kjøp mat for ${action.days} døgn`,
         subtitle:
           action.suggestions.length > 0
             ? capitalize(listWords(action.suggestions.map((t) => t.name.toLowerCase())))

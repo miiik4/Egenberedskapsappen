@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Colors, Spacing } from '@/constants/theme';
+import { Text } from '@/components/ui/text';
 
 /** Two or three mutually exclusive views of the same screen, e.g. Innbo / Reise. */
 export function Segmented<T extends string>({

@@ -1,7 +1,8 @@
 import { Picker } from '@expo/ui/community/picker';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { Colors, Spacing } from '@/constants/theme';
+import { Text } from '@/components/ui/text';
 
 /** Pick one of a short list from a menu, as «Kategori: Mat ⌃⌄» in the design: a Material dropdown. */
 export function MenuField<T extends string>({
