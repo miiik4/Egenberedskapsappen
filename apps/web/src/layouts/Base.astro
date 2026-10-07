@@ -1,0 +1,148 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content="nb_NO" />
+    <meta name="theme-color" content="#F4F7FA" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#08131F" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..800&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#innhold">Gå til innholdet</a>
+    <header class="site-header">
+      <div class="wrap bar">
+        <a class="wordmark" href="/">Egenberedskapsappen</a>
+        <nav aria-label="Hovedmeny">
+          <ul>
+            <li><a href="#regn-ut">Regn ut</a></li>
+            <li><a href="#funksjoner">Funksjoner</a></li>
+            <li><a href="#personvern">Personvern</a></li>
+            <li><a href="#sporsmal">Spørsmål</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="innhold">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap foot">
+        <div>
+          <p class="wordmark">Egenberedskapsappen</p>
+          <p>Gratis app for egenberedskap i norske husstander.</p>
+        </div>
+        <p class="small">
+          Rådene bygger på Direktoratet for samfunnssikkerhet og beredskap (DSB). Se også{' '}
+          <a href="https://www.sikkerhverdag.no/" rel="noopener">sikkerhverdag.no</a>.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .skip {
+    position: absolute;
+    left: 16px;
+    top: -100px;
+    z-index: 10;
+    padding: 10px 16px;
+    background: var(--card);
+    border-radius: 8px;
+  }
+  .skip:focus {
+    top: 12px;
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: color-mix(in srgb, var(--page) 86%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--separator);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    min-height: 64px;
+  }
+  .wordmark {
+    margin: 0;
+    color: var(--label);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    font-stretch: 112%;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+  nav ul {
+    display: flex;
+    gap: 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  nav a {
+    color: var(--body);
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+  }
+  nav a:hover {
+    color: var(--accent);
+  }
+  @media (max-width: 760px) {
+    nav {
+      display: none;
+    }
+  }
+
+  .site-footer {
+    margin-top: 40px;
+    padding-block: 48px 64px;
+    border-top: 1px solid var(--separator);
+  }
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 24px;
+    font-size: 1rem;
+    color: var(--secondary);
+  }
+  .foot .wordmark {
+    margin-bottom: 4px;
+  }
+  .small {
+    max-width: 44ch;
+  }
+</style>

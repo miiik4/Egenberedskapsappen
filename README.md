@@ -9,12 +9,13 @@ Funded by partners, not by users and not by ads. Sponsored content is always lab
 | Path | What |
 | --- | --- |
 | `apps/mobile` | Expo app (iOS + Android), Expo Router, SDK 57 |
+| `apps/web` | Marketing site (Astro, static). Its calculator uses the days calculation from `packages/core`; the phone pictures are rendered from the iOS v2 design |
 | `packages/core` | Shared TypeScript: domain types, the days-covered calculation, guidance figures. No React, fully tested |
 | `packages/store` | On-device storage: SQLite schema, migrations and every read and write. Tested against real SQLite (`node:sqlite`); the app runs it on expo-sqlite |
 | `packages/sync` | End-to-end encryption and the sync engine for backup. Pure TypeScript, tested with two simulated phones |
 | `functions` | Cloud Functions (europe-north1) for vaults, activation codes and the AI analysis of rooms. Not a workspace: it deploys on its own (`npm test` inside it runs its unit tests) |
 
-Planned: `apps/web` (marketing site and blog).
+A blog on `apps/web` is planned.
 
 ## Backend
 
@@ -81,6 +82,7 @@ npm test            # all workspaces
 npm run typecheck
 npm run lint
 npm run mobile      # Expo dev server; scan the QR code with Expo Go
+npm --workspace web run dev     # the website, on http://localhost:4321
 ```
 
 In development, opening `exp://<host>:8081/--/utvikling` wipes the local database and fills it with the household from the design.

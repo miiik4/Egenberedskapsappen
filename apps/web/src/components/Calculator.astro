@@ -1,0 +1,356 @@
+---
+import {
+  computeCoverage,
+  MEALS_PER_PERSON_PER_DAY,
+  TARGET_DAYS,
+  WATER_LITRES_PER_PERSON_PER_DAY,
+} from '@egenberedskap/core';
+
+import { describe, START, toItems } from './calculator';
+
+// Rendered once here, so the numbers are there before the script runs.
+const coverage = computeCoverage(START.members, toItems(START), '2026-01-01');
+const text = describe(coverage);
+
+const PEOPLE = [
+  { key: 'adults', label: 'Voksne', min: 1 },
+  { key: 'children', label: 'Barn', min: 0 },
+  { key: 'dogs', label: 'Hunder', min: 0 },
+  { key: 'cats', label: 'Katter', min: 0 },
+] as const;
+---
+
+<div class="calc" data-calc>
+  <form class="inputs" onsubmit="return false">
+    <fieldset>
+      <legend>Hvem bor hjemme?</legend>
+      <div class="steppers">
+        {
+          PEOPLE.map((p) => (
+            <div class="stepper">
+              <span id={`lbl-${p.key}`}>{p.label}</span>
+              <div class="controls">
+                <button type="button" data-step={p.key} data-by="-1" data-min={p.min} aria-label={`Færre ${p.label.toLowerCase()}`}>
+                  −
+                </button>
+                <output data-count={p.key} aria-labelledby={`lbl-${p.key}`}>
+                  {START.members[p.key]}
+                </output>
+                <button type="button" data-step={p.key} data-by="1" aria-label={`Flere ${p.label.toLowerCase()}`}>
+                  +
+                </button>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Hva har dere allerede?</legend>
+      <label class="slider">
+        <span class="slider-head">
+          <span>Vann på kanner</span>
+          <output data-show="litres">{START.litres} liter</output>
+        </span>
+        <input type="range" name="litres" min="0" max="120" step="5" value={START.litres} />
+        <span class="hint">Minst {WATER_LITRES_PER_PERSON_PER_DAY} liter per person per døgn</span>
+      </label>
+      <label class="slider">
+        <span class="slider-head">
+          <span>Måltider i hermetikk, knekkebrød og tørrmat</span>
+          <output data-show="meals">{START.meals} måltider</output>
+        </span>
+        <input type="range" name="meals" min="0" max="120" step="1" value={START.meals} />
+        <span class="hint">{MEALS_PER_PERSON_PER_DAY} måltider per person per døgn</span>
+      </label>
+      <label class="check">
+        <input type="checkbox" name="heat" checked={START.heat} />
+        <span>Ved, gass eller annen varmekilde som virker uten strøm</span>
+      </label>
+    </fieldset>
+  </form>
+
+  <div class="result" aria-live="polite">
+    <p class="lead">Uten strøm og vann klarer dere dere i</p>
+    <p class="days">
+      <span class="number" data-out="days">{Math.min(coverage.days, TARGET_DAYS)}</span>
+      <span class="of">av {TARGET_DAYS} døgn</span>
+    </p>
+    <p class="limiter" data-out="limiter">{text.limiter}</p>
+
+    <ul class="rows">
+      {
+        text.rows.map((row) => (
+          <li data-row={row.kind}>
+            <span class="row-head">
+              <span>{row.name}</span>
+              <span data-out="value">{row.value}</span>
+            </span>
+            <span class="track">
+              <span class="bar" style={`width: ${row.share * 100}%`} />
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="short" data-out="short">{text.short}</p>
+  </div>
+</div>
+
+<script>
+  import { computeCoverage } from '@egenberedskap/core';
+
+  import { describe, START, toItems, type CalcState } from './calculator';
+
+  const root = document.querySelector<HTMLElement>('[data-calc]');
+  if (root) {
+    const state: CalcState = structuredClone(START);
+    const form = root.querySelector('form')!;
+    const out = (name: string) => root.querySelector<HTMLElement>(`[data-out="${name}"]`)!;
+
+    const render = () => {
+      const coverage = computeCoverage(state.members, toItems(state), new Date().toISOString().slice(0, 10));
+      const text = describe(coverage);
+      out('days').textContent = String(text.days);
+      out('limiter').textContent = text.limiter;
+      out('short').textContent = text.short;
+      for (const row of text.rows) {
+        const li = root.querySelector<HTMLElement>(`[data-row="${row.kind}"]`)!;
+        li.querySelector<HTMLElement>('[data-out="value"]')!.textContent = row.value;
+        li.querySelector<HTMLElement>('.bar')!.style.width = `${row.share * 100}%`;
+      }
+      for (const el of root.querySelectorAll<HTMLOutputElement>('[data-count]')) {
+        el.textContent = String(state.members[el.dataset.count as keyof CalcState['members']]);
+      }
+      for (const button of root.querySelectorAll<HTMLButtonElement>('[data-by="-1"]')) {
+        const key = button.dataset.step as keyof CalcState['members'];
+        button.disabled = state.members[key] <= Number(button.dataset.min);
+      }
+      root.querySelector('[data-show="litres"]')!.textContent = `${state.litres} liter`;
+      root.querySelector('[data-show="meals"]')!.textContent = `${state.meals} ${state.meals === 1 ? 'måltid' : 'måltider'}`;
+    };
+
+    root.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-step]');
+      if (!button) return;
+      const key = button.dataset.step as keyof CalcState['members'];
+      state.members[key] = Math.min(9, Math.max(Number(button.dataset.min ?? 0), state.members[key] + Number(button.dataset.by)));
+      render();
+    });
+
+    form.addEventListener('input', () => {
+      const data = new FormData(form);
+      state.litres = Number(data.get('litres'));
+      state.meals = Number(data.get('meals'));
+      state.heat = data.get('heat') === 'on';
+      render();
+    });
+
+    render();
+  }
+</script>
+
+<style>
+  .calc {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(24px, 4vw, 56px);
+    padding: clamp(20px, 4vw, 48px);
+    background: var(--hero);
+    color: var(--hero-muted);
+    border-radius: 28px;
+  }
+  @media (max-width: 860px) {
+    .calc {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  fieldset {
+    min-width: 0;
+    margin: 0 0 28px;
+    padding: 0;
+    border: 0;
+  }
+  fieldset:last-child {
+    margin-bottom: 0;
+  }
+  legend {
+    margin-bottom: 14px;
+    color: var(--hero-text);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.25rem;
+  }
+
+  .steppers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 520px) {
+    .steppers {
+      grid-template-columns: 1fr;
+    }
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 8px 8px 16px;
+    background: rgb(255 255 255 / 0.06);
+    border-radius: 14px;
+    color: var(--hero-text);
+  }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .controls output {
+    min-width: 1.6ch;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+  .controls button {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--hero-track);
+    color: var(--hero-text);
+    font: 600 1.25rem/1 var(--text);
+    cursor: pointer;
+  }
+  .controls button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .controls button:focus-visible,
+  input:focus-visible {
+    outline-color: var(--hero-bar);
+  }
+
+  .slider {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .slider-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--hero-text);
+  }
+  .slider-head output {
+    flex-shrink: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .hint {
+    font-size: 0.9375rem;
+    color: var(--hero-caption);
+  }
+  input[type='range'] {
+    width: 100%;
+    margin: 6px 0;
+    accent-color: var(--hero-bar);
+  }
+  .check {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--hero-text);
+    cursor: pointer;
+  }
+  .check input {
+    width: 22px;
+    height: 22px;
+    margin: 2px 0 0;
+    flex-shrink: 0;
+    accent-color: var(--hero-bar);
+  }
+
+  .result {
+    align-self: start;
+    padding: clamp(20px, 3vw, 32px);
+    background: rgb(255 255 255 / 0.05);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: 20px;
+  }
+  .lead {
+    color: var(--hero-muted);
+    font-size: 1.125rem;
+  }
+  .days {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    color: var(--hero-text);
+  }
+  .number {
+    font-family: var(--display);
+    font-weight: 800;
+    font-stretch: 125%;
+    font-size: clamp(6rem, 14vw, 9.5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .of {
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+  .limiter {
+    margin-top: 4px;
+    color: var(--hero-text);
+    font-size: 1.1875rem;
+  }
+
+  .rows {
+    display: grid;
+    gap: 14px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .row-head {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    color: var(--hero-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .row-head span:last-child {
+    color: var(--hero-muted);
+  }
+  .track {
+    display: block;
+    height: 8px;
+    background: var(--hero-track);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .bar {
+    display: block;
+    height: 100%;
+    background: var(--hero-bar);
+    border-radius: 99px;
+    transition: width 0.25s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bar {
+      transition: none;
+    }
+  }
+  .short {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid rgb(255 255 255 / 0.1);
+    color: var(--hero-caption);
+    font-size: 1rem;
+  }
+</style>

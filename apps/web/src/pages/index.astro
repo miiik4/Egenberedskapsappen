@@ -1,0 +1,650 @@
+---
+import { MEALS_PER_PERSON_PER_DAY, TARGET_DAYS, WATER_LITRES_PER_PERSON_PER_DAY } from '@egenberedskap/core';
+
+import analyse from '../assets/skjermbilder/analyse.webp';
+import eiendeler from '../assets/skjermbilder/eiendeler.webp';
+import forslag from '../assets/skjermbilder/forslag.webp';
+import hvem from '../assets/skjermbilder/kom-i-gang-hvem.webp';
+import harAllerede from '../assets/skjermbilder/kom-i-gang-lager.webp';
+import resultat from '../assets/skjermbilder/kom-i-gang-resultat.webp';
+import kvartalssjekk from '../assets/skjermbilder/kvartalssjekk.webp';
+import lager from '../assets/skjermbilder/lager.webp';
+import nodinfo from '../assets/skjermbilder/nodinfo.webp';
+import oversikt from '../assets/skjermbilder/oversikt.webp';
+import underforsikret from '../assets/skjermbilder/underforsikret.webp';
+import Calculator from '../components/Calculator.astro';
+import Phone from '../components/Phone.astro';
+import Base from '../layouts/Base.astro';
+
+const STEPS = [
+  {
+    image: hvem,
+    alt: 'Skjermen «Hvem bor hjemme?» med antall voksne, eldre, barn, småbarn, hunder og katter.',
+    title: 'Hvem bor hjemme?',
+    text: 'Antall voksne, barn, hunder og katter. Bare antall per aldersgruppe, ingen navn eller fødselsdatoer.',
+  },
+  {
+    image: harAllerede,
+    alt: 'Skjermen «Hva har dere allerede?» med avhuking for vann, hermetikk, varmekilde, lommelykt, radio og førstehjelpsskrin.',
+    title: 'Hva har dere allerede?',
+    text: 'Huk av det dere har: vann, hermetikk, varmekilde, lommelykt, radio og førstehjelpsskrin. Resten kan dere fylle inn senere.',
+  },
+  {
+    image: resultat,
+    alt: 'Resultatet: 4 av 7 døgn, med vann, mat og varme som hver sin linje.',
+    title: 'Svaret med en gang',
+    text: 'Hvor mange døgn dere klarer dere, og hva som holder tallet nede. Det som mangler ligger klart som en handleliste.',
+  },
+];
+
+const FAQ = [
+  {
+    q: 'Hva koster appen?',
+    a: 'Ingenting. Appen er gratis for husstanden og betales av partnere, ikke av brukerne og ikke av reklame.',
+  },
+  {
+    q: 'Må jeg lage en konto?',
+    a: 'Nei. Appen har ingen kontoer, og det dere legger inn blir liggende på telefonen.',
+  },
+  {
+    q: 'Virker appen uten nett?',
+    a: 'Ja. Lageret, nødkontaktene, møtestedet og dokumentene ligger på telefonen og kan åpnes uten mobildekning. Nødkontaktene kan ringes uten mobildata.',
+  },
+  {
+    q: 'Hvor kommer tallene fra?',
+    a: `Fra rådene til Direktoratet for samfunnssikkerhet og beredskap (DSB): å klare seg selv i ${TARGET_DAYS} døgn, med minst ${WATER_LITRES_PER_PERSON_PER_DAY} liter vann per person per døgn. Mat regnes i måltider, ${MEALS_PER_PERSON_PER_DAY} per person per døgn, så en boks lapskaus og en pakke knekkebrød kan legges sammen.`,
+  },
+  {
+    q: 'Hva skjer hvis jeg mister telefonen?',
+    a: 'Har dere slått på sikkerhetskopi, henter dere alt tilbake på en ny telefon med gjenopprettingskoden. Koden er det eneste som kan åpne sikkerhetskopien, så ta godt vare på den.',
+  },
+  {
+    q: 'Hvordan får jeg sikkerhetskopi og KI-dokumentasjon av innboet?',
+    a: 'Det er inkludert hos utvalgte forsikringsselskaper. Dere får en aktiveringskode fra forsikringsselskapet og legger den inn i appen.',
+  },
+  {
+    q: 'Hvilke telefoner virker appen på?',
+    a: 'iPhone og Android.',
+  },
+];
+---
+
+<Base
+  title="Egenberedskapsappen – hvor lenge klarer dere dere selv?"
+  description="Gratis app som regner ut hvor mange døgn husstanden klarer seg uten strøm og vann, viser hva som mangler og minner dere på det som går ut på dato."
+>
+  <section class="hero wrap">
+    <div class="hero-text">
+      <h1>Hvor lenge klarer dere dere uten strøm og vann?</h1>
+      <p class="lead">
+        Egenberedskapsappen regner ut hvor mange døgn husstanden klarer seg selv, viser hva som mangler, og minner dere
+        på det som går ut på dato. Gratis, uten konto, og alt blir liggende på telefonen.
+      </p>
+      <div class="actions">
+        <a class="button" href="#regn-ut">Regn ut deres døgn</a>
+        <p class="soon">Kommer snart til iPhone og Android.</p>
+      </div>
+    </div>
+    <Phone
+      src={oversikt}
+      eager
+      class="hero-phone"
+      alt="Oversikt i appen: «Uten strøm og vann klarer dere dere i 4 døgn», med kvartalssjekk og neste å gjøre under."
+    />
+  </section>
+
+  <section id="regn-ut" class="calc-section wrap">
+    <div class="section-head">
+      <h2>Prøv regnestykket</h2>
+      <p>
+        Det samme regnestykket som i appen, med DSBs anbefaling på {TARGET_DAYS} døgn som mål. Det du fyller inn her blir
+        ikke sendt noe sted.
+      </p>
+    </div>
+    <Calculator />
+  </section>
+
+  <section class="steps wrap" aria-labelledby="kom-i-gang">
+    <div class="section-head">
+      <h2 id="kom-i-gang">Kom i gang på et minutt</h2>
+      <p>Tre spørsmål første gang dere åpner appen, så har dere et tall å jobbe mot.</p>
+    </div>
+    <ol>
+      {
+        STEPS.map((step, i) => (
+          <li>
+            <Phone src={step.image} alt={step.alt} />
+            <div class="step-text">
+              <span class="step-number" aria-hidden="true">
+                {i + 1}
+              </span>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <div id="funksjoner">
+    <section class="feature wrap" aria-labelledby="f-lager">
+      <div class="feature-text">
+        <p class="tab">Lager</p>
+        <h2 id="f-lager">DSBs liste, regnet ut for husstanden</h2>
+        <p>
+          Lageret følger DSBs liste, gruppert i vann, mat, varme, lys, kommunikasjon, førstehjelp og hygiene. Mengdene
+          tilpasses hvor mange dere er, og om dere har barn eller dyr.
+        </p>
+        <ul class="points">
+          <li>Det som mangler ligger klart som en handleliste.</li>
+          <li>Legg inn utløpsdato, så får dere beskjed en uke før noe går ut.</li>
+          <li>En vare slutter å telle dagen etter at den har gått ut, så tallet alltid stemmer.</li>
+        </ul>
+      </div>
+      <Phone
+        src={lager}
+        alt="Lager: drikkevann, vannrensetabletter, hermetikk, knekkebrød og havregryn, med det som er på plass huket av."
+      />
+    </section>
+
+    <section class="feature feature-flip wrap" aria-labelledby="f-sjekk">
+      <div class="feature-text">
+        <p class="tab">Kvartalssjekk</p>
+        <h2 id="f-sjekk">Fire spørsmål hver tredje måned</h2>
+        <p>
+          Beredskap blir fort utdatert. Hver tredje måned minner appen dere på en rask gjennomgang: stemmer husstanden,
+          hva går snart ut, virker lommelykten og radioen, og stemmer nødkontaktene?
+        </p>
+        <ul class="points">
+          <li>Tar omtrent fem minutter.</li>
+          <li>Svarer dere nei, tar appen dere rett dit det kan rettes opp.</li>
+        </ul>
+      </div>
+      <Phone
+        src={kvartalssjekk}
+        alt="Kvartalssjekk med fire spørsmål, der det andre handler om varer som går ut innen en måned."
+      />
+    </section>
+
+    <section class="feature wrap" aria-labelledby="f-nodinfo">
+      <div class="feature-text">
+        <p class="tab">Nødinfo</p>
+        <h2 id="f-nodinfo">Alltid ett trykk unna, aldri låst</h2>
+        <p>
+          Nødnumrene, nødkontaktene og møtestedet ligger i en egen fane som aldri låses, så alle i husstanden finner dem
+          når det haster.
+        </p>
+        <ul class="points">
+          <li>Nødkontakter lagres på telefonen og kan ringes uten mobildata.</li>
+          <li>Avtal et møtested, i tilfelle dere blir skilt og ikke får tak i hverandre.</li>
+          <li>
+            Pass, resepter og forsikringsbevis kan åpnes uten nett. Dokumentene låses med Face ID eller kode og skjules når
+            dere bytter app.
+          </li>
+        </ul>
+      </div>
+      <Phone
+        src={nodinfo}
+        alt="Nødinfo med nødnumrene 110, 112, 113 og 116 117, to nødkontakter, møtested og dokumenter."
+      />
+    </section>
+
+    <section class="belongings" aria-labelledby="f-eiendeler">
+      <div class="wrap">
+        <div class="belongings-head">
+          <p class="tab">Eiendeler</p>
+          <h2 id="f-eiendeler">Dokumenter innboet før noe skjer</h2>
+          <p>
+            Etter en brann eller vannskade er det vanskelig å huske alt som sto i stua. Film et rom eller ta bilder, så
+            foreslår appen gjenstandene og hva de er verdt. Dere går gjennom forslagene og bestemmer hva som legges inn.
+          </p>
+        </div>
+        <ol class="belongings-flow">
+          <li>
+            <Phone src={analyse} alt="Analyse av kjøkkenet: bildene lastes opp, og appen ser etter gjenstander og verdier." />
+            <h3>Film rommet</h3>
+            <p>Gå sakte rundt i rommet. Bare stillbilder sendes til analyse, aldri lyd.</p>
+          </li>
+          <li>
+            <Phone src={forslag} alt="Forslag fra analysen: knivsett, olje- og eddiksett og induksjonstopp, med kategori og verdi." />
+            <h3>Gå gjennom forslagene</h3>
+            <p>Endre navn, kategori eller verdi. Ingenting legges inn før dere har sagt ja.</p>
+          </li>
+          <li>
+            <Phone
+              src={underforsikret}
+              alt="Eiendeler med varselet «Innboet kan være underforsikret»: dokumentert 642 000 kr mot en forsikringssum på 600 000 kr."
+            />
+            <h3>Se om forsikringen holder</h3>
+            <p>Appen sier fra når innboet nærmer seg eller passerer forsikringssummen.</p>
+          </li>
+        </ol>
+        <div class="belongings-more">
+          <Phone src={eiendeler} alt="Eiendeler med samlet verdi og rommene stue, kjøkken, gang, soverom og bod." />
+          <div>
+            <h3>Klar når dere må melde en skade</h3>
+            <p>
+              Legg til kvitteringer, og lag en innbooversikt som PDF som dere deler direkte med forsikringsselskapet.
+              KI-dokumentasjonen er inkludert hos utvalgte forsikringsselskaper.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section id="personvern" class="privacy wrap" aria-labelledby="p-head">
+    <div class="section-head">
+      <h2 id="p-head">Det som er deres, blir hos dere</h2>
+      <p>Appen holder på pass, medisinlister og hva som står i stua. Derfor er personvern lagt inn fra starten.</p>
+    </div>
+    <dl class="promises">
+      <div>
+        <dt>Alt ligger på telefonen</dt>
+        <dd>Lager, kontakter og dokumenter lagres på telefonen og virker uten nett. På iPhone kan ingenting leses mens telefonen er låst.</dd>
+      </div>
+      <div>
+        <dt>Ingen konto</dt>
+        <dd>Dere trenger verken e-post eller passord. Om husstanden lagrer appen bare antall per aldersgruppe.</dd>
+      </div>
+      <div>
+        <dt>Dokumentene er låst</dt>
+        <dd>Face ID eller kode for å åpne dem, og de holdes utenfor iCloud og sikkerhetskopien på Android.</dd>
+      </div>
+      <div>
+        <dt>Kryptert sikkerhetskopi</dt>
+        <dd>Alt krypteres på telefonen før det lagres. Bare gjenopprettingskoden kan åpne det, heller ikke vi.</dd>
+      </div>
+      <div>
+        <dt>KI med grenser</dt>
+        <dd>Når dere filmer et rom, går bare stillbildene til en KI-tjeneste i EU. De slettes så snart analysen er ferdig.</dd>
+      </div>
+      <div>
+        <dt>Ingen reklame eller sporing</dt>
+        <dd>
+          Sponset innhold er alltid merket «Sponset», vises aldri når det haster, og ingen personopplysninger går til
+          sponsorer.
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <section id="sporsmal" class="faq wrap" aria-labelledby="faq-head">
+    <h2 id="faq-head">Spørsmål og svar</h2>
+    <div class="faq-list">
+      {
+        FAQ.map((item) => (
+          <details>
+            <summary>{item.q}</summary>
+            <p>{item.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="closing wrap">
+    <div class="closing-card">
+      <h2>Begynn med ett tall</h2>
+      <p>Egenberedskapsappen kommer snart til iPhone og Android, gratis for alle husstander.</p>
+      <a class="button button-light" href="#regn-ut">Regn ut deres døgn</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  section {
+    padding-block: clamp(56px, 9vw, 112px);
+  }
+
+  .section-head {
+    max-width: 640px;
+    margin-bottom: clamp(32px, 5vw, 56px);
+  }
+  .section-head p {
+    margin-top: 14px;
+    font-size: 1.1875rem;
+  }
+
+  h2 {
+    font-size: clamp(2rem, 4.2vw, 3rem);
+    font-stretch: 108%;
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+  }
+  h3 {
+    font-size: 1.3125rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 26px;
+    background: var(--button);
+    color: #fff;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .button:hover {
+    filter: brightness(1.08);
+  }
+
+  /* Hero */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    align-items: center;
+    gap: clamp(32px, 6vw, 96px);
+    padding-block: clamp(40px, 7vw, 96px) clamp(40px, 6vw, 72px);
+  }
+  h1 {
+    font-size: clamp(2.6rem, 6.4vw, 5rem);
+    font-stretch: 112%;
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+  }
+  .lead {
+    max-width: 34em;
+    margin-top: 24px;
+    font-size: clamp(1.1875rem, 1.6vw, 1.375rem);
+    line-height: 1.5;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 22px;
+    margin-top: 36px;
+  }
+  .soon {
+    color: var(--secondary);
+    font-size: 1rem;
+  }
+  .hero :global(.hero-phone) {
+    justify-self: center;
+  }
+  @media (max-width: 820px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+    .hero :global(.hero-phone) {
+      max-width: 280px;
+    }
+  }
+
+  .calc-section {
+    padding-top: clamp(24px, 4vw, 48px);
+  }
+
+  /* Kom i gang: a real sequence, so it's numbered */
+  .steps ol {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(24px, 4vw, 48px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .steps li :global(.phone) {
+    max-width: 280px;
+    margin-inline: auto;
+  }
+  .step-text {
+    max-width: 300px;
+    margin: 28px auto 0;
+  }
+  .step-number {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin-bottom: 12px;
+    background: var(--button);
+    color: #fff;
+    border-radius: 50%;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .step-text p {
+    margin-top: 8px;
+  }
+  @media (max-width: 860px) {
+    .steps ol {
+      grid-template-columns: 1fr;
+      gap: 56px;
+    }
+  }
+
+  /* Feature rows */
+  .tab {
+    margin-bottom: 10px;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.0625rem;
+  }
+  .feature {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
+    align-items: center;
+    gap: clamp(32px, 8vw, 120px);
+    border-top: 1px solid var(--separator);
+  }
+  .feature-flip {
+    grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  }
+  .feature-flip .feature-text {
+    order: 2;
+  }
+  .feature-text {
+    max-width: 560px;
+  }
+  .feature-text > p:not(.tab) {
+    margin-top: 18px;
+    font-size: 1.1875rem;
+  }
+  .points {
+    display: grid;
+    gap: 12px;
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .points li {
+    position: relative;
+    padding-left: 30px;
+  }
+  .points li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 0.42em;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent)
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.2l2.3 2.3 4.7-5' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+      center / contain no-repeat;
+  }
+  @media (max-width: 820px) {
+    .feature,
+    .feature-flip {
+      grid-template-columns: 1fr;
+    }
+    .feature-flip .feature-text {
+      order: 0;
+    }
+    .feature :global(.phone) {
+      max-width: 280px;
+      margin-inline: auto;
+    }
+  }
+
+  /* Eiendeler: a band of its own, since it's the biggest module */
+  .belongings {
+    background: var(--card);
+    border-block: 1px solid var(--card-border);
+  }
+  .belongings-head {
+    max-width: 680px;
+  }
+  .belongings-head > p:not(.tab) {
+    margin-top: 18px;
+    font-size: 1.1875rem;
+  }
+  .belongings-flow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(24px, 4vw, 48px);
+    margin: clamp(40px, 6vw, 64px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .belongings-flow li :global(.phone) {
+    max-width: 260px;
+    margin: 0 auto 24px;
+  }
+  .belongings-flow h3,
+  .belongings-flow p {
+    max-width: 290px;
+    margin-inline: auto;
+  }
+  .belongings-flow p {
+    margin-top: 6px;
+  }
+  .belongings-more {
+    display: grid;
+    grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(32px, 6vw, 80px);
+    margin-top: clamp(56px, 8vw, 96px);
+    padding: clamp(24px, 4vw, 48px);
+    background: var(--page);
+    border-radius: 28px;
+  }
+  .belongings-more p {
+    max-width: 30em;
+    margin-top: 10px;
+    font-size: 1.1875rem;
+  }
+  @media (max-width: 860px) {
+    .belongings-flow {
+      grid-template-columns: 1fr;
+      gap: 48px;
+    }
+    .belongings-more {
+      grid-template-columns: 1fr;
+    }
+    .belongings-more :global(.phone) {
+      max-width: 260px;
+      margin-inline: auto;
+    }
+  }
+
+  /* Personvern */
+  .promises {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 clamp(24px, 4vw, 48px);
+    margin: 0;
+  }
+  .promises div {
+    padding-block: 22px 26px;
+    border-top: 2px solid var(--label);
+  }
+  .promises dt {
+    color: var(--label);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.1875rem;
+  }
+  .promises dd {
+    margin: 8px 0 0;
+  }
+  @media (max-width: 860px) {
+    .promises {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .promises {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Spørsmål */
+  .faq {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(24px, 5vw, 64px);
+    border-top: 1px solid var(--separator);
+  }
+  .faq-list {
+    border-top: 1px solid var(--separator);
+  }
+  details {
+    border-bottom: 1px solid var(--separator);
+  }
+  summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 20px;
+    color: var(--label);
+    font-weight: 700;
+    font-size: 1.1875rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary::after {
+    content: '+';
+    flex-shrink: 0;
+    color: var(--accent);
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  details[open] summary::after {
+    content: '−';
+  }
+  details p {
+    max-width: 38em;
+    padding-bottom: 22px;
+  }
+  @media (max-width: 820px) {
+    .faq {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Avslutning */
+  .closing {
+    padding-top: 0;
+  }
+  .closing-card {
+    padding: clamp(32px, 6vw, 72px);
+    background: var(--hero);
+    border-radius: 28px;
+    color: var(--hero-muted);
+  }
+  .closing-card h2 {
+    color: var(--hero-text);
+  }
+  .closing-card p {
+    max-width: 32em;
+    margin: 14px 0 28px;
+    font-size: 1.1875rem;
+  }
+  /* White on the navy card in both modes, so the text stays navy too. */
+  .button-light {
+    background: #fff;
+    color: #0b2b4a;
+  }
+</style>

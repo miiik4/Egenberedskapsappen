@@ -1,0 +1,45 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  /** The hero's phone is the first thing on the page, so it loads straight away. */
+  eager?: boolean;
+  class?: string;
+}
+
+const { src, alt, eager = false, class: className } = Astro.props;
+---
+
+<figure class:list={['phone', className]}>
+  <Image
+    src={src}
+    alt={alt}
+    widths={[320, 480, 640]}
+    sizes="(max-width: 600px) 72vw, 320px"
+    loading={eager ? 'eager' : 'lazy'}
+    fetchpriority={eager ? 'high' : 'auto'}
+  />
+</figure>
+
+<style>
+  .phone {
+    margin: 0;
+    width: 100%;
+    max-width: 320px;
+    overflow: hidden;
+    /* The screen's own colour, so a phone whose picture hasn't loaded yet still looks like one. */
+    background: #f4f7fa;
+    border: 9px solid #0d1620;
+    border-radius: 52px;
+    box-shadow:
+      0 0 0 1px #2b3a48,
+      0 30px 60px -24px rgb(11 43 74 / 0.45);
+  }
+  .phone :global(img) {
+    width: 100%;
+    border-radius: 43px;
+  }
+</style>
