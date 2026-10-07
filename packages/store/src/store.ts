@@ -1,9 +1,13 @@
 import {
   isBelongingCategory,
+  isClaimKind,
+  isDamage,
   isStockType,
   peopleIn,
   stockType,
   type Belonging,
+  type Claim,
+  type ClaimItem,
   type Household,
   type Suggestion, type HouseholdMembers, type IsoDate, type StockItem } from '@egenberedskap/core';
 
@@ -38,6 +42,11 @@ export type BelongingFileKind = 'photo' | 'receipt';
 export type BelongingFile = DocumentFile & { kind: BelongingFileKind };
 export type StoredBelonging = Belonging & { photo?: BelongingFile; receipt?: BelongingFile };
 export type Owner = { name: string; birthDate?: IsoDate };
+/** A thing on a claim, with the receipt added for it if it was never documented. */
+export type StoredClaimItem = ClaimItem & { receipt?: DocumentFile };
+export type StoredClaim = Claim & { items: StoredClaimItem[]; photos: DocumentFile[] };
+/** What the claim form edits. Being reported is set on its own, so saving the form never clears it. */
+export type ClaimDraft = Draft<Omit<Claim, 'reportedOn'>>;
 
 /**
  * An AI analysis this phone started: photos being uploaded, the answer awaited, suggestions to
@@ -80,6 +89,8 @@ export type AppData = {
   /** The user has read what AI analysis sends, and agreed. Asked once per phone. */
   analysisConsent: boolean;
   analyses: Analysis[];
+  /** Damage claims, newest first. */
+  claims: StoredClaim[];
   backup: BackupState | null;
 };
 
@@ -207,6 +218,21 @@ export function createStore({ db, newId, now, today }: Deps) {
     return files;
   }
 
+  /** Soft-deletes claim files matching `where`, returning their file names. */
+  async function deleteClaimFilesWhere(where: string, params: SqlValue[]): Promise<string[]> {
+    const files = await db.all<{ file_name: string }>(
+      `SELECT file_name FROM claim_files WHERE ${where} AND deleted_at IS NULL`,
+      params,
+    );
+    const at = stamp();
+    await db.run(`UPDATE claim_files SET deleted_at = ?, updated_at = ? WHERE ${where} AND deleted_at IS NULL`, [
+      at,
+      at,
+      ...params,
+    ]);
+    return files.map((f) => f.file_name);
+  }
+
   const store = {
     migrate: () => migrate(db),
 
@@ -326,6 +352,49 @@ export function createStore({ db, newId, now, today }: Deps) {
       }>(
         'SELECT id, room_id, source, status, frame_count, public_key, error, suggestions, created_at FROM analyses ORDER BY created_at',
       );
+      const claims = await db.all<{
+        id: string;
+        property_id: string | null;
+        kind: string;
+        happened_on: string;
+        description: string;
+        police_report: string | null;
+        reported_on: string | null;
+      }>(
+        `SELECT id, property_id, kind, happened_on, description, police_report, reported_on FROM claims
+         WHERE deleted_at IS NULL ORDER BY happened_on DESC, created_at DESC`,
+      );
+      const claimItems = await db.all<{
+        id: string;
+        claim_id: string;
+        belonging_id: string | null;
+        room_id: string | null;
+        name: string;
+        category: string;
+        value_kr: number | null;
+        value_estimated: number;
+        damage: string;
+      }>(
+        `SELECT id, claim_id, belonging_id, room_id, name, category, value_kr, value_estimated, damage FROM claim_items
+         WHERE deleted_at IS NULL ORDER BY created_at`,
+      );
+      const claimFiles = await db.all<{
+        id: string;
+        claim_id: string;
+        claim_item_id: string | null;
+        kind: 'photo' | 'receipt';
+        file_name: string;
+        mime_type: string;
+        size: number;
+      }>(
+        `SELECT id, claim_id, claim_item_id, kind, file_name, mime_type, size FROM claim_files
+         WHERE deleted_at IS NULL ORDER BY created_at`,
+      );
+      // One receipt per thing; should two phones each have added one, the newest wins.
+      const receiptsByItem = new Map<string, DocumentFile>();
+      for (const f of claimFiles) {
+        if (f.kind === 'receipt' && f.claim_item_id) receiptsByItem.set(f.claim_item_id, toDocumentFile(f));
+      }
       const lastCheck = await db.first<{ checked_on: string }>(
         'SELECT checked_on FROM quarterly_checks WHERE deleted_at IS NULL ORDER BY checked_on DESC, created_at DESC LIMIT 1',
       );
@@ -402,6 +471,34 @@ export function createStore({ db, newId, now, today }: Deps) {
           ...(a.error && { error: a.error }),
           ...(a.suggestions && { suggestions: JSON.parse(a.suggestions) as Suggestion[] }),
           createdAt: a.created_at,
+        })),
+        claims: claims.map((c) => ({
+          id: c.id,
+          ...(c.property_id && { propertyId: c.property_id }),
+          // A kind or damage from a newer version reads as the most general one until this one learns it.
+          kind: isClaimKind(c.kind) ? c.kind : 'other',
+          happenedOn: c.happened_on,
+          description: c.description,
+          ...(c.police_report && { policeReport: c.police_report }),
+          ...(c.reported_on && { reportedOn: c.reported_on }),
+          items: claimItems
+            .filter((i) => i.claim_id === c.id)
+            .map((i) => {
+              const receipt = receiptsByItem.get(i.id);
+              return {
+                id: i.id,
+                claimId: i.claim_id,
+                ...(i.belonging_id && { belongingId: i.belonging_id }),
+                ...(i.room_id && { roomId: i.room_id }),
+                name: i.name,
+                category: isBelongingCategory(i.category) ? i.category : 'Annet',
+                ...(i.value_kr !== null && { valueKr: i.value_kr }),
+                valueEstimated: i.value_estimated !== 0,
+                damage: isDamage(i.damage) ? i.damage : 'damaged',
+                ...(receipt && { receipt }),
+              };
+            }),
+          photos: claimFiles.filter((f) => f.claim_id === c.id && f.kind === 'photo').map(toDocumentFile),
         })),
         backup:
           backupVaultId && backupEntitledUntil
@@ -589,6 +686,105 @@ export function createStore({ db, newId, now, today }: Deps) {
     },
     deletePolicy: (id: string) => softDelete('policies', id),
 
+    async saveClaim(draft: ClaimDraft) {
+      if (!isClaimKind(draft.kind)) throw new ValidationError('kind', `Unknown kind: ${draft.kind}`);
+      validDate(draft.happenedOn, 'happenedOn');
+      return upsert('claims', draft.id, {
+        property_id: draft.propertyId ?? null,
+        kind: draft.kind,
+        happened_on: draft.happenedOn,
+        description: draft.description.trim(),
+        police_report: draft.policeReport?.trim() || null,
+      });
+    },
+
+    /** Shared with the insurer on this day, or back to a draft with null. */
+    async setClaimReported(id: string, on: IsoDate | null) {
+      if (on !== null) validDate(on, 'reportedOn');
+      const at = stamp();
+      await db.run('UPDATE claims SET reported_on = ?, updated_at = ? WHERE id = ?', [on, at, id]);
+    },
+
+    /** Removes a claim with its things and files. Returns the files to delete. */
+    async deleteClaim(id: string): Promise<string[]> {
+      let files: string[] = [];
+      await db.transaction(async () => {
+        files = await deleteClaimFilesWhere('claim_id = ?', [id]);
+        const at = stamp();
+        await db.run('UPDATE claim_items SET deleted_at = ?, updated_at = ? WHERE claim_id = ? AND deleted_at IS NULL', [
+          at,
+          at,
+          id,
+        ]);
+        await softDelete('claims', id);
+      });
+      return files;
+    },
+
+    async saveClaimItem(draft: Draft<ClaimItem>) {
+      if (!isBelongingCategory(draft.category)) throw new ValidationError('category', `Unknown category: ${draft.category}`);
+      if (!isDamage(draft.damage)) throw new ValidationError('damage', `Unknown damage: ${draft.damage}`);
+      if (draft.valueKr !== undefined && (!Number.isInteger(draft.valueKr) || draft.valueKr < 0)) {
+        throw new ValidationError('valueKr', 'valueKr must be a whole number of kroner, 0 or more');
+      }
+      return upsert('claim_items', draft.id, {
+        claim_id: draft.claimId,
+        belonging_id: draft.belongingId ?? null,
+        room_id: draft.roomId ?? null,
+        name: required(draft.name, 'name'),
+        category: draft.category,
+        value_kr: draft.valueKr ?? null,
+        value_estimated: draft.valueEstimated ? 1 : 0,
+        damage: draft.damage,
+      });
+    },
+
+    /** Takes a thing off the claim, with its receipt. Returns the files to delete. */
+    async deleteClaimItem(id: string): Promise<string[]> {
+      let files: string[] = [];
+      await db.transaction(async () => {
+        files = await deleteClaimFilesWhere('claim_item_id = ?', [id]);
+        await softDelete('claim_items', id);
+      });
+      return files;
+    },
+
+    /** Records a photo of the damage, already copied into the app's folder. */
+    addClaimPhoto: async (file: { claimId: string; fileName: string; mimeType: string; size: number }) =>
+      upsert('claim_files', undefined, {
+        claim_id: file.claimId,
+        claim_item_id: null,
+        kind: 'photo',
+        file_name: required(file.fileName, 'fileName'),
+        mime_type: file.mimeType,
+        size: file.size,
+      }),
+
+    /** Records the receipt for a thing on the claim, in place of any it had. Returns the replaced file, to delete. */
+    async setClaimItemReceipt(file: { claimItemId: string; fileName: string; mimeType: string; size: number }) {
+      const item = await db.first<{ claim_id: string }>('SELECT claim_id FROM claim_items WHERE id = ?', [file.claimItemId]);
+      if (!item) throw new ValidationError('claimItemId', `claimItemId ${file.claimItemId} is not on any claim`);
+      let replaced: string[] = [];
+      await db.transaction(async () => {
+        replaced = await deleteClaimFilesWhere('claim_item_id = ?', [file.claimItemId]);
+        await upsert('claim_files', undefined, {
+          claim_id: item.claim_id,
+          claim_item_id: file.claimItemId,
+          kind: 'receipt',
+          file_name: required(file.fileName, 'fileName'),
+          mime_type: file.mimeType,
+          size: file.size,
+        });
+      });
+      return replaced;
+    },
+
+    async removeClaimFile(id: string): Promise<string[]> {
+      const row = await db.first<{ file_name: string }>('SELECT file_name FROM claim_files WHERE id = ?', [id]);
+      await softDelete('claim_files', id);
+      return row ? [row.file_name] : [];
+    },
+
     saveDocument: async (draft: { id?: string; name: string }) =>
       upsert('documents', draft.id, { name: required(draft.name, 'name') }),
 
@@ -696,6 +892,9 @@ export function createStore({ db, newId, now, today }: Deps) {
         for (const table of [
           'analyses',
           'settings',
+          'claim_files',
+          'claim_items',
+          'claims',
           'belonging_files',
           'belongings',
           'rooms',
@@ -746,6 +945,10 @@ export function monotonicStamp(now: () => Date) {
     last = Math.max(now().getTime(), last + 1);
     return new Date(last).toISOString();
   };
+}
+
+function toDocumentFile(f: { id: string; file_name: string; mime_type: string; size: number }): DocumentFile {
+  return { id: f.id, fileName: f.file_name, mimeType: f.mime_type, size: f.size };
 }
 
 /** Rows of a type this version doesn't know (from a newer phone) are left out by the caller. */

@@ -29,10 +29,13 @@ const TABLES: Record<string, string[]> = {
   documents: ['name'],
   document_files: ['document_id', 'file_name', 'mime_type', 'size'],
   belonging_files: ['belonging_id', 'kind', 'file_name', 'mime_type', 'size'],
+  claims: ['property_id', 'kind', 'happened_on', 'description', 'police_report', 'reported_on'],
+  claim_items: ['claim_id', 'belonging_id', 'room_id', 'name', 'category', 'value_kr', 'value_estimated', 'damage'],
+  claim_files: ['claim_id', 'claim_item_id', 'kind', 'file_name', 'mime_type', 'size'],
 };
 
 /** Tables whose rows each stand for an encrypted file that syncs separately. */
-const FILE_TABLES = ['document_files', 'belonging_files'];
+const FILE_TABLES = ['document_files', 'belonging_files', 'claim_files'];
 
 /**
  * Household settings follow the household. The rest (selected property, lock, sync state) belong
@@ -175,7 +178,7 @@ export function createSyncSource(db: SqlExecutor) {
       return true;
     },
 
-    /** Document and belonging files with their upload state, deleted ones included. */
+    /** Document, belonging and claim files with their upload state, deleted ones included. */
     async files(): Promise<SyncedFile[]> {
       const rows = await db.all<{ id: string; file_name: string; deleted_at: string | null; uploaded_at: string | null }>(
         FILE_TABLES.map((t) => `SELECT id, file_name, deleted_at, uploaded_at FROM ${t}`).join(' UNION ALL '),

@@ -308,6 +308,112 @@ describe('belongings', () => {
   });
 });
 
+describe('damage claims', () => {
+  beforeEach(onboard);
+  // Onboarding made the home id1 and its rooms id2 (Stue) to id7 (Bod).
+  const home = 'id1';
+  const stue = 'id2';
+  const water = { propertyId: home, kind: 'water' as const, happenedOn: '2026-10-01', description: ' Lekkasje fra oppvaskmaskinen ' };
+  const file = (fileName: string) => ({ fileName, mimeType: 'image/jpeg', size: 10 });
+
+  it('keeps a claim with its things and photos, newest first', async () => {
+    const older = await store.saveClaim({ ...water, happenedOn: '2025-12-24', kind: 'fire', description: '' });
+    const claimId = await store.saveClaim(water);
+    const tv = await store.saveClaimItem({ claimId, roomId: stue, belongingId: 'b1', name: 'TV', category: 'Elektronikk', valueKr: 12_000, valueEstimated: true, damage: 'destroyed' });
+    await store.saveClaimItem({ claimId, name: 'Teppe', category: 'Annet', valueEstimated: false, damage: 'damaged' });
+    await store.addClaimPhoto({ claimId, ...file('skade1.jpg') });
+    await store.addClaimPhoto({ claimId, ...file('skade2.jpg') });
+
+    const { claims } = await store.load();
+    expect(claims.map((c) => c.id)).toEqual([claimId, older]);
+    const [claim] = claims;
+    expect(claim).toMatchObject({ propertyId: home, kind: 'water', happenedOn: '2026-10-01', description: 'Lekkasje fra oppvaskmaskinen' });
+    expect(claim).not.toHaveProperty('reportedOn');
+    expect(claim!.items).toEqual([
+      { id: tv, claimId, belongingId: 'b1', roomId: stue, name: 'TV', category: 'Elektronikk', valueKr: 12_000, valueEstimated: true, damage: 'destroyed' },
+      { id: expect.any(String), claimId, name: 'Teppe', category: 'Annet', valueEstimated: false, damage: 'damaged' },
+    ]);
+    expect(claim!.photos.map((p) => p.fileName)).toEqual(['skade1.jpg', 'skade2.jpg']);
+  });
+
+  it('keeps what was lost when the belonging itself is deleted', async () => {
+    const claimId = await store.saveClaim(water);
+    const tv = await store.saveBelonging({ roomId: stue, name: 'TV', category: 'Elektronikk', valueKr: 12_000, valueEstimated: false });
+    await store.saveClaimItem({ claimId, belongingId: tv, roomId: stue, name: 'TV', category: 'Elektronikk', valueKr: 12_000, valueEstimated: false, damage: 'destroyed' });
+    await store.deleteRoom(stue);
+    expect((await store.load()).claims[0]!.items).toMatchObject([{ belongingId: tv, name: 'TV', valueKr: 12_000 }]);
+  });
+
+  it('marks a claim reported, and saving the form again leaves that alone', async () => {
+    const claimId = await store.saveClaim(water);
+    await store.setClaimReported(claimId, '2026-10-04');
+    await store.saveClaim({ ...water, id: claimId, policeReport: ' ' });
+    const [claim] = (await store.load()).claims;
+    expect(claim!.reportedOn).toBe('2026-10-04');
+    expect(claim).not.toHaveProperty('policeReport');
+    await store.setClaimReported(claimId, null);
+    expect((await store.load()).claims[0]).not.toHaveProperty('reportedOn');
+  });
+
+  it('keeps one receipt per thing and hands back the replaced one', async () => {
+    const claimId = await store.saveClaim(water);
+    const rug = await store.saveClaimItem({ claimId, name: 'Teppe', category: 'Annet', valueEstimated: false, damage: 'damaged' });
+    expect(await store.setClaimItemReceipt({ claimItemId: rug, ...file('old.jpg') })).toEqual([]);
+    expect(await store.setClaimItemReceipt({ claimItemId: rug, ...file('new.jpg') })).toEqual(['old.jpg']);
+    const [claim] = (await store.load()).claims;
+    expect(claim!.items[0]!.receipt).toMatchObject({ fileName: 'new.jpg' });
+    expect(claim!.photos).toEqual([]);
+    await expect(store.setClaimItemReceipt({ claimItemId: 'nope', ...file('x.jpg') })).rejects.toThrow('claimItemId');
+  });
+
+  it('removes a thing with its receipt, a single photo, or the whole claim with its files', async () => {
+    const claimId = await store.saveClaim(water);
+    const rug = await store.saveClaimItem({ claimId, name: 'Teppe', category: 'Annet', valueEstimated: false, damage: 'damaged' });
+    await store.setClaimItemReceipt({ claimItemId: rug, ...file('kvittering.jpg') });
+    expect(await store.deleteClaimItem(rug)).toEqual(['kvittering.jpg']);
+
+    const photo = await store.addClaimPhoto({ claimId, ...file('a.jpg') });
+    await store.addClaimPhoto({ claimId, ...file('b.jpg') });
+    expect(await store.removeClaimFile(photo)).toEqual(['a.jpg']);
+
+    const sofa = await store.saveClaimItem({ claimId, name: 'Sofa', category: 'Møbler', valueEstimated: false, damage: 'damaged' });
+    await store.setClaimItemReceipt({ claimItemId: sofa, ...file('sofa.jpg') });
+    expect((await store.deleteClaim(claimId)).sort()).toEqual(['b.jpg', 'sofa.jpg']);
+    expect((await store.load()).claims).toEqual([]);
+    expect(sqlite.prepare('SELECT COUNT(*) AS n FROM claim_items WHERE deleted_at IS NULL').get()).toEqual({ n: 0 });
+  });
+
+  it('rejects an unknown kind, damage or category, a bad date or value, and a blank name', async () => {
+    await expect(store.saveClaim({ ...water, kind: 'flood' as 'water' })).rejects.toThrow('kind');
+    await expect(store.saveClaim({ ...water, happenedOn: '1.10.2026' })).rejects.toThrow('happenedOn');
+    const claimId = await store.saveClaim(water);
+    await expect(store.setClaimReported(claimId, 'i dag')).rejects.toThrow('reportedOn');
+    const base = { claimId, name: 'TV', category: 'Elektronikk' as const, valueEstimated: false, damage: 'destroyed' as const };
+    await expect(store.saveClaimItem({ ...base, damage: 'lost' as 'stolen' })).rejects.toThrow('damage');
+    await expect(store.saveClaimItem({ ...base, category: 'Bil' as 'Annet' })).rejects.toThrow('category');
+    await expect(store.saveClaimItem({ ...base, valueKr: 99.5 })).rejects.toThrow('valueKr');
+    await expect(store.saveClaimItem({ ...base, name: ' ' })).rejects.toThrow('name');
+  });
+
+  it('syncs claims, their things and their files, and reads values from a newer version safely', async () => {
+    const claimId = await store.saveClaim(water);
+    const rug = await store.saveClaimItem({ claimId, name: 'Teppe', category: 'Annet', valueEstimated: false, damage: 'damaged' });
+    const photo = await store.addClaimPhoto({ claimId, ...file('skade.jpg') });
+    const source = createSyncSource(nodeExecutor(sqlite));
+    const types = (await source.pending()).map((c) => c.type);
+    expect(types).toEqual(expect.arrayContaining(['claims', 'claim_items', 'claim_files']));
+    expect(types.indexOf('claims')).toBeLessThan(types.indexOf('claim_items'));
+    expect(types.indexOf('claim_items')).toBeLessThan(types.indexOf('claim_files'));
+    expect(await source.files()).toContainEqual({ id: photo, fileName: 'skade.jpg', deleted: false, uploaded: false });
+
+    await source.apply({ type: 'claims', id: claimId, updatedAt: '2030-01-01T00:00:00.000Z', deleted: false, fields: { property_id: home, kind: 'avalanche', happened_on: '2026-10-01', description: '' } });
+    await source.apply({ type: 'claim_items', id: rug, updatedAt: '2030-01-01T00:00:00.000Z', deleted: false, fields: { claim_id: claimId, name: 'Teppe', category: 'Annet', value_estimated: 0, damage: 'melted' } });
+    const [claim] = (await store.load()).claims;
+    expect(claim!.kind).toBe('other');
+    expect(claim!.items[0]!.damage).toBe('damaged');
+  });
+});
+
 describe('AI analyses', () => {
   beforeEach(onboard);
   const start = () =>
@@ -465,9 +571,13 @@ describe('reset', () => {
     await store.savePolicy({ name: 'Innboforsikring', propertyId: 'id1', alertNearSum: true });
     const tv = await store.saveBelonging({ roomId: 'id2', name: 'TV', category: 'Elektronikk', valueEstimated: false });
     await store.setBelongingFile({ belongingId: tv, kind: 'photo', fileName: 'tv.jpg', mimeType: 'image/jpeg', size: 1 });
+    const claimId = await store.saveClaim({ propertyId: 'id1', kind: 'theft', happenedOn: '2026-10-01', description: '' });
+    const stolen = await store.saveClaimItem({ claimId, name: 'Sykkel', category: 'Sport og fritid', valueEstimated: false, damage: 'stolen' });
+    await store.setClaimItemReceipt({ claimItemId: stolen, fileName: 'k.jpg', mimeType: 'image/jpeg', size: 1 });
     await store.reset();
     const data = await store.load();
     expect(data.onboarded).toBe(false);
     expect(data.stock).toEqual([]);
+    expect(data.claims).toEqual([]);
   });
 });

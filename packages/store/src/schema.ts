@@ -222,6 +222,59 @@ const MIGRATIONS: string[] = [
   -- New synced settings (ownerName, ownerBirthDate), skipped by older phones: start over.
   DELETE FROM settings WHERE key = 'syncCursor';
   `,
+  // 7: damage claims («Meld en skade»). Items are copies of belongings as they were, so a claim
+  // still says what was lost after the belongings are edited or deleted; belonging_id and room_id
+  // are no foreign keys for that reason. Files are photos of the damage, and receipts for things
+  // that were never documented.
+  `
+  CREATE TABLE claims (
+    id TEXT PRIMARY KEY NOT NULL,
+    property_id TEXT REFERENCES properties(id),
+    kind TEXT NOT NULL,
+    happened_on TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    police_report TEXT,
+    reported_on TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT,
+    pushed_at TEXT
+  );
+
+  CREATE TABLE claim_items (
+    id TEXT PRIMARY KEY NOT NULL,
+    claim_id TEXT NOT NULL REFERENCES claims(id),
+    belonging_id TEXT,
+    room_id TEXT,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    value_kr INTEGER,
+    value_estimated INTEGER NOT NULL DEFAULT 0,
+    damage TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT,
+    pushed_at TEXT
+  );
+
+  CREATE TABLE claim_files (
+    id TEXT PRIMARY KEY NOT NULL,
+    claim_id TEXT NOT NULL REFERENCES claims(id),
+    claim_item_id TEXT REFERENCES claim_items(id),
+    kind TEXT NOT NULL CHECK (kind IN ('photo', 'receipt')),
+    file_name TEXT NOT NULL,
+    mime_type TEXT NOT NULL,
+    size INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    deleted_at TEXT,
+    pushed_at TEXT,
+    uploaded_at TEXT
+  );
+
+  -- New synced tables, skipped by older phones: start over.
+  DELETE FROM settings WHERE key = 'syncCursor';
+  `,
 ];
 
 export const SCHEMA_VERSION = MIGRATIONS.length;

@@ -29,3 +29,12 @@ export const EXPIRY_REMINDER_DAYS = 7;
 
 /** «Varsle ved 90 %»: warn when documented belongings reach this share of the sum insured. */
 export const INSURANCE_ALERT_SHARE = 0.9;
+
+/**
+ * A claim must reach the insurer within a year of learning what happened, or the right to
+ * compensation is lost (forsikringsavtaleloven § 8-5). The app warns as the date comes near.
+ */
+export const CLAIM_DEADLINE_MONTHS = 12;
+
+/** How long before the claim deadline the app starts warning. */
+export const CLAIM_DEADLINE_WARNING_DAYS = 30;

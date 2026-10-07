@@ -1,6 +1,7 @@
 export * from './actions';
 export * from './belongings';
 export * from './catalogue';
+export * from './claims';
 export * from './coverage';
 export * from './crop';
 export * from './dates';
