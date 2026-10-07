@@ -28,8 +28,8 @@
   --hero-bar: #5fa3f0;
   --hero-caption: #a9c5dd;
 
-  --display: 'Archivo', system-ui, sans-serif;
-  --text: 'Source Sans 3', system-ui, sans-serif;
+  --display: 'Archivo Variable', system-ui, sans-serif;
+  --text: 'Source Sans 3 Variable', system-ui, sans-serif;
 
   --gutter: clamp(16px, 4vw, 40px);
   --max: 1160px;

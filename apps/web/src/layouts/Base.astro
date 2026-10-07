@@ -1,4 +1,7 @@
 ---
+// Fonts are served from our own domain, so no visitor's IP address goes to Google.
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource-variable/source-sans-3';
 import '../styles/global.css';
 
 interface Props {
@@ -22,12 +25,6 @@ const { title, description } = Astro.props;
     <meta name="theme-color" content="#F4F7FA" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#08131F" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,600..800&family=Source+Sans+3:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
   </head>
   <body>
     <a class="skip" href="#innhold">Gå til innholdet</a>
