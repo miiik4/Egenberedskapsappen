@@ -10,6 +10,12 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
+
+// Only the build for the prod project may be indexed. Firebase passes the project to the
+// predeploy build (firebase.json), so the test site, and any build made without it, says noindex.
+const indexable = process.env.GCLOUD_PROJECT === 'egenberedskapsappen';
+// Both sites point search engines at the real one.
+const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!doctype html>
@@ -19,6 +25,8 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {!indexable && <meta name="robots" content="noindex, nofollow" />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:locale" content="nb_NO" />
