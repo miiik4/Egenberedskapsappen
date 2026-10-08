@@ -51,15 +51,15 @@ import Page from '../layouts/Page.astro';
       en verdi utledet fra gjenopprettingskoden, som lar en ny telefon finne sikkerhetskopien. Koden kan ikke leses ut
       av den.
     </li>
-    <li>hvilket forsikringsselskap eller abonnement som gir tilgang, og hvor lenge.</li>
+    <li>hvilket forsikringsselskap som gir tilgang, og hvor lenge.</li>
   </ul>
 
   <h3>KI-analyse av rom</h3>
   <p>
     Når dere filmer et rom eller tar bilder for å finne gjenstander, tar telefonen stillbilder og sletter selve
     filmen. Bare stillbildene sendes, aldri lyd eller video. De analyseres av Googles KI-tjeneste Vertex AI i EU, og
-    slettes så snart analysen er gjort. Det som kan ligge igjen, ryddes bort innen en time. Svaret, en liste over
-    gjenstander, krypteres med en nøkkel som bare telefonen har, før det sendes tilbake.
+    slettes så snart analysen er gjort. Det som kan ligge igjen, ryddes bort av en opprydding som går hver time.
+    Svaret, en liste over gjenstander, krypteres med en nøkkel som bare telefonen har, før det sendes tilbake.
   </p>
   <p>
     Vi lagrer ikke bildene og bruker dem ikke til noe annet. Ingen opplysninger om hva som står i hjemmet havner i
@@ -84,7 +84,8 @@ import Page from '../layouts/Page.astro';
     <dt>Google Cloud og Firebase (Google Ireland Ltd.)</dt>
     <dd>
       Lagrer den krypterte sikkerhetskopien og kjører serverfunksjonene og KI-analysen. Alt ligger i EU, i
-      europe-north1 (Finland), med mindre annet står her.
+      europe-north1 (Finland). Bare oppryddingen som sletter gjenglemte bilder, kjører i europe-west1 (Belgia), og den
+      leser dem ikke.
     </dd>
     <dt>Apple og Google</dt>
     <dd>Bekrefter at forespørsler kommer fra appen (App Attest og Play Integrity).</dd>
