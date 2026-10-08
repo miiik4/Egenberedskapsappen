@@ -1,0 +1,289 @@
+---
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  date: string;
+  readingTime: string;
+  category: string;
+}
+
+const { title, description, heading, date, readingTime, category } = Astro.props;
+---
+
+<Base title={title} description={description}>
+  <div class="wrap article-container">
+    <nav class="breadcrumbs" aria-label="Brødsmulesti">
+      <a href="/blogg" class="back-link">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            d="M10 13L5 8L10 3"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Tilbake til alle artikler
+      </a>
+    </nav>
+
+    <article class="article">
+      <header class="article-header">
+        <div class="meta-tags">
+          <span class="badge">{category}</span>
+          <span class="separator">·</span>
+          <time datetime={date}>{date}</time>
+          <span class="separator">·</span>
+          <span>{readingTime}</span>
+        </div>
+        <h1>{heading}</h1>
+      </header>
+
+      <div class="prose">
+        <slot />
+      </div>
+
+      <footer class="article-footer">
+        <div class="cta-box">
+          <div class="cta-content">
+            <h3>Klar for å sikre husstanden?</h3>
+            <p>
+              Egenberedskapsappen regner ut nøyaktig hvor mange dager dere klarer dere, gir dere skreddersydde råd og
+              minner dere på alt som har utløpsdato. Gratis og helt uten konto.
+            </p>
+          </div>
+          <div class="cta-actions">
+            <a href="/#regn-ut" class="cta-button">Prøv beredskapskalkulatoren</a>
+          </div>
+        </div>
+      </footer>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .article-container {
+    padding-top: clamp(24px, 4vw, 48px);
+    padding-bottom: clamp(48px, 8vw, 96px);
+  }
+
+  .breadcrumbs {
+    margin-bottom: 28px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+  }
+
+  .article {
+    max-width: 44rem;
+    margin-inline: auto;
+  }
+
+  .article-header {
+    margin-bottom: clamp(32px, 5vw, 48px);
+  }
+
+  .meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-size: 0.9375rem;
+    color: var(--secondary);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    border-radius: 999px;
+  }
+
+  .separator {
+    color: var(--secondary);
+    opacity: 0.6;
+  }
+
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-stretch: 110%;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: var(--label);
+  }
+
+  .prose {
+    font-size: 1.1875rem;
+    line-height: 1.7;
+    color: var(--body);
+  }
+
+  .prose :global(h2) {
+    margin-top: 52px;
+    margin-bottom: 16px;
+    font-size: clamp(1.5rem, 3vw, 1.875rem);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    color: var(--label);
+  }
+
+  .prose :global(h3) {
+    margin-top: 32px;
+    margin-bottom: 12px;
+    font-size: 1.3rem;
+    line-height: 1.3;
+    color: var(--label);
+  }
+
+  .prose :global(p) {
+    margin-top: 18px;
+    margin-bottom: 0;
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin-top: 18px;
+    margin-bottom: 0;
+    padding-left: 24px;
+  }
+
+  .prose :global(li + li) {
+    margin-top: 10px;
+  }
+
+  .prose :global(blockquote) {
+    margin: 28px 0;
+    padding: 18px 24px;
+    background: var(--card);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    font-style: italic;
+    color: var(--label);
+  }
+
+  .prose :global(blockquote p) {
+    margin: 0;
+  }
+
+  .prose :global(.info-card) {
+    margin: 32px 0;
+    padding: 24px;
+    background: var(--notice);
+    border: 1px solid var(--notice-border);
+    border-radius: 12px;
+    color: var(--label);
+  }
+
+  .prose :global(.info-card h4) {
+    margin: 0 0 10px;
+    font-family: var(--display);
+    font-size: 1.125rem;
+    color: var(--warning-text);
+  }
+
+  .prose :global(.info-card p) {
+    margin-top: 8px;
+    font-size: 1.0625rem;
+  }
+
+  .prose :global(strong) {
+    color: var(--label);
+    font-weight: 700;
+  }
+
+  .prose :global(a) {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .article-footer {
+    margin-top: 64px;
+    padding-top: 40px;
+    border-top: 1px solid var(--separator);
+  }
+
+  .cta-box {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: clamp(24px, 4vw, 36px);
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(11, 43, 74, 0.04);
+  }
+
+  @media (min-width: 640px) {
+    .cta-box {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cta-content {
+      max-width: 26rem;
+    }
+  }
+
+  .cta-content h3 {
+    margin: 0 0 8px;
+    font-size: 1.35rem;
+    color: var(--label);
+  }
+
+  .cta-content p {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--body);
+  }
+
+  .cta-actions {
+    flex-shrink: 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    padding: 12px 24px;
+    background: var(--button);
+    color: #ffffff;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+
+  .cta-button:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+  }
+</style>

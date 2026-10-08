@@ -1,0 +1,111 @@
+---
+import Article from '../../layouts/Article.astro';
+import {
+  TARGET_DAYS,
+  WATER_LITRES_PER_PERSON_PER_DAY,
+  WATER_LITRES_PER_DOG_PER_DAY,
+  WATER_LITRES_PER_CAT_PER_DAY,
+  STORED_WATER_SHELF_LIFE_MONTHS,
+} from '@egenberedskap/core';
+
+const title = 'Slik lagrer du drikkevann trygt i ett år – Egenberedskapsappen';
+const description =
+  'Vann er det viktigste i egenberedskapen. Lær hvordan du vasker kanner, fyller og lagrer drikkevann trygt slik at det holder seg friskt i minst 12 måneder.';
+const heading = 'Slik lagrer du drikkevann trygt i ett år';
+const date = '5. oktober 2026';
+const readingTime = '4 min lesetid';
+const category = 'Vann og hygiene';
+---
+
+<Article
+  title={title}
+  description={description}
+  heading={heading}
+  date={date}
+  readingTime={readingTime}
+  category={category}
+>
+  <p>
+    Ved langvarig strømbrudd eller forurensning i det kommunale vannettet kan kranen plutselig gå tørr. Da er tilgangen
+    på rent vann forskjellen på en håndterbar situasjon og en akutt krise. Heldigvis har vi i Norge vann fra springen av
+    svært god kvalitet, og med enkle forholdsregler kan du lagre kranvann i minst <strong>{STORED_WATER_SHELF_LIFE_MONTHS} måneder</strong> uten at det blir dårlig.
+  </p>
+
+  <h2>Hvor mye vann trenger dere?</h2>
+  <p>
+    Myndighetene (DSB) anbefaler minst <strong>{WATER_LITRES_PER_PERSON_PER_DAY} liter vann per person per døgn</strong>
+    i minst <strong>{TARGET_DAYS} døgn</strong>. Dette vannet skal dekke både drikke og grunnleggende matlaging.
+  </p>
+  <ul>
+    <li>En person i {TARGET_DAYS} døgn: minst {WATER_LITRES_PER_PERSON_PER_DAY * TARGET_DAYS} liter.</li>
+    <li>To voksne i {TARGET_DAYS} døgn: minst {2 * WATER_LITRES_PER_PERSON_PER_DAY * TARGET_DAYS} liter.</li>
+    <li>En familie på fire i {TARGET_DAYS} døgn: minst {4 * WATER_LITRES_PER_PERSON_PER_DAY * TARGET_DAYS} liter.</li>
+  </ul>
+
+  <h3>Ikke glem kjæledyrene</h3>
+  <p>
+    Har du hund eller katt, må du huske å beregne vann til dem også:
+  </p>
+  <ul>
+    <li><strong>Hund:</strong> Beregn cirka {WATER_LITRES_PER_DOG_PER_DAY} liter per dag ({WATER_LITRES_PER_DOG_PER_DAY * TARGET_DAYS} liter for en uke).</li>
+    <li><strong>Katt:</strong> Beregn cirka {WATER_LITRES_PER_CAT_PER_DAY} liter per dag ({WATER_LITRES_PER_CAT_PER_DAY * TARGET_DAYS} liter for en uke).</li>
+  </ul>
+
+  <h2>Slik gjør du det – steg for steg</h2>
+
+  <h3>1. Velg riktige kanner</h3>
+  <p>
+    Bruk kanner eller flasker som er godkjent for næringsmidler og drikkevann (se etter glass-og-gaffel-symbolet).
+    Vanndunker på 10 eller 20 liter er praktiske og enkle å stable. Unngå beholdere som har vært brukt til kjemikalier,
+    bensin eller melkeprodukter.
+  </p>
+
+  <h3>2. Rengjør og desinfiser beholderne grundig</h3>
+  <p>
+    Selv usynlige bakterier kan formere seg over tid dersom kannen ikke er ren:
+  </p>
+  <ol>
+    <li>Vask kannen grundig med varmt vann og vanlig oppvasksåpe. Skyll godt slik at all såpe forsvinner.</li>
+    <li>Fyll kannen med kaldt vann og tilsett en kork (ca. 1 spiseskje) vanlig husholdningsklorin per 10 liter vann.</li>
+    <li>Rist godt og la kloroppløsningen stå i minst 30 minutter (gjerne et par timer).</li>
+    <li>Hell ut klorvannet og skyll grundig med rent, kaldt kranvann til all klorlukt er borte.</li>
+  </ol>
+
+  <h3>3. Fyll med kaldt kranvann</h3>
+  <p>
+    La kaldtvannskranen renne til vannet er helt kaldt og friskt. Fyll kannen helt opp til kanten for å minimere mengden
+    luft i beholderen, og skru korken godt til med én gang.
+  </p>
+
+  <h3>4. Oppbevar mørkt, kjølig og frostfritt</h3>
+  <p>
+    Lagre vannkannene på et sted som er:
+  </p>
+  <ul>
+    <li><strong>Mørkt:</strong> Lys stimulerer vekst av alger og mikroorganismer.</li>
+    <li><strong>Kjølig:</strong> Helst mellom 5 og 15 grader (bod, kjeller, skap eller under en seng).</li>
+    <li><strong>Frostfritt:</strong> Hvis vannet fryser, kan plasten sprekke eller lekke.</li>
+  </ul>
+
+  <div class="info-card">
+    <h4>Hvor lenge holder vannet?</h4>
+    <p>
+      Drikkevann som er tappet og lagret på denne måten, holder seg helt trygt og friskt i minst <strong>{STORED_WATER_SHELF_LIFE_MONTHS} måneder</strong>.
+      Mange rullerer vannet én gang i året, for eksempel i forbindelse med den nasjonale Egenberedskapsuka hver høst.
+    </p>
+  </div>
+
+  <h2>Hva med vann fra butikken?</h2>
+  <p>
+    Kjøpevann på uåpnede flasker eller kanner fra dagligvarebutikken er et utmerket alternativ. Uåpnede flasker har
+    ofte holdbarhet på flere år dersom de lagres mørkt og kjølig. Dette krever ingen vasking, men koster noe mer enn
+    kranvann.
+  </p>
+
+  <h2>Bruk og hygiene i en krisesituasjon</h2>
+  <p>
+    Det lagrede drikkevannet bør primært forbeholdes drikke og enkel matlaging. Til personlig hygiene, vask av hender og
+    oppvask bør du i en krise prioritere våtservietter og hånddesinfeksjon. Hvis du har mulighet til å samle regnvann,
+    smelte snø eller hente vann fra en bekk, kan dette brukes til toalettspyling eller kokes før bruk.
+  </p>
+</Article>

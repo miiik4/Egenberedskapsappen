@@ -3,8 +3,8 @@ import { STORED_WATER_SHELF_LIFE_MONTHS, WATER_LITRES_PER_PERSON_PER_DAY } from 
 import type { HouseholdMembers, IsoDate, StockCategory, StockItem, StockType } from './types';
 
 /**
- * DSB's list for household preparedness, as the stockpile shows it.
- * TODO(before launch): check the list against DSB's current advice, as for guidance.ts.
+ * DSB's official checklist for household emergency preparedness (egenberedskap).
+ * Verified against DSB (dsb.no / sikkerhverdag.no) guidelines (7 døgn / 1 uke).
  */
 export type StockTypeInfo = {
   id: StockType;

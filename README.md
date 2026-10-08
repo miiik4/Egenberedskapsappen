@@ -15,7 +15,7 @@ Funded by partners, not by users and not by ads. Sponsored content is always lab
 | `packages/sync` | End-to-end encryption and the sync engine for backup. Pure TypeScript, tested with two simulated phones |
 | `functions` | Cloud Functions (europe-north1) for vaults, activation codes and the AI analysis of rooms. Not a workspace: it deploys on its own (`npm test` inside it runs its unit tests) |
 
-A blog on `apps/web` is planned.
+Blogg med praktiske guider og artikler om egenberedskap finnes under `apps/web/src/pages/blogg/`.
 
 ## Backend
 

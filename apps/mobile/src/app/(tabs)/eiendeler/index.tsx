@@ -2,7 +2,7 @@ import { summarizeRooms } from '@egenberedskap/core';
 import { Image } from 'expo-image';
 import { router, Stack } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { INSURANCE_ALERT_TITLE, useHomeInsurance } from '@/components/preparedness/home-insurance';
 import { Card } from '@/components/ui/card';
@@ -78,7 +78,7 @@ export default function Eiendeler() {
 }
 
 function Innbo() {
-  const { rooms, belongings } = useData();
+  const { rooms, belongings, claims } = useData();
   const { savePolicy } = useActions();
   const { property, policy, documentedKr, alert } = useHomeInsurance();
   const propertyRooms = rooms.filter((room) => room.propertyId === property?.id);
@@ -170,10 +170,9 @@ function Innbo() {
         <Row title="Lag innbooversikt (PDF)" chevron onPress={() => router.push('/rapport')} />
         <Row
           title="Meld en skade"
+          detail={claims.length > 0 ? `${claims.length} ${claims.length === 1 ? 'sak' : 'saker'}` : undefined}
           chevron
-          onPress={() =>
-            Alert.alert('Meld en skade', 'Veiviseren kommer i en senere versjon. Legg gjerne ved en innbooversikt når du melder skaden.')
-          }
+          onPress={() => router.push('/skader')}
         />
       </Section>
     </>

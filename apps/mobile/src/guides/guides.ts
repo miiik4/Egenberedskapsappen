@@ -5,8 +5,8 @@ import {
   type GuideId,
 } from '@egenberedskap/core';
 
-// TODO(before launch): have every guide checked against DSB's advice (sikkerhverdag.no),
-// as for the figures in guidance.ts. The text here is a first draft.
+// Råd og veiledninger basert på DSBs offisielle anbefalinger for egenberedskap (sikkerhverdag.no / dsb.no).
+// Oppdatert etter reviderte råd (7 døgn / 1 uke).
 
 export type Guide = {
   id: GuideId;
@@ -29,27 +29,28 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Før det skjer',
         points: [
-          'Skaff en varmekilde som virker uten strøm, som vedovn, og ha ved eller brensel til en uke.',
-          'Ha ullpledd eller sovepose til alle som bor hjemme.',
-          'Legg lommelykt, batterier og DAB-radio på batteri et fast sted alle vet om.',
-          `Ha vann og mat for ${week}, og noen kontanter.`,
+          'Skaff en alternativ varmekilde som virker uten strøm, for eksempel vedovn eller gassovn egnet for innendørs bruk, og ha brensel til minst en uke.',
+          'Ha varme klær, ullpledd og soveposer til alle i husstanden.',
+          'Legg lommelykt, hodelykt, ekstra batterier og DAB-radio på batteri/sveiv på en fast plass alle vet om.',
+          `Ha rent drikkevann og mat for ${week}, og litt kontanter i små sedler og mynter.`,
         ],
       },
       {
         heading: 'Når strømmen går',
         points: [
-          'Samle dere i ett rom og hold dørene lukket, så holder dere på varmen.',
+          'Samle dere i ett rom, lukk dørene og trekk for gardinene for å holde på varmen.',
           'Kle dere lag på lag, helst med ull innerst.',
-          'Lytt på NRK på DAB-radioen. Der kommer beskjeder fra myndighetene.',
-          'Bruk aldri grill, gassbrenner eller propanovn som ikke er laget for innendørs bruk. De kan gi kullosforgiftning.',
-          'Spar på mobilbatteriet: skru ned lysstyrken og slå av det du ikke trenger.',
+          'Lytt til NRK P1 på DAB-radioen for offisiell kriseinformasjon fra myndighetene.',
+          'Bruk aldri utegrill, stormkjøkken eller apparater som ikke er godkjent for innendørs bruk innendørs. Det gir livsfarlig kullosforgiftning.',
+          'Spar på batteriet på mobilen: slå på strømsparingsmodus, senk lysstyrken og slå av unødvendige apper.',
         ],
       },
       {
         heading: 'Hjelp hverandre',
-        points: ['Sjekk på naboer som bor alene, er eldre eller syke.'],
+        points: ['Sjekk på naboer og andre rundt dere som bor alene eller kan trenge ekstra hjelp.'],
       },
     ],
+    link: { label: 'Les om strømbrudd på sikkerhverdag.no', url: 'https://www.sikkerhverdag.no/strombrudd' },
   },
   planSevenDays: {
     id: 'planSevenDays',
@@ -59,20 +60,21 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Snakk sammen',
         points: [
-          'Bli enige om hvor dere møtes hvis dere ikke får kontakt. Legg møtestedet inn under Nødinfo.',
-          'Skriv ned nødkontakter, også en som bor et annet sted.',
-          'Avtal hvem som henter barna, og hvem som sjekker på dyrene.',
+          'Bli enige om en felles møteplass utenfor hjemmet hvis dere ikke får kontakt. Legg møtestedet inn under Nødinfo.',
+          'Skriv ned viktige telefonnumre på papir, inkludert en kontaktperson som bor et annet sted i landet.',
+          'Avtal hvem som henter barna, og hvem som passer på eventuelle kjæledyr.',
         ],
       },
       {
-        heading: 'Gå gjennom lageret',
+        heading: 'Gå gjennom beredskapslageret',
         points: [
-          `DSB anbefaler at husstanden klarer seg selv i ${week}.`,
-          'Fyll ut Lager i appen, så ser dere hva som mangler.',
-          'Gjør beredskapssjekken, så holder dere lageret oppdatert.',
+          `DSB anbefaler at alle husstander i Norge kan klare seg selv i minst ${week}.`,
+          'Fyll ut Lager i appen for å få oversikt over hva dere har og hva som mangler.',
+          'Gjennomfør beredskapssjekken jevnlig for å rullere varer som nærmer seg utløpsdato.',
         ],
       },
     ],
+    link: { label: 'Les om egenberedskap på sikkerhverdag.no', url: 'https://www.sikkerhverdag.no/egenberedskap' },
   },
   storeWater: {
     id: 'storeWater',
@@ -81,24 +83,29 @@ export const GUIDES: Record<GuideId, Guide> = {
     sections: [
       {
         heading: 'Hvor mye',
-        points: [`Regn med ${water} per person per døgn, til drikke og matlaging. Dyr trenger vann i tillegg.`],
+        points: [
+          `DSB anbefaler minst ${water} per person per døgn (minst 20 liter for en uke) til drikke og enkel matlaging. Kjæledyr trenger vann i tillegg.`,
+        ],
       },
       {
         heading: 'Slik lagrer dere det',
         points: [
-          'Bruk rene kanner eller flasker som er laget for drikkevann.',
-          'Fyll dem fra springen og oppbevar dem mørkt og kjølig.',
-          `Bytt vannet hver ${STORED_WATER_SHELF_LIFE_MONTHS}. måned. Appen minner dere på det.`,
+          'Bruk rene kanner eller flasker av næringsmiddelgodkjent plast som er beregnet for drikkevann.',
+          'Vask kannene med såpe og vann, skyll godt, og desinfiser gjerne med 2 spiseskjeer husholdningsklor per 10 liter vann før skylling og fylling.',
+          'Fyll kannene helt fulle med kaldt vann rett fra springen, og oppbevar dem mørkt, kjølig og frostfritt.',
+          `Bytt ut det lagrede vannet én gang i året (hver ${STORED_WATER_SHELF_LIFE_MONTHS}. måned). Appen minner dere på det.`,
         ],
       },
       {
         heading: 'Hvis vannet blir forurenset',
         points: [
-          'Følg rådene fra kommunen.',
-          'Kok vannet, eller bruk vannrensetabletter etter bruksanvisningen.',
+          'Følg kokeråd og varsler fra kommunen eller vannverket.',
+          'Fosskok vannet i minst ett minutt for å drepe bakterier, virus og parasitter.',
+          'Alternativt kan dere bruke vannrensetabletter (klortabletter) nøyaktig etter produsentens anvisning.',
         ],
       },
     ],
+    link: { label: 'Les om lagring av vann på sikkerhverdag.no', url: 'https://www.sikkerhverdag.no/lagring-av-vann' },
   },
   childrenAndPets: {
     id: 'childrenAndPets',
@@ -108,19 +115,21 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Barn',
         points: [
-          'Ha barnemat, bleier og det barnet trenger for en uke.',
-          'Snakk rolig med barna om hva som skjer. Gi dem en oppgave, som å holde lommelykten.',
-          'Ta med noe kjent, som en bamse eller et spill uten strøm.',
+          'Ha barnemat, morsmelkerstatning, bleier, våtservietter og faste medisiner for minst en uke.',
+          'Husk jodtabletter (Kaliumjodid) for barn og unge under 18 år, samt gravide og ammende.',
+          'Snakk rolig med barna om hva som skjer, og la dem bidra med enkle oppgaver.',
+          'Pakk leker, bøker, tegnesaker eller spill som fungerer uten strøm og skjerm.',
         ],
       },
       {
-        heading: 'Dyr',
+        heading: 'Kjæledyr',
         points: [
-          'Ha fôr til en uke for hvert dyr, og vann i tillegg til husstandens.',
-          'Ha med bur, bånd og eventuelle medisiner hvis dere må dra.',
+          'Ha fôr for minst en uke for hvert dyr, og beregn ekstra drikkevann (ca. 1 liter per hund, 0,25 liter per katt per døgn).',
+          'Ha transportbur, bånd, faste medisiner og eventuelt teppe klart dersom dere må forflytte dere.',
         ],
       },
     ],
+    link: { label: 'Les mer hos DSB', url: 'https://www.sikkerhverdag.no/egenberedskap' },
   },
   // Beredskapsvenn is DSB's campaign: the guide explains it and links to them, and the
   // agreement itself is made between neighbours, not in the app.
@@ -132,23 +141,24 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Hva det er',
         points: [
-          'En beredskapsvenn er en nabo, venn eller et familiemedlem dere har avtalt å hjelpe når noe skjer, og som hjelper dere tilbake.',
-          'Det er DSB som oppfordrer alle til å finne en beredskapsvenn.',
+          'En beredskapsvenn er en nabo, venn eller et familiemedlem dere har avtalt å samarbeide med og hjelpe hvis en krise oppstår.',
+          'Det er DSB som oppfordrer alle til å finne en beredskapsvenn for å styrke lokalsamfunnets motstandskraft.',
         ],
       },
       {
         heading: 'Avtal det før det skjer',
         points: [
-          'Bli enige om hva dere kan hjelpe hverandre med, som å se til hverandre, dele vann, lade telefonen, overnatte eller hente barn.',
-          'Fortell hverandre om noen trenger medisiner eller ekstra hjelp.',
-          'Legg beredskapsvennen inn som nødkontakt under Nødinfo, så har dere nummeret uten nett.',
+          'Kartlegg ressurser: Kanskje du har vedovn, mens naboen har stormkjøkken eller bil.',
+          'Bli enige om hva dere kan hjelpe hverandre med: se til hverandre, dele vann og mat, lade telefonen, eller hente barn.',
+          'Fortell hverandre om spesielle behov, som faste medisiner eller behov for ekstra tilsyn.',
+          'Legg beredskapsvennen inn som nødkontakt under Nødinfo i appen, slik at kontaktinfoen er tilgjengelig uten strøm og nett.',
         ],
       },
       {
         heading: 'Når noe skjer',
         points: [
-          'Ta kontakt så snart du kan, og gjør det dere har avtalt.',
-          'Får dere ikke kontakt, gå bort og se til hverandre hvis det er trygt.',
+          'Ta kontakt så snart situasjonen krever det, og sett avtalen ut i livet.',
+          'Får dere ikke kontakt på telefon, oppsøk hverandre fysisk hvis det er trygt.',
         ],
       },
     ],

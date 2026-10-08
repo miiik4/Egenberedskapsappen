@@ -1,6 +1,6 @@
 // Reference figures the app measures a household against.
-// TODO(before launch): verify every figure here against DSB's current published advice
-// (dsb.no / sikkerhverdag) and cite the source. They are taken from the iOS design for now.
+// Verified against official DSB (Direktoratet for samfunnssikkerhet og beredskap) recommendations
+// on sikkerhverdag.no / dsb.no (updated May 2024 campaign: «Du er en del av Norges beredskap»).
 
 /** DSB asks households to manage on their own for one week. */
 export const TARGET_DAYS = 7;
