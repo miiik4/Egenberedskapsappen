@@ -897,7 +897,7 @@ export function createStore({ db, newId, now, today }: Deps) {
     /** A phone restored from backup skips the welcome questions: the answers came with it. */
     markOnboarded: () => setSetting('onboardedOn', today()),
 
-    /** Wipes everything back to first launch. Only reachable from developer settings. */
+    /** Wipes everything back to first launch («Slett alle data» in Husstand). */
     async reset() {
       await db.transaction(async () => {
         // Children before the rows they point to: belongings before rooms, rooms and policies before properties.

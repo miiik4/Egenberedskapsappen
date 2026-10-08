@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { daysUntilCheck, expiresBeforeNextCheck, isCheckInterval, nextCheck } from './check';
+import { daysUntilCheck, expiresBeforeNextCheck, isCheckInterval, nextCheck, renewExpiring } from './check';
+import { addMonths } from './dates';
+import { STORED_WATER_SHELF_LIFE_MONTHS } from './guidance';
+import { item } from './test-items';
 
 describe('beredskapssjekk', () => {
   it('falls due the chosen number of months after the last one, and counts down to it', () => {
@@ -32,5 +35,22 @@ describe('beredskapssjekk', () => {
   it('leaves out what has already expired', () => {
     expect(expiresBeforeNextCheck('2026-10-07', '2026-10-08', 3)).toBe(false);
     expect(expiresBeforeNextCheck('2026-10-08', '2026-10-08', 3)).toBe(true);
+  });
+
+  it('renews what «Byttet» covers, and lists what has nothing to go by', () => {
+    const today = '2026-10-08';
+    const tin = item('tin', { type: 'cannedMeals', meals: 4, boughtOn: '2025-11-01', expiresOn: '2026-11-01' });
+    const water = item('water', { type: 'drinkingWater', litres: 20, expiresOn: '2026-10-20' });
+    const batteries = item('batteries', { type: 'batteries', expiresOn: '2026-10-30' });
+    const later = item('later', { type: 'drinkingWater', litres: 20, expiresOn: '2027-06-01' });
+    const expired = item('expired', { type: 'drinkingWater', litres: 20, expiresOn: '2026-10-01' });
+    const undated = item('undated', { type: 'batteries' });
+
+    const { renewed, needDate } = renewExpiring([tin, water, batteries, later, expired, undated], today, 3);
+    expect(renewed).toEqual([
+      { ...tin, boughtOn: today, expiresOn: '2027-10-08' },
+      { ...water, boughtOn: today, expiresOn: addMonths(today, STORED_WATER_SHELF_LIFE_MONTHS) },
+    ]);
+    expect(needDate).toEqual([batteries]);
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { renewedDates, STOCK_TYPES, suggestType } from './catalogue';
+import { renewedDates, STOCK_TYPES, suggestType, typesFor } from './catalogue';
+import { computeCoverage } from './coverage';
 import { item } from './test-items';
 import { addMonths } from './dates';
 import { featuredGuide } from './guides';
@@ -22,6 +23,24 @@ describe('catalogue', () => {
     expect(suggestType('Powerbank 20 000 mAh')).toBe('powerBank');
     expect(suggestType('Telys')).toBe('candles');
     expect(suggestType('Sokker')).toBeUndefined();
+    expect(suggestType('Primus')).toBe('cookingStove');
+    expect(suggestType('Rødsprit til stormkjøkken')).toBe('cookingStove');
+    expect(suggestType('Bleier str. 4')).toBe('nappies');
+    expect(suggestType('Tamponger')).toBe('menstrualProducts');
+  });
+
+  it('lists nappies only for households with infants', () => {
+    const two = { adults: 2, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 };
+    const ids = (m: typeof two) => typesFor(m, 'hygiene').map((t) => t.id);
+    expect(ids(two)).not.toContain('nappies');
+    expect(ids({ ...two, infants: 1 })).toContain('nappies');
+    expect(ids(two)).toContain('menstrualProducts');
+  });
+
+  it('does not count a cooking stove as heat for the home', () => {
+    const one = { adults: 1, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 };
+    const stove = item('s', { type: 'cookingStove' });
+    expect(computeCoverage(one, [stove], '2026-10-08').heatDays).toBe(0);
   });
 });
 

@@ -7,8 +7,8 @@ import {
 
 import { formatPeriod } from '@/lib/format';
 
-// TODO(before launch): have every guide checked against DSB's advice (sikkerhverdag.no),
-// as for the figures in guidance.ts. The text here is a first draft.
+// Checked point by point against DSB's pages in docs/dsb-check.md (2026-10-08). The wording is ours.
+// TODO(before launch): Mikkel signs off on docs/dsb-check.md.
 
 export type Guide = {
   id: GuideId;
@@ -36,7 +36,8 @@ export const GUIDES: Record<GuideId, Guide> = {
           `Skaff en varmekilde som virker uten strøm, som vedovn, og ha ved eller brensel til ${weekInWords}.`,
           'Ha ullpledd eller sovepose til alle som bor hjemme.',
           'Legg lommelykt, batterier og DAB-radio på batteri et fast sted alle vet om.',
-          `Ha vann og mat for ${week}, og noen kontanter.`,
+          `Ha vann og mat for ${week}, noen kontanter og mer enn ett betalingskort.`,
+          'Avtal på forhånd hvor dere kan overnatte hvis dere ikke får holdt boligen varm.',
         ],
       },
       {
@@ -46,6 +47,7 @@ export const GUIDES: Record<GuideId, Guide> = {
           'Kle dere lag på lag, helst med ull innerst.',
           'Lytt på NRK på DAB-radioen. Der kommer beskjeder fra myndighetene.',
           'Bruk aldri grill, gassbrenner eller propanovn som ikke er laget for innendørs bruk. De kan gi kullosforgiftning.',
+          'Sjekk røykvarsler og brannslukker når dere bruker levende lys, peis eller annen åpen flamme.',
           'Spar på mobilbatteriet: skru ned lysstyrken og slå av det du ikke trenger.',
         ],
       },
@@ -64,7 +66,7 @@ export const GUIDES: Record<GuideId, Guide> = {
         heading: 'Snakk sammen',
         points: [
           'Bli enige om hvor dere møtes hvis dere ikke får kontakt. Legg møtestedet inn under Nødinfo.',
-          'Skriv ned nødkontakter, også en som bor et annet sted.',
+          'Skriv ned nødkontakter, også en som bor et annet sted, og ha listen på papir.',
           'Avtal hvem som henter barna, og hvem som sjekker på dyrene.',
         ],
       },
@@ -81,7 +83,7 @@ export const GUIDES: Record<GuideId, Guide> = {
   storeWater: {
     id: 'storeWater',
     title: 'Lagre og rense vann',
-    minutes: 3,
+    minutes: 4,
     sections: [
       {
         heading: 'Hvor mye',
@@ -90,8 +92,10 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Slik lagrer dere det',
         points: [
-          'Bruk rene kanner eller flasker som er laget for drikkevann.',
-          'Fyll dem fra springen og oppbevar dem mørkt og kjølig.',
+          'Bruk kanner eller flasker som er laget for drikkevann.',
+          'Vask dem med såpe, desinfiser med litt husholdningsklor og skyll godt.',
+          'La vannet i springen renne til det er kaldt, og fyll kannene helt opp.',
+          'Oppbevar dem mørkt, kjølig og frostfritt, unna bensin og kjemikalier.',
           `Bytt vannet hver ${STORED_WATER_SHELF_LIFE_MONTHS}. måned. Appen minner dere på det.`,
         ],
       },
@@ -99,7 +103,10 @@ export const GUIDES: Record<GuideId, Guide> = {
         heading: 'Hvis vannet blir forurenset',
         points: [
           'Følg rådene fra kommunen.',
-          'Kok vannet, eller bruk vannrensetabletter etter bruksanvisningen.',
+          'Sil vannet først hvis det er grumsete.',
+          'Kok det opp så det bobler kraftig, og la det kjøle seg ned av seg selv.',
+          'Vannrensetabletter kan brukes i stedet for koking. Følg bruksanvisningen.',
+          'Ikke drikk vannet hvis det kan ha kommet kjemikalier i det.',
         ],
       },
     ],

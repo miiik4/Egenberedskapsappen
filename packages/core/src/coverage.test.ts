@@ -91,7 +91,7 @@ describe('checklist', () => {
 
   it('lists baby food only with small children, and pet food only with pets', () => {
     const food = (m: HouseholdMembers) => checklist(m, [], today).find((c) => c.category === 'food')!.types.map((t) => t.id);
-    expect(food(two)).toEqual(['cannedMeals', 'crispbread', 'oats', 'driedFruitNuts']);
+    expect(food(two)).toEqual(['cannedMeals', 'crispbread', 'oats', 'driedFruitNuts', 'cookingStove']);
     expect(food({ ...two, infants: 1, cats: 1 })).toEqual([
       'cannedMeals',
       'crispbread',
@@ -99,6 +99,7 @@ describe('checklist', () => {
       'driedFruitNuts',
       'babyFood',
       'petFood',
+      'cookingStove',
     ]);
   });
 
@@ -107,7 +108,7 @@ describe('checklist', () => {
       'purificationTablets',
       'oats',
       'driedFruitNuts',
-      'woolBlankets',
+      'cookingStove',
     ]);
   });
 });

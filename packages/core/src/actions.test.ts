@@ -30,6 +30,7 @@ describe('nextActions', () => {
       'buyWater',
       'buyFood',
       'replace w1 -1',
+      'get cookingStove',
       'get torch',
       'get batteries',
       'get candles',
@@ -39,6 +40,7 @@ describe('nextActions', () => {
       'get iodine',
       'get wetWipes',
       'get toiletPaper',
+      'get menstrualProducts',
       'replace f1 0',
     ]);
   });
@@ -71,6 +73,7 @@ describe('nextActions', () => {
       item('f', { type: 'cannedMeals', meals: 42 }),
       ...['purificationTablets', 'crispbread', 'oats', 'driedFruitNuts', 'heatSource', 'woolBlankets', 'matches', 'torch',
         'batteries', 'candles', 'powerBank', 'radio', 'cash', 'firstAidKit', 'medicines', 'iodine', 'wetWipes', 'toiletPaper',
+        'cookingStove', 'menstrualProducts',
       ].map((type) => item(type, { type: type as StockItem['type'], meals: 0 })),
     ];
     expect(nextActions(two, full, today)).toEqual([]);

@@ -3,8 +3,11 @@ import { STORED_WATER_SHELF_LIFE_MONTHS, WATER_LITRES_PER_PERSON_PER_DAY } from 
 import type { HouseholdMembers, IsoDate, StockCategory, StockItem, StockType } from './types';
 
 /**
- * DSB's list for household preparedness, as the stockpile shows it.
- * TODO(before launch): check the list against DSB's current advice, as for guidance.ts.
+ * The stockpile list: our selection based on DSB's checklist for household preparedness
+ * (https://www.dsb.no/sikkerhverdag/egenberedskap/slik-bidrar-du-til-norges-beredskap/ and
+ * https://www.dsb.no/siteassets/sikkerhverdag/egenberedskap/sjekkliste-egenberedskap-a4-bokmal.pdf).
+ * The names, hints and amounts are ours. Compared item by item in docs/dsb-check.md.
+ * TODO(before launch): Mikkel signs off on docs/dsb-check.md.
  */
 export type StockTypeInfo = {
   id: StockType;
@@ -54,7 +57,15 @@ export const STOCK_TYPES: StockTypeInfo[] = [
     hint: 'Hvis vannet blir forurenset',
     task: 'Kjøp vannrensetabletter',
   },
-  { id: 'cannedMeals', category: 'food', name: 'Hermetikk og ferdigretter', hint: 'Kan spises kald', task: 'Kjøp hermetikk', measure: 'meals' },
+  // Middagshermetikk needs heating (DSB, mat-du-bor-ha-i-hus-i-tilfelle-krise), hence cookingStove.
+  {
+    id: 'cannedMeals',
+    category: 'food',
+    name: 'Hermetikk og ferdigretter',
+    hint: 'Holder lenge og kan varmes på stormkjøkken',
+    task: 'Kjøp hermetikk',
+    measure: 'meals',
+  },
   { id: 'crispbread', category: 'food', name: 'Knekkebrød og kjeks', hint: 'Lang holdbarhet', task: 'Kjøp knekkebrød', measure: 'meals' },
   { id: 'oats', category: 'food', name: 'Havregryn og müsli', hint: 'Kan lages med kaldt vann', task: 'Kjøp havregryn', measure: 'meals' },
   {
@@ -75,6 +86,14 @@ export const STOCK_TYPES: StockTypeInfo[] = [
     appliesTo: hasInfants,
   },
   { id: 'petFood', category: 'food', name: 'Fôr til dyr', hint: 'Én uke per dyr', task: 'Kjøp fôr til dyrene', appliesTo: hasPets },
+  // For cooking, not for heating the home: it doesn't count towards the heat days (coverage.ts).
+  {
+    id: 'cookingStove',
+    category: 'food',
+    name: 'Kokeapparat og ekstra brensel',
+    hint: 'Stormkjøkken eller primus som virker uten strøm',
+    task: 'Skaff kokeapparat og brensel',
+  },
   { id: 'heatSource', category: 'heat', name: 'Ved eller annen varmekilde', hint: 'Som virker uten strøm', task: 'Skaff en varmekilde' },
   { id: 'woolBlankets', category: 'heat', name: 'Ullpledd og soveposer', hint: 'Én per person', task: 'Finn fram ullpledd og soveposer' },
   { id: 'matches', category: 'heat', name: 'Fyrstikker og lighter', hint: '', task: 'Kjøp fyrstikker' },
@@ -86,9 +105,11 @@ export const STOCK_TYPES: StockTypeInfo[] = [
   { id: 'cash', category: 'communication', name: 'Kontanter', hint: 'Når kortterminaler ikke virker', task: 'Ta ut kontanter' },
   { id: 'firstAidKit', category: 'firstAid', name: 'Førstehjelpsskrin', hint: '', task: 'Lag et førstehjelpsskrin' },
   { id: 'medicines', category: 'firstAid', name: 'Faste medisiner for en uke', hint: '', task: 'Hent faste medisiner for en uke' },
-  { id: 'iodine', category: 'firstAid', name: 'Jodtabletter', hint: 'For barn, unge og gravide', task: 'Kjøp jodtabletter' },
+  { id: 'iodine', category: 'firstAid', name: 'Jodtabletter', hint: 'For alle under 40, gravide og ammende', task: 'Kjøp jodtabletter' },
   { id: 'wetWipes', category: 'hygiene', name: 'Våtservietter og håndsprit', hint: '', task: 'Kjøp våtservietter og håndsprit' },
   { id: 'toiletPaper', category: 'hygiene', name: 'Toalettpapir og søppelsekker', hint: '', task: 'Kjøp toalettpapir og søppelsekker' },
+  { id: 'nappies', category: 'hygiene', name: 'Bleier', hint: '', task: 'Kjøp bleier', appliesTo: hasInfants },
+  { id: 'menstrualProducts', category: 'hygiene', name: 'Bind og tamponger', hint: '', task: 'Kjøp bind og tamponger' },
 ];
 
 const BY_ID = new Map(STOCK_TYPES.map((t) => [t.id, t]));
@@ -118,6 +139,7 @@ const KEYWORDS: [RegExp, StockType][] = [
   [/vannrens|rensetablett|klortablett/, 'purificationTablets'],
   [/barnemat|velling|morsmelk|barnegrøt/, 'babyFood'],
   [/fôr|hundemat|kattemat|tørrfôr/, 'petFood'],
+  [/stormkjøkken|primus|kokeapparat|rødsprit|gassboks|gassbeholder/, 'cookingStove'],
   [/powerbank|batteripakke/, 'powerBank'],
   [/batteri/, 'batteries'],
   [/radio|dab/, 'radio'],
@@ -128,7 +150,7 @@ const KEYWORDS: [RegExp, StockType][] = [
   [/vann|kanne/, 'drinkingWater'],
   [/pledd|sovepose|ullteppe|dyne/, 'woolBlankets'],
   [/fyrstikk|lighter/, 'matches'],
-  [/\bved\b|vedovn|gassovn|parafin|varmeovn|primus/, 'heatSource'],
+  [/\bved\b|vedovn|gassovn|parafin|varmeovn/, 'heatSource'],
   [/lommelykt|hodelykt|lykt/, 'torch'],
   [/stearin|telys|kubbelys|\blys\b/, 'candles'],
   [/kontant|sedler|mynter/, 'cash'],
@@ -137,6 +159,8 @@ const KEYWORDS: [RegExp, StockType][] = [
   [/medisin|resept|tabletter/, 'medicines'],
   [/våtserviett|håndsprit|antibac/, 'wetWipes'],
   [/toalettpapir|dopapir|søppelsekk/, 'toiletPaper'],
+  [/bleie/, 'nappies'],
+  [/\bbind\b|tampong|menskopp|truseinnlegg|menstruasjon/, 'menstrualProducts'],
 ];
 
 /** A guess at the type from what the user typed, or undefined when nothing fits. */

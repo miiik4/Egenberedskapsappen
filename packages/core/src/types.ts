@@ -46,7 +46,10 @@ export type StockType =
   | 'medicines'
   | 'iodine'
   | 'wetWipes'
-  | 'toiletPaper';
+  | 'toiletPaper'
+  | 'cookingStove'
+  | 'nappies'
+  | 'menstrualProducts';
 
 export type StockItem = {
   id: string;

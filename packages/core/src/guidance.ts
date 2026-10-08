@@ -1,24 +1,38 @@
-// Reference figures the app measures a household against.
-// TODO(before launch): verify every figure here against DSB's current published advice
-// (dsb.no / sikkerhverdag) and cite the source. They are taken from the iOS design for now.
+// Reference figures the app measures a household against. Each one is compared with DSB's pages
+// in docs/dsb-check.md (2026-10-08); a source is cited below where the figure matches.
+// TODO(before launch): Mikkel signs off on docs/dsb-check.md.
 
-/** DSB asks households to manage on their own for one week. */
+/**
+ * Norwegian authorities recommend that households can manage on their own for one week.
+ * Source: https://www.dsb.no/sikkerhverdag/egenberedskap/slik-bidrar-du-til-norges-beredskap/
+ */
 export const TARGET_DAYS = 7;
 
 /** Days are counted up to here. Past TARGET_DAYS the screens just say «7+ døgn». */
 export const SCALE_MAX_DAYS = 10;
 
-/** Drinking and cooking water, per person per day. */
+/**
+ * Drinking and cooking water, per person per day. DSB gives no per-day figure: its current pages
+ * say about 20 litres per person for a week, for drinking, cooking and hygiene, which is roughly
+ * 3 litres a day. Source: https://www.dsb.no/sikkerhverdag/egenberedskap/vann-i-beredskap/
+ * (also https://www.dsb.no/sikkerhverdag/egenberedskap/slik-lagrer-du-drikkevann/).
+ */
 export const WATER_LITRES_PER_PERSON_PER_DAY = 3;
 
-/** Drinking water for pets, per animal per day. */
+/**
+ * Drinking water for pets, per animal per day. Our figures: DSB says to store water for pets too
+ * but gives no amount (https://www.dsb.no/sikkerhverdag/egenberedskap/egenberedskap-for-kjaledyr/).
+ */
 export const WATER_LITRES_PER_DOG_PER_DAY = 1;
 export const WATER_LITRES_PER_CAT_PER_DAY = 0.25;
 
 /** Food is counted in meals: a tin of stew and a pack of crispbread add up without counting calories. */
 export const MEALS_PER_PERSON_PER_DAY = 3;
 
-/** DSB recommends replacing stored water every 12 months. */
+/**
+ * DSB recommends changing stored water once a year, for the taste; it stays safe to drink longer.
+ * Source: https://www.dsb.no/sikkerhverdag/egenberedskap/slik-lagrer-du-drikkevann/
+ */
 export const STORED_WATER_SHELF_LIFE_MONTHS = 12;
 
 /** How long before expiry an item counts as «går ut snart». */
@@ -48,7 +62,8 @@ export const INSURANCE_ALERT_SHARE = 0.9;
 
 /**
  * A claim must reach the insurer within a year of learning what happened, or the right to
- * compensation is lost (forsikringsavtaleloven § 8-5). The app warns as the date comes near.
+ * compensation is lost (forsikringsavtaleloven § 8-5 first paragraph,
+ * https://lovdata.no/dokument/NL/lov/1989-06-16-69). The app warns as the date comes near.
  */
 export const CLAIM_DEADLINE_MONTHS = 12;
 
