@@ -29,8 +29,8 @@ How to use it:
 - [ ] **(Mikkel)** Decide on the differences in `docs/dsb-check.md`: water (DSB now says about 20 L per person for
       the week, no per-day figure), the iodine hint, «Kan spises kald» for canned dinners, items DSB lists that we
       don't, and the water and power-outage guides
-- [ ] Apply those decisions in the code, cite the pages, and only then remove the three `TODO(before launch)` notes
-- [ ] Guidance in words instead of from `guidance.ts`: «en uke» in `lager/kategori/[id].tsx` and `guides.ts`,
+- [ ] Decisions applied in the code with sources (7ad8aca); remove the three `TODO(before launch)` notes once signed off
+- [x] Guidance in words instead of from `guidance.ts`: «en uke» in `lager/kategori/[id].tsx` and `guides.ts`,
       «innen en måned» in `beredskapssjekk.tsx`; and «2 personer trenger 21 hver» is missing «måltider»
 
 ## 2. Privacy
@@ -41,17 +41,17 @@ How to use it:
       (2026-10-08)
 - [ ] **(Mikkel)** Ask Google for the Vertex AI abuse-monitoring exception (prompt logging) for test and prod, or
       soften «vi lagrer ikke bildene» in the privacy policy until it's granted
-- [ ] **(Mikkel)** Expo update checks send an install ID and IP address to Expo (USA) on every launch: name Expo in
+- [x] **(Mikkel)** Expo update checks send an install ID and IP address to Expo (USA) on every launch: name Expo in
       the privacy policy, or turn update checks off in production
-- [ ] Privacy policy: also mention IP addresses (Firebase, Expo), the analysis job records (up to 24 h), and that
+- [x] Privacy policy: also mention IP addresses (Firebase, Expo), the analysis job records (up to 24 h), and that
       the iOS Keychain key can survive deleting the app (or clear it on first launch)
-- [ ] Documents can be renamed and deleted without unlocking: the toolbar in `nodinfo/[id].tsx` sits outside
+- [x] Documents can be renamed and deleted without unlocking: the toolbar in `nodinfo/[id].tsx` sits outside
       `<DocumentGate>`
-- [ ] Picked files are left in the cache after `importFile` copies them into `dokumenter/` (`use-documents.ts`,
+- [x] Picked files are left in the cache after `importFile` copies them into `dokumenter/` (`use-documents.ts`,
       `files.ts`): delete the cached copy
-- [ ] The recovery and activation code fields allow autocorrect (`gjenopprett.tsx`, `sikkerhetskopi.tsx`)
-- [ ] A release build has no way to delete all data («Slett alle data» is `__DEV__` only, `husstand.tsx`)
-- [ ] Camera and photo permission texts say that photos may be sent for AI analysis in the EU
+- [x] The recovery and activation code fields allow autocorrect (`gjenopprett.tsx`, `sikkerhetskopi.tsx`)
+- [x] A release build has no way to delete all data («Slett alle data» is `__DEV__` only, `husstand.tsx`)
+- [x] Camera and photo permission texts say that photos may be sent for AI analysis in the EU
 
 ## 3. AI analysis of rooms, on the test project
 
@@ -82,21 +82,21 @@ How to use it:
 
 ## 5. App, before the store build
 
-- [ ] App icon, splash and Android adaptive icon are still Expo's template (`assets/images/icon.png`,
+- [x] App icon, splash and Android adaptive icon are still Expo's template (`assets/images/icon.png`,
       `assets/expo.icon`, colours in `app.json`); the name is cut to «Egenbereds…» on the home screen
-- [ ] Hide Egenberedskap+ (backup, AI analysis, restore from backup) in 1.0 behind one switch, so it can be turned on
+- [x] Hide Egenberedskap+ (backup, AI analysis, restore from backup) in 1.0 behind one switch, so it can be turned on
       without a new native build
-- [ ] «Gi tilbakemelding» row that opens an email to the contact address
-- [ ] The stockpile category footer still says «Typene følger DSBs liste» (→ «bygger på»), and the hygiene page
+- [x] «Gi tilbakemelding» row that opens an email to the contact address
+- [x] The stockpile category footer still says «Typene følger DSBs liste» (→ «bygger på»), and the hygiene page
       doesn't say nappies only show for households with infants
-- [ ] Remove the unfinished «Reise» tab and the «Meld en skade» row from Eiendeler (both say «kommer i en senere
+- [x] Remove the unfinished «Reise» tab and the «Meld en skade» row from Eiendeler (both say «kommer i en senere
       versjon»)
-- [ ] Beredskapssjekk: «Byttet» doesn't change the item's date; it looks only 30 days ahead whatever the interval;
+- [x] Beredskapssjekk: «Byttet» doesn't change the item's date; it looks only 30 days ahead whatever the interval;
       «Lagre sjekken» can be tapped twice
-- [ ] The day count shows «10 døgn» on Oversikt but «7+ døgn» in the rows
-- [ ] Deleting an item from its detail page leaves «Varen er slettet.» with no way on
-- [ ] A failed database load or migration shows a blank screen with no message
-- [ ] `/utvikling` can be opened by deep link in a release build
+- [x] The day count shows «10 døgn» on Oversikt but «7+ døgn» in the rows
+- [x] Deleting an item from its detail page leaves «Varen er slettet.» with no way on
+- [x] A failed database load or migration shows a blank screen with no message
+- [x] `/utvikling` can be opened by deep link in a release build
 - [ ] Check Android dark mode (the colours may fall back to light values)
 - [ ] Walk through every flow in the simulator, including with no network (the QA agent couldn't: it needs simulator
       access)
@@ -130,9 +130,9 @@ How to use it:
 - [x] Every claim checked against the app; false ones fixed (287df93)
 - [ ] **(Mikkel)** The Egenberedskap+ section sells the innbo list, receipts and PDF as paid, but the app lets
       anyone add things by hand (depends on Tarjei's answer in section 7)
-- [ ] **(Mikkel)** «Sponset innhold er alltid merket» describes sponsored content the app doesn't have: keep it as a
+- [x] **(Mikkel)** «Sponset innhold er alltid merket» describes sponsored content the app doesn't have: keep it as a
       promise, or say «ingen reklame eller sporing»
-- [ ] «Lageret følger DSBs liste» → «bygger på DSBs liste», as the app says; «i Porsgrunn» depends on the company
+- [x] «Lageret følger DSBs liste» → «bygger på DSBs liste», as the app says; «i Porsgrunn» depends on the company
       details
 - [ ] When the Kvartalssjekk section is replaced, also replace the hero alt text and `oversikt.webp`
 - [ ] Deploy to the prod hosting site with the real domain; indexing on only there
