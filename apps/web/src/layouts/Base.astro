@@ -3,6 +3,7 @@
 import '@fontsource-variable/archivo/wdth.css';
 import '@fontsource-variable/source-sans-3';
 import '../styles/global.css';
+import { COMPANY } from '../company';
 
 interface Props {
   title: string;
@@ -41,11 +42,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         <a class="wordmark" href="/">Egenberedskapsappen</a>
         <nav aria-label="Hovedmeny">
           <ul>
-            <li><a href="#regn-ut">Regn ut</a></li>
-            <li><a href="#funksjoner">Funksjoner</a></li>
-            <li><a href="#personvern">Personvern</a></li>
-            <li><a href="#forsikring">Forsikring</a></li>
-            <li><a href="#sporsmal">Spørsmål</a></li>
+            <li><a href="/#regn-ut">Regn ut</a></li>
+            <li><a href="/#funksjoner">Funksjoner</a></li>
+            <li><a href="/#personvern">Personvern</a></li>
+            <li><a href="/#forsikring">Forsikring</a></li>
+            <li><a href="/#sporsmal">Spørsmål</a></li>
           </ul>
         </nav>
       </div>
@@ -60,6 +61,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         <div>
           <p class="wordmark">Egenberedskapsappen</p>
           <p>Gratis app for egenberedskap i norske husstander.</p>
+          <p class="foot-links">
+            <a href="/kontakt">Kontakt og hjelp</a>
+            <a href="/personvern">Personvernerklæring</a>
+          </p>
+          <p>{COMPANY.name} · Org.nr. {COMPANY.orgNumber}</p>
         </div>
         <p class="small">
           Rådene bygger på Direktoratet for samfunnssikkerhet og beredskap (DSB). Appen er ikke laget av DSB. Se også{' '}
@@ -147,6 +153,16 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   }
   .foot .wordmark {
     margin-bottom: 4px;
+  }
+  .foot-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin: 12px 0;
+  }
+  .foot-links a {
+    color: var(--accent);
+    font-weight: 600;
   }
   .small {
     max-width: 44ch;

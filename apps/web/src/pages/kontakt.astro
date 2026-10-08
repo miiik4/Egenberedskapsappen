@@ -1,0 +1,45 @@
+---
+import { COMPANY, phoneHref } from '../company';
+import Page from '../layouts/Page.astro';
+---
+
+<Page
+  title="Kontakt og hjelp – Egenberedskapsappen"
+  description="Spørsmål om Egenberedskapsappen, samarbeid for forsikringsselskaper, eller hjelp med appen."
+  heading="Kontakt og hjelp"
+>
+  <p>
+    Har dere spørsmål om appen, trenger hjelp med sikkerhetskopien, eller vil dere vite mer om et samarbeid? Ta kontakt,
+    så svarer vi så fort vi kan.
+  </p>
+
+  <dl>
+    <dt>E-post</dt>
+    <dd><a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a></dd>
+    <dt>Telefon</dt>
+    <dd><a href={phoneHref}>{COMPANY.phone}</a></dd>
+    <dt>Adresse</dt>
+    <dd>{COMPANY.name}, {COMPANY.street}, {COMPANY.postcode}</dd>
+    <dt>Org.nr.</dt>
+    <dd>{COMPANY.orgNumber}</dd>
+  </dl>
+
+  <h2>Før dere tar kontakt</h2>
+  <ul>
+    <li>
+      <strong>Mistet telefonen?</strong> Installer appen på den nye telefonen og trykk «Ny telefon? Gjenopprett fra sikkerhetskopi». Dere trenger
+      gjenopprettingskoden. Vi har den ikke og kan ikke lage en ny, så uten koden kan sikkerhetskopien ikke åpnes.
+    </li>
+    <li>
+      <strong>Aktiveringskode fra forsikringsselskapet?</strong> Legg den inn under Sikkerhetskopi i appen. Virker den ikke,
+      send oss koden og navnet på forsikringsselskapet.
+    </li>
+    <li>Se også <a href="/#sporsmal">spørsmål og svar</a> og <a href="/personvern">personvernerklæringen</a>.</li>
+  </ul>
+
+  <h2>Når det haster</h2>
+  <p>
+    Ved fare for liv og helse: ring <a href="tel:110">110</a> (brann), <a href="tel:112">112</a> (politi) eller
+    <a href="tel:113">113</a> (ambulanse). Vi kan ikke hjelpe i en nødsituasjon.
+  </p>
+</Page>

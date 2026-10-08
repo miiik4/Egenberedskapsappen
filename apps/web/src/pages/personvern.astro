@@ -1,0 +1,128 @@
+---
+import { COMPANY } from '../company';
+import Page from '../layouts/Page.astro';
+---
+
+<Page
+  title="Personvernerklæring – Egenberedskapsappen"
+  description="Hvilke opplysninger Egenberedskapsappen behandler, hvor de lagres og hvilke rettigheter dere har."
+  heading="Personvernerklæring"
+  updated="8. oktober 2026"
+>
+  <p>
+    Egenberedskapsappen er laget for å holde på det som er deres: lageret, kontaktene, dokumentene og innboet. Det
+    meste blir aldri sendt fra telefonen. Her står hva som skjer med opplysningene, og når noe likevel går til en
+    server.
+  </p>
+
+  <h2>Hvem som er ansvarlig</h2>
+  <p>
+    {COMPANY.name} (org.nr. {COMPANY.orgNumber}), {COMPANY.street}, {COMPANY.postcode}, er behandlingsansvarlig. Spørsmål
+    om personvern sendes til <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>.
+  </p>
+
+  <h2>Det som blir på telefonen</h2>
+  <p>
+    Det dere legger inn i appen lagres bare på telefonen: husstanden, lageret, nødkontakter, møtested, dokumenter,
+    innbo og kvitteringer. Vi kan ikke se det. Appen har ingen konto, og om husstanden lagrer den bare antall per
+    aldersgruppe, ikke navn eller fødselsdatoer.
+  </p>
+  <ul>
+    <li>På iPhone er filene beskyttet slik at ingenting kan leses mens telefonen er låst.</li>
+    <li>Dokumentene låses med Face ID eller kode, og holdes utenfor iCloud og sikkerhetskopien på Android.</li>
+    <li>Påminnelser lages på telefonen. Vi sender ingen pushvarsler og har ingen opplysninger om når dere får dem.</li>
+  </ul>
+  <p>Sletter dere appen, slettes alt som ligger på telefonen.</p>
+
+  <h2>Når noe sendes fra telefonen</h2>
+  <p>Bare to funksjoner sender noe fra telefonen, og begge slås på av dere selv.</p>
+
+  <h3>Kryptert sikkerhetskopi</h3>
+  <p>
+    Slår dere på sikkerhetskopi, krypteres alt på telefonen før det sendes. Nøkkelen ligger på telefonen og i
+    gjenopprettingskoden, som verken lagres eller sendes til oss. Vi kan derfor ikke lese sikkerhetskopien. Det vi
+    lagrer, er:
+  </p>
+  <ul>
+    <li>det krypterte innholdet,</li>
+    <li>hva slags oppføring det er (for eksempel en vare eller et dokument) og når den ble endret,</li>
+    <li>en anonym bruker-ID for hver telefon som er koblet til sikkerhetskopien,</li>
+    <li>
+      en verdi utledet fra gjenopprettingskoden, som lar en ny telefon finne sikkerhetskopien. Koden kan ikke leses ut
+      av den.
+    </li>
+    <li>hvilket forsikringsselskap eller abonnement som gir tilgang, og hvor lenge.</li>
+  </ul>
+
+  <h3>KI-analyse av rom</h3>
+  <p>
+    Når dere filmer et rom eller tar bilder for å finne gjenstander, tar telefonen stillbilder og sletter selve
+    filmen. Bare stillbildene sendes, aldri lyd eller video. De analyseres av Googles KI-tjeneste Vertex AI i EU, og
+    slettes så snart analysen er gjort. Det som kan ligge igjen, ryddes bort innen en time. Svaret, en liste over
+    gjenstander, krypteres med en nøkkel som bare telefonen har, før det sendes tilbake.
+  </p>
+  <p>
+    Vi lagrer ikke bildene og bruker dem ikke til noe annet. Ingen opplysninger om hva som står i hjemmet havner i
+    loggene våre.
+  </p>
+
+  <h3>Kontroll av at det er appen som spør</h3>
+  <p>
+    For at bare appen vår skal kunne bruke serverne, sjekker vi hver forespørsel med Apples App Attest eller Googles
+    Play Integrity. Det sier oss at forespørselen kommer fra en ekte installasjon av appen, ikke hvem dere er.
+  </p>
+
+  <h2>Hvorfor vi har lov</h2>
+  <p>
+    Vi behandler opplysningene for å levere tjenestene dere har bedt om, altså sikkerhetskopi og KI-analyse
+    (personvernforordningen artikkel 6 nr. 1 bokstav b). Medisinlister og andre helseopplysninger forlater aldri
+    telefonen ukryptert, og vi kan ikke lese dem.
+  </p>
+
+  <h2>Hvem som behandler opplysningene for oss</h2>
+  <dl>
+    <dt>Google Cloud og Firebase (Google Ireland Ltd.)</dt>
+    <dd>
+      Lagrer den krypterte sikkerhetskopien og kjører serverfunksjonene og KI-analysen. Alt ligger i EU, i
+      europe-north1 (Finland), med mindre annet står her.
+    </dd>
+    <dt>Apple og Google</dt>
+    <dd>Bekrefter at forespørsler kommer fra appen (App Attest og Play Integrity).</dd>
+  </dl>
+  <p>Vi selger ikke opplysninger, og vi deler dem ikke med forsikringsselskaper, sponsorer eller andre.</p>
+
+  <h2>Forsikringsselskaper</h2>
+  <p>
+    Får dere Egenberedskap+ gjennom et forsikringsselskap, vet vi hvilket selskap aktiveringskoden kom fra. Selskapet
+    får ingen opplysninger fra appen. Vil dere dele innbooversikten med dem, lager dere en PDF i appen og sender den
+    selv.
+  </p>
+
+  <h2>Reklame og sporing</h2>
+  <p>
+    Appen og nettsiden har ingen reklame, ingen analyseverktøy og ingen sporing. Nettsiden bruker ikke
+    informasjonskapsler, og regnestykket regnes ut i nettleseren uten å sendes noe sted.
+  </p>
+
+  <h2>Hvor lenge vi lagrer</h2>
+  <ul>
+    <li>Bilder til KI-analyse: til analysen er gjort, og aldri mer enn et døgn.</li>
+    <li>Den krypterte sikkerhetskopien: så lenge dere bruker den. Ta kontakt hvis dere vil ha den slettet.</li>
+  </ul>
+
+  <h2>Rettighetene deres</h2>
+  <p>
+    Dere har rett til innsyn, retting, sletting og dataportabilitet, og til å protestere mot behandlingen. Det meste
+    styrer dere selv i appen, siden opplysningene ligger hos dere. Siden vi ikke kan lese sikkerhetskopien eller vite
+    hvem den tilhører, må vi kanskje be dere om hjelp fra appen for å finne den.
+  </p>
+  <p>
+    Ta kontakt på <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>. Mener dere at vi behandler opplysninger i
+    strid med reglene, kan dere klage til <a href="https://www.datatilsynet.no/" rel="noopener">Datatilsynet</a>.
+  </p>
+
+  <h2>Endringer</h2>
+  <p>
+    Endrer vi hvordan opplysninger behandles, oppdaterer vi denne siden og datoen øverst.
+  </p>
+</Page>

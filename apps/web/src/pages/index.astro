@@ -12,6 +12,7 @@ import lager from '../assets/skjermbilder/lager.webp';
 import nodinfo from '../assets/skjermbilder/nodinfo.webp';
 import oversikt from '../assets/skjermbilder/oversikt.webp';
 import underforsikret from '../assets/skjermbilder/underforsikret.webp';
+import { COMPANY } from '../company';
 import Calculator from '../components/Calculator.astro';
 import Phone from '../components/Phone.astro';
 import Base from '../layouts/Base.astro';
@@ -297,6 +298,7 @@ const FAQ = [
     </dl>
     <p class="insurers-note">
       Kundenes data er krypterte, og verken vi eller dere kan lese dem. Kunden bestemmer selv hva som deles.
+      <a href="/kontakt">Ta kontakt for et samarbeid.</a>
     </p>
   </section>
 
@@ -315,7 +317,10 @@ const FAQ = [
         Mens vi jobbet med det, ble egenberedskap stadig mer aktuelt. Begge deler handler om å være forberedt, så vi slo
         ideene sammen. Resultatet er én app som hjelper dere å klare dere når noe skjer, og å komme videre etterpå.
       </p>
-      <p>Egenberedskapsappen er laget av Holm &amp; Tall AS i Porsgrunn.</p>
+      <p>
+        Egenberedskapsappen er laget av {COMPANY.name} i Porsgrunn. <a href="/kontakt">Ta kontakt</a> hvis dere vil vite
+        mer, eller vil tilby appen til kundene deres.
+      </p>
     </div>
   </section>
 

@@ -1,0 +1,74 @@
+---
+import Base from './Base.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  updated?: string;
+}
+
+const { title, description, heading, updated } = Astro.props;
+---
+
+<Base title={title} description={description}>
+  <article class="page wrap">
+    <h1>{heading}</h1>
+    {updated && <p class="updated">Sist oppdatert {updated}</p>}
+    <div class="prose">
+      <slot />
+    </div>
+  </article>
+</Base>
+
+<style>
+  .page {
+    padding-block: clamp(40px, 7vw, 88px);
+  }
+  h1 {
+    max-width: 16em;
+    font-size: clamp(2.4rem, 5.4vw, 4rem);
+    font-stretch: 112%;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .updated {
+    margin-top: 14px;
+    color: var(--secondary);
+    font-size: 1rem;
+  }
+  .prose {
+    max-width: 42em;
+    margin-top: clamp(28px, 4vw, 44px);
+    font-size: 1.125rem;
+  }
+  .prose :global(h2) {
+    margin-top: 44px;
+    font-size: clamp(1.5rem, 2.6vw, 1.875rem);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+  .prose :global(h3) {
+    margin-top: 28px;
+    font-size: 1.25rem;
+  }
+  .prose :global(p),
+  .prose :global(ul),
+  .prose :global(dl) {
+    margin-top: 14px;
+  }
+  .prose :global(li + li) {
+    margin-top: 8px;
+  }
+  .prose :global(dt) {
+    margin-top: 16px;
+    color: var(--label);
+    font-weight: 700;
+  }
+  .prose :global(dd) {
+    margin: 4px 0 0;
+  }
+  .prose :global(a) {
+    color: var(--accent);
+  }
+</style>
