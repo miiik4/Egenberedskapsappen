@@ -40,7 +40,7 @@ const STEPS = [
 const FAQ = [
   {
     q: 'Hva koster appen?',
-    a: 'Ingenting. Appen er gratis for husstanden og betales av partnere, ikke av brukerne og ikke av reklame.',
+    a: 'Egenberedskapsappen er gratis for alle husstander. Egenberedskap+, med KI-dokumentasjon av innboet og kryptert sikkerhetskopi, koster 29 kr i måneden.',
   },
   {
     q: 'Må jeg lage en konto?',
@@ -60,7 +60,7 @@ const FAQ = [
   },
   {
     q: 'Hvordan får jeg sikkerhetskopi og KI-dokumentasjon av innboet?',
-    a: 'Det er inkludert hos utvalgte forsikringsselskaper. Dere får en aktiveringskode fra forsikringsselskapet og legger den inn i appen.',
+    a: 'Det er inkludert i Egenberedskap+. Hos utvalgte forsikringsselskaper får dere det uten å betale selv: dere får en aktiveringskode fra forsikringsselskapet og legger den inn i appen.',
   },
   {
     q: 'Hvilke telefoner virker appen på?',
@@ -193,12 +193,14 @@ const FAQ = [
     <section class="belongings" aria-labelledby="f-eiendeler">
       <div class="wrap">
         <div class="belongings-head">
-          <p class="tab">Eiendeler</p>
-          <h2 id="f-eiendeler">Dokumenter innboet før noe skjer</h2>
+          <h2 id="f-eiendeler" class="plus-title">Egenberedskap+</h2>
+          <p class="plus-lead">Dokumenter innboet, og ha det trygt selv om telefonen blir borte.</p>
           <p>
             Etter en brann eller vannskade er det vanskelig å huske alt som sto i stua. Film et rom eller ta bilder, så
-            foreslår appen gjenstandene og hva de er verdt. Dere går gjennom forslagene og bestemmer hva som legges inn.
+            foreslår appen gjenstandene og hva de er verdt. Alt krypteres på telefonen før det sikkerhetskopieres, så
+            bare dere kan åpne det.
           </p>
+          <p class="price">29 kr/mnd · Inkludert hos utvalgte forsikringsselskaper</p>
         </div>
         <ol class="belongings-flow">
           <li>
@@ -226,7 +228,8 @@ const FAQ = [
             <h3>Klar når dere må melde en skade</h3>
             <p>
               Legg til kvitteringer, og lag en innbooversikt som PDF som dere deler direkte med forsikringsselskapet.
-              KI-dokumentasjonen er inkludert hos utvalgte forsikringsselskaper.
+              Siden innboet ligger i en kryptert sikkerhetskopi, er listen der selv om telefonen brenner opp sammen med
+              resten.
             </p>
           </div>
         </div>
@@ -270,6 +273,52 @@ const FAQ = [
     </dl>
   </section>
 
+  <section id="forsikring" class="insurers wrap" aria-labelledby="forsikring-head">
+    <div class="section-head">
+      <p class="tab">For forsikringsselskaper</p>
+      <h2 id="forsikring-head">Forberedte kunder gir færre og mindre skader</h2>
+      <p>
+        Gi kundene Egenberedskap+ som en del av forsikringen. Dere hjelper dem før noe skjer, ikke bare etterpå.
+      </p>
+    </div>
+    <dl class="promises">
+      <div>
+        <dt>Bedre dokumentasjon</dt>
+        <dd>Innbo med bilder, verdi og kvittering, samlet i en oversikt kunden deler med dere når en skade skal meldes.</dd>
+      </div>
+      <div>
+        <dt>Riktig forsikringssum</dt>
+        <dd>Appen sier fra når innboet nærmer seg eller passerer forsikringssummen, før en skade avslører det.</dd>
+      </div>
+      <div>
+        <dt>Enkelt å ta i bruk</dt>
+        <dd>Kundene får en aktiveringskode fra dere og legger den inn i appen. De trenger ingen konto.</dd>
+      </div>
+    </dl>
+    <p class="insurers-note">
+      Kundenes data er krypterte, og verken vi eller dere kan lese dem. Kunden bestemmer selv hva som deles.
+    </p>
+  </section>
+
+  <section id="om-oss" class="about wrap" aria-labelledby="om-oss-head">
+    <div class="section-head">
+      <p class="tab">Om oss</p>
+      <h2 id="om-oss-head">Laget for å komme videre etter en brann</h2>
+    </div>
+    <div class="about-text">
+      <p>
+        Ideen kom etter storbrannen i Krokstadelva. Mange mistet alt, og det viste seg hvor vanskelig det er å huske og
+        dokumentere det man eide når det er borte. Hva om man kunne filme hjemmet med telefonen, og la KI finne og
+        registrere eiendelene på forhånd?
+      </p>
+      <p>
+        Mens vi jobbet med det, ble egenberedskap stadig mer aktuelt. Begge deler handler om å være forberedt, så vi slo
+        ideene sammen. Resultatet er én app som hjelper dere å klare dere når noe skjer, og å komme videre etterpå.
+      </p>
+      <p>Egenberedskapsappen er laget av Holm &amp; Tall AS i Porsgrunn.</p>
+    </div>
+  </section>
+
   <section id="sporsmal" class="faq wrap" aria-labelledby="faq-head">
     <h2 id="faq-head">Spørsmål og svar</h2>
     <div class="faq-list">
@@ -302,7 +351,7 @@ const FAQ = [
     max-width: 640px;
     margin-bottom: clamp(32px, 5vw, 56px);
   }
-  .section-head p {
+  .section-head p:not(.tab) {
     margin-top: 14px;
     font-size: 1.1875rem;
   }
@@ -491,11 +540,32 @@ const FAQ = [
     border-block: 1px solid var(--card-border);
   }
   .belongings-head {
-    max-width: 680px;
+    max-width: 720px;
+    margin-inline: auto;
+    text-align: center;
   }
-  .belongings-head > p:not(.tab) {
+  .belongings-head > p {
     margin-top: 18px;
     font-size: 1.1875rem;
+  }
+  /* Same size as the hero heading, so the paid tier reads as its own product */
+  .plus-title {
+    font-size: clamp(2.6rem, 6.4vw, 5rem);
+    font-stretch: 112%;
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+  }
+  .belongings-head > .plus-lead {
+    color: var(--label);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(1.3125rem, 2.2vw, 1.625rem);
+    line-height: 1.25;
+  }
+  .belongings-head > .price {
+    margin-top: 22px;
+    color: var(--secondary);
+    font-size: 1rem;
   }
   .belongings-flow {
     display: grid;
@@ -575,6 +645,27 @@ const FAQ = [
     .promises {
       grid-template-columns: 1fr;
     }
+  }
+
+  /* Forsikring */
+  .insurers {
+    border-top: 1px solid var(--separator);
+  }
+  .insurers-note {
+    max-width: 40em;
+    margin-top: 28px;
+    color: var(--secondary);
+  }
+
+  /* Om oss */
+  .about {
+    border-top: 1px solid var(--separator);
+  }
+  .about-text {
+    display: grid;
+    gap: 16px;
+    max-width: 40em;
+    font-size: 1.1875rem;
   }
 
   /* Spørsmål */
