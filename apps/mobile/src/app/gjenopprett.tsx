@@ -55,6 +55,7 @@ export default function Gjenopprett() {
           placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
           autoCapitalize="none"
           autoFocus
+          secret
         />
       </Section>
       {error && <Text style={styles.error}>{error}</Text>}

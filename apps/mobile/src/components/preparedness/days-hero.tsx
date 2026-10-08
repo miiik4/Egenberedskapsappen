@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
-import { formatDays } from '@/lib/format';
+import { daysFigure, formatDays } from '@/lib/format';
 
 import { DAY_ROWS, limiterText } from './day-rows';
 
@@ -25,11 +25,11 @@ export function DaysHero({ coverage, onPressKind }: { coverage: Coverage; onPres
     <View style={styles.card}>
       <View
         accessible
-        accessibilityLabel={`Uten strøm og vann klarer dere dere i ${coverage.days} døgn. DSB anbefaler ${TARGET_DAYS}.`}
+        accessibilityLabel={`Uten strøm og vann klarer dere dere i ${formatDays(coverage.days)}. DSB anbefaler ${TARGET_DAYS}.`}
         style={styles.top}>
         <Text style={styles.lead}>Uten strøm og vann klarer dere dere i</Text>
         <View style={styles.numberRow}>
-          <Text style={styles.number}>{coverage.days}</Text>
+          <Text style={styles.number}>{daysFigure(coverage.days)}</Text>
           <Text style={styles.unit}>døgn</Text>
         </View>
         <View style={styles.scale}>

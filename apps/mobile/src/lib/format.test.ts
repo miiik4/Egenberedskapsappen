@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  daysFigure,
   formatDate,
   formatDateWithYear,
   formatDays,
@@ -8,7 +9,9 @@ import {
   formatIn,
   formatKr,
   formatMeals,
+  formatMonths,
   formatMonthYear,
+  formatPeriod,
   formatTime,
   householdLabel,
   initials,
@@ -40,6 +43,8 @@ describe('format', () => {
     expect(formatDays(4)).toBe('4 døgn');
     expect(formatDays(7)).toBe('7 døgn');
     expect(formatDays(10)).toBe('7+ døgn');
+    expect(daysFigure(7)).toBe('7');
+    expect(daysFigure(10)).toBe('7+');
     expect(formatMeals(1)).toBe('1 måltid');
     expect(formatMeals(2.5)).toBe('2,5 måltider');
     expect(formatMonthYear('2028-05-01')).toBe('mai 2028');
@@ -49,6 +54,14 @@ describe('format', () => {
     expect(formatExpiry(9)).toBe('går ut om 9 dager');
     expect(formatExpiry(0)).toBe('går ut i dag');
     expect(formatExpiry(-1)).toBe('har gått ut');
+  });
+
+  it('writes spans of time in words', () => {
+    expect(formatPeriod(7)).toBe('en uke');
+    expect(formatPeriod(14)).toBe('to uker');
+    expect(formatPeriod(10)).toBe('10 døgn');
+    expect(formatMonths(1)).toBe('en måned');
+    expect(formatMonths(6)).toBe('seks måneder');
   });
 
   it('describes the household in counts only', () => {

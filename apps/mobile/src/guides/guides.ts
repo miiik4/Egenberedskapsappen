@@ -5,6 +5,8 @@ import {
   type GuideId,
 } from '@egenberedskap/core';
 
+import { formatPeriod } from '@/lib/format';
+
 // TODO(before launch): have every guide checked against DSB's advice (sikkerhverdag.no),
 // as for the figures in guidance.ts. The text here is a first draft.
 
@@ -18,6 +20,8 @@ export type Guide = {
 };
 
 const week = `${TARGET_DAYS} døgn`;
+/** The same week in words, where «7 døgn» would read oddly. */
+const weekInWords = formatPeriod(TARGET_DAYS);
 const water = `${WATER_LITRES_PER_PERSON_PER_DAY} liter`;
 
 export const GUIDES: Record<GuideId, Guide> = {
@@ -29,7 +33,7 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Før det skjer',
         points: [
-          'Skaff en varmekilde som virker uten strøm, som vedovn, og ha ved eller brensel til en uke.',
+          `Skaff en varmekilde som virker uten strøm, som vedovn, og ha ved eller brensel til ${weekInWords}.`,
           'Ha ullpledd eller sovepose til alle som bor hjemme.',
           'Legg lommelykt, batterier og DAB-radio på batteri et fast sted alle vet om.',
           `Ha vann og mat for ${week}, og noen kontanter.`,
@@ -108,7 +112,7 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Barn',
         points: [
-          'Ha barnemat, bleier og det barnet trenger for en uke.',
+          `Ha barnemat, bleier og det barnet trenger for ${weekInWords}.`,
           'Snakk rolig med barna om hva som skjer. Gi dem en oppgave, som å holde lommelykten.',
           'Ta med noe kjent, som en bamse eller et spill uten strøm.',
         ],
@@ -116,7 +120,7 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Dyr',
         points: [
-          'Ha fôr til en uke for hvert dyr, og vann i tillegg til husstandens.',
+          `Ha fôr til ${weekInWords} for hvert dyr, og vann i tillegg til husstandens.`,
           'Ha med bur, bånd og eventuelle medisiner hvis dere må dra.',
         ],
       },

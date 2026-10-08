@@ -37,8 +37,8 @@ export type CheckIntervalMonths = (typeof CHECK_INTERVALS_MONTHS)[number];
 /** Every quarter unless the household picks something else. */
 export const DEFAULT_CHECK_INTERVAL_MONTHS: CheckIntervalMonths = 3;
 
-/** The beredskapssjekk goes through what expires within this many days: «innen en måned». */
-export const CHECK_EXPIRY_LOOKAHEAD_DAYS = 30;
+// The beredskapssjekk goes through what expires before the next one is due, so the interval
+// is also how far ahead it looks (`expiresBeforeNextCheck`).
 
 /** «Påminn meg» on the expiry dates in the beredskapssjekk comes back this many days later. */
 export const EXPIRY_REVIEW_AFTER_DAYS = 7;

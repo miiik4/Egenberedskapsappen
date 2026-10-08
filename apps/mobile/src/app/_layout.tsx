@@ -80,8 +80,10 @@ function Routes() {
         <Stack.Screen name="sikkerhetskopi" options={sheet} />
         <Stack.Screen name="fil" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
       </Stack.Protected>
-      {/* Last, so it's never the fallback a guard redirects to. */}
-      <Stack.Screen name="utvikling" />
+      {/* Last, so it's never the fallback a guard redirects to. Not there at all in a release build. */}
+      <Stack.Protected guard={__DEV__}>
+        <Stack.Screen name="utvikling" />
+      </Stack.Protected>
     </Stack>
   );
 }

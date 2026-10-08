@@ -11,12 +11,13 @@ import {
   type StockItem,
 } from '@egenberedskap/core';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { DateField } from '@/components/form/fields';
 import { WarningDot } from '@/components/ui/check-circle';
 import { Card } from '@/components/ui/card';
-import { EmptyRow, Row, Section } from '@/components/ui/list';
+import { Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
@@ -29,14 +30,17 @@ export default function Vare() {
   const { stock, household } = useData();
   const { saveStockItem } = useActions();
   const item = stock.find((i) => i.id === id);
-  // Deleted from the edit sheet on top of this page.
-  if (!item) {
-    return (
-      <Screen>
-        <EmptyRow text="Varen er slettet." />
-      </Screen>
-    );
-  }
+  const gone = !item;
+
+  // Deleted from the edit sheet on top of this page: the sheet closes itself, and this page
+  // has nothing left to show, so it goes back to the list as well.
+  useEffect(() => {
+    if (!gone) return;
+    if (router.canGoBack()) router.back();
+    else router.replace('/lager');
+  }, [gone]);
+
+  if (!item) return null;
 
   const type = stockType(item.type);
   const today = todayIso();

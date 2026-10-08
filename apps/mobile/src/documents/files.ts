@@ -34,13 +34,19 @@ const EXTENSIONS: Record<string, string> = {
 
 export const isPdf = (mimeType: string) => mimeType === 'application/pdf';
 
-/** Copies a picked or photographed file into the app, under a fresh name. */
+/**
+ * Copies a picked or photographed file into the app, under a fresh name. The pickers leave
+ * their own copy in the cache folder, where it would stay until the system clears it, so
+ * that copy is deleted once it's in.
+ */
 export async function importFile(sourceUri: string, mimeType: string) {
   ensureFolder();
   const dir = folder();
   const extension = EXTENSIONS[mimeType] ?? /\.(\w{2,5})$/.exec(sourceUri)?.[1]?.toLowerCase() ?? 'bin';
   const destination = new File(dir, `${randomUUID()}.${extension}`);
-  await new File(sourceUri).copy(destination);
+  const source = new File(sourceUri);
+  await source.copy(destination);
+  if (sourceUri.startsWith(Paths.cache.uri) && source.exists) source.delete();
   return { fileName: `${destination.uri.split('/').pop()}`, size: destination.size ?? 0 };
 }
 

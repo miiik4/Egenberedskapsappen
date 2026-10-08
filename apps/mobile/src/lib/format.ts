@@ -43,7 +43,27 @@ export function formatKr(amount: number): string {
 
 /** «7 døgn», and «7+ døgn» past DSB's week, where the exact number stops mattering. */
 export function formatDays(days: number): string {
-  return days > TARGET_DAYS ? `${TARGET_DAYS}+ døgn` : `${days} døgn`;
+  return `${daysFigure(days)} døgn`;
+}
+
+/** The number alone, by the same rule: «4», «7», «7+». */
+export function daysFigure(days: number): string {
+  return days > TARGET_DAYS ? `${TARGET_DAYS}+` : String(days);
+}
+
+const NUMBER_WORDS = ['null', 'en', 'to', 'tre', 'fire', 'fem', 'seks', 'sju', 'åtte', 'ni', 'ti', 'elleve', 'tolv'];
+const inWords = (n: number) => NUMBER_WORDS[n] ?? String(n);
+
+/** «en uke», «to uker», «10 døgn»: a span of days the way people say it, for figures from guidance.ts. */
+export function formatPeriod(days: number): string {
+  if (days % 7 !== 0) return `${days} døgn`;
+  const weeks = days / 7;
+  return weeks === 1 ? 'en uke' : `${inWords(weeks)} uker`;
+}
+
+/** «en måned», «tre måneder». */
+export function formatMonths(months: number): string {
+  return months === 1 ? 'en måned' : `${inWords(months)} måneder`;
 }
 
 /** «1 måltid», «8 måltider», with a decimal comma when needed. */

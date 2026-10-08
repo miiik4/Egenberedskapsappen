@@ -1,19 +1,13 @@
-import {
-  addDays,
-  daysBetween,
-  CHECK_EXPIRY_LOOKAHEAD_DAYS,
-  EXPIRY_REVIEW_AFTER_DAYS,
-  nextCheck,
-} from '@egenberedskap/core';
+import { addDays, EXPIRY_REVIEW_AFTER_DAYS, expiresBeforeNextCheck, nextCheck } from '@egenberedskap/core';
 import { router, type Href } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { useNotifications } from '@/notifications/notifications-provider';
-import { formatDate, householdLabel, todayIso } from '@/lib/format';
+import { formatDate, formatMonths, householdLabel, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 type Step = {
@@ -31,11 +25,10 @@ export default function Beredskapssjekk() {
   const { recordCheck, setExpiryReview } = useActions();
   const { permission, requestPermission } = useNotifications();
   const today = todayIso();
-  const expiringThisMonth = stock.filter((item) => {
-    if (!item.expiresOn) return false;
-    const left = daysBetween(today, item.expiresOn);
-    return left >= 0 && left <= CHECK_EXPIRY_LOOKAHEAD_DAYS;
-  }).length;
+  const expiring = stock.filter(
+    (item) => item.expiresOn && expiresBeforeNextCheck(item.expiresOn, today, checkIntervalMonths),
+  ).length;
+  const untilNextCheck = formatMonths(checkIntervalMonths);
 
   const steps: Step[] = [
     {
@@ -48,9 +41,9 @@ export default function Beredskapssjekk() {
       key: 'expiry',
       question: 'Gå gjennom utløpsdatoer',
       detail:
-        expiringThisMonth > 0
-          ? `${expiringThisMonth} ${expiringThisMonth === 1 ? 'vare går' : 'varer går'} ut innen en måned`
-          : 'Ingen varer går ut den neste måneden',
+        expiring > 0
+          ? `${expiring} ${expiring === 1 ? 'vare går' : 'varer går'} ut innen ${untilNextCheck}`
+          : `Ingen varer går ut innen ${untilNextCheck}`,
       answers: ['Byttet', 'Påminn meg'],
     },
     { key: 'equipment', question: 'Test lommelykt og radio', answers: ['Virker', 'Må fikses'] },
@@ -61,13 +54,22 @@ export default function Beredskapssjekk() {
   const current = answers.length;
   const complete = current === steps.length;
   const answer = (value: string) => setAnswers((prev) => [...prev, value]);
+  // A second tap before the screen closes would record the check twice.
+  const saving = useRef(false);
 
   const save = async () => {
+    if (saving.current) return;
+    saving.current = true;
     const answered = Object.fromEntries(steps.map((step, i) => [step.key, answers[i]!]));
-    await recordCheck(answered);
-    if (answered.expiry === 'Påminn meg') {
-      await setExpiryReview(addDays(today, EXPIRY_REVIEW_AFTER_DAYS));
-      if (permission === 'undetermined') await requestPermission();
+    try {
+      await recordCheck(answered);
+      if (answered.expiry === 'Påminn meg') {
+        await setExpiryReview(addDays(today, EXPIRY_REVIEW_AFTER_DAYS));
+        if (permission === 'undetermined') await requestPermission();
+      }
+    } catch (error) {
+      saving.current = false;
+      throw error;
     }
     // Open the first thing that needs putting right, if any.
     const fix = steps.find((step, i) => step.fix && answers[i] === step.answers[1])?.fix;

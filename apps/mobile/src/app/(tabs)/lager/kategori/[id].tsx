@@ -21,7 +21,7 @@ import { Screen } from '@/components/ui/screen';
 import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Fonts } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
-import { describeType, formatDays, formatMeals, formatNumber, todayIso } from '@/lib/format';
+import { describeType, formatDays, formatMeals, formatNumber, formatPeriod, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 /** One category from DSB's list, split into its types, each with the household's own items. */
@@ -92,15 +92,16 @@ function DaysCard({ category, coverage, people }: { category: StockCategory; cov
   const days = row.days(coverage);
 
   const persons = `${people} ${people === 1 ? 'person' : 'personer'}`;
+  const week = formatPeriod(TARGET_DAYS);
   const explanation =
     category === 'food'
-      ? `Dere har ${formatMeals(Math.floor(coverage.meals / people))} per person. ${persons} trenger ${
-          TARGET_DAYS * MEALS_PER_PERSON_PER_DAY
-        } hver for en uke.`
+      ? `Dere har ${formatMeals(Math.floor(coverage.meals / people))} per person. ${persons} trenger ${formatMeals(
+          TARGET_DAYS * MEALS_PER_PERSON_PER_DAY,
+        )}${people === 1 ? '' : ' hver'} for ${week}.`
       : category === 'water'
-        ? `Dere har ${formatNumber(coverage.litres)} liter og bruker ${formatNumber(coverage.litresPerDay)} liter per døgn. En uke trenger ${formatNumber(
-            TARGET_DAYS * coverage.litresPerDay,
-          )} liter.`
+        ? `Dere har ${formatNumber(coverage.litres)} liter og bruker ${formatNumber(coverage.litresPerDay)} liter per døgn. ${
+            week.charAt(0).toUpperCase() + week.slice(1)
+          } trenger ${formatNumber(TARGET_DAYS * coverage.litresPerDay)} liter.`
         : coverage.heatDays > 0
           ? 'Dere har en varmekilde som virker uten strøm.'
           : 'Uten en varmekilde som virker uten strøm blir det fort kaldt inne om vinteren.';

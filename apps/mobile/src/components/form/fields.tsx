@@ -29,6 +29,7 @@ export function TextField({
   autoFocus,
   autoCapitalize = 'sentences',
   textContentType,
+  secret,
 }: {
   label: string;
   value: string;
@@ -38,6 +39,8 @@ export function TextField({
   autoFocus?: boolean;
   autoCapitalize?: 'none' | 'sentences' | 'words';
   textContentType?: 'name' | 'telephoneNumber' | 'fullStreetAddress' | 'none';
+  /** A code that must not be learnt or suggested by the keyboard: no autocorrect, spellcheck or autofill. */
+  secret?: boolean;
 }) {
   return (
     <FieldRow label={label}>
@@ -50,6 +53,9 @@ export function TextField({
         autoFocus={autoFocus}
         autoCapitalize={autoCapitalize}
         textContentType={textContentType}
+        autoCorrect={!secret}
+        spellCheck={!secret}
+        autoComplete={secret ? 'off' : undefined}
         accessibilityLabel={label}
         style={styles.input}
       />

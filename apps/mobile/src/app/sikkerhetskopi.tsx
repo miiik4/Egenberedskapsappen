@@ -79,6 +79,7 @@ function TurnOn() {
             placeholder="XXXX-XXXX-XXXX"
             autoCapitalize="none"
             autoFocus
+            secret
           />
         </Section>
         {error && <Text style={styles.error}>{error}</Text>}
@@ -214,7 +215,7 @@ function Status() {
       {(status === 'readOnly' || daysLeft < RENEW_SHOWN_DAYS) && (
         <>
           <Section header="Forny" footer="Fikk du en ny aktiveringskode fra forsikringsselskapet? Den forlenger fra dagens dato eller fra utløpet, det som er senest.">
-            <TextField label="Kode" value={activationCode} onChange={setActivationCode} placeholder="XXXX-XXXX-XXXX" autoCapitalize="none" />
+            <TextField label="Kode" value={activationCode} onChange={setActivationCode} placeholder="XXXX-XXXX-XXXX" autoCapitalize="none" secret />
           </Section>
           {error && <Text style={styles.error}>{error}</Text>}
           {busy ? (

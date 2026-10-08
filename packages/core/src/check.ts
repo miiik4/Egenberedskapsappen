@@ -17,3 +17,12 @@ export function nextCheck(lastChecked: IsoDate, intervalMonths: CheckIntervalMon
 export function daysUntilCheck(lastChecked: IsoDate, intervalMonths: CheckIntervalMonths, today: IsoDate): number {
   return daysBetween(today, nextCheck(lastChecked, intervalMonths));
 }
+
+/**
+ * Whether the beredskapssjekk should bring an item up: it expires between today and the next
+ * check, so this check is the last chance to replace it in time.
+ */
+export function expiresBeforeNextCheck(expiresOn: IsoDate, today: IsoDate, intervalMonths: CheckIntervalMonths): boolean {
+  const left = daysBetween(today, expiresOn);
+  return left >= 0 && left <= daysBetween(today, nextCheck(today, intervalMonths));
+}

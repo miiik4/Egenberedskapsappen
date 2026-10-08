@@ -10,7 +10,7 @@ import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { isPdf, storedFile } from '@/documents/files';
-import { DocumentGate } from '@/documents/lock';
+import { DocumentGate, useDocumentLock } from '@/documents/lock';
 import { useDocumentFiles, type Source } from '@/documents/use-documents';
 import { Text } from '@/components/ui/text';
 
@@ -24,6 +24,7 @@ export default function DocumentPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const document = useData().documents.find((d) => d.id === id);
   const { addFrom, removeDocument } = useDocumentFiles();
+  const { locked } = useDocumentLock();
   const [adding, setAdding] = useState(false);
 
   // Gone, e.g. just deleted: nothing to show while the stack pops back.
@@ -57,8 +58,9 @@ export default function DocumentPage() {
   return (
     <>
       <Stack.Screen options={{ title: document.name }} />
+      {/* Renaming and deleting wait for the unlock, like the files themselves. */}
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Menu icon={ToolbarIcons.more}>
+        <Stack.Toolbar.Menu icon={ToolbarIcons.more} hidden={locked}>
           <Stack.Toolbar.MenuAction
             icon="pencil"
             onPress={() => router.push({ pathname: '/dokument', params: { id: document.id } })}>

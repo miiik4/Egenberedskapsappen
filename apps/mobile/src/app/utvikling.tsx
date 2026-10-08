@@ -13,7 +13,8 @@ import { Text } from '@/components/ui/text';
 
 /**
  * Development only, reached by deep link (`…/--/utvikling` in Expo Go, `<scheme>://utvikling`
- * in a development build). Does nothing in a release build.
+ * in a development build). In a release build the route is guarded off in `_layout.tsx`, and
+ * this screen would only send the user Home.
  *
  * - no action: wipe the database and fill it with the household from the design, then go Home
  * - `?handling=krypto`: check that the phone's AES reads what Node's WebCrypto wrote
@@ -62,12 +63,12 @@ export default function Utvikling() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [handling, kode]);
 
-  if (done) return <Redirect href="/" />;
+  if (done || !__DEV__) return <Redirect href="/" />;
   return (
     <SafeAreaView style={styles.root}>
       <ScrollView>
         <Text style={styles.text} selectable>
-          {!__DEV__ ? 'Bare i utvikling.' : result?.run === run ? result.text : 'Arbeider …'}
+          {result?.run === run ? result.text : 'Arbeider …'}
         </Text>
       </ScrollView>
     </SafeAreaView>

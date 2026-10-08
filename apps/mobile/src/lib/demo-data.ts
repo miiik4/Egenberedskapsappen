@@ -84,8 +84,8 @@ async function addDemoFile(
 ) {
   const temp = new File(Paths.cache, `demo.${extension}`);
   temp.write(base64, { encoding: 'base64' });
+  // importFile deletes the temporary copy once it's in.
   const { fileName, size } = await importFile(temp.uri, mimeType);
-  temp.delete();
   await actions.addDocumentFile({ documentId, fileName, mimeType, size });
 }
 
