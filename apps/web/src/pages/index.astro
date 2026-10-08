@@ -41,7 +41,7 @@ const STEPS = [
 const FAQ = [
   {
     q: 'Hva koster appen?',
-    a: 'Egenberedskapsappen er gratis for alle husstander. Egenberedskap+, med KI-dokumentasjon av innboet og kryptert sikkerhetskopi, koster 29 kr i måneden, men foreløpig får dere det bare gjennom utvalgte forsikringsselskaper.',
+    a: 'Egenberedskapsappen er gratis for alle husstander, også innbooversikten med kvitteringer og PDF. Egenberedskap+, med KI-dokumentasjon av innboet og kryptert sikkerhetskopi, kommer senere. Planlagt pris er 29 kr i måneden.',
   },
   {
     q: 'Må jeg lage en konto?',
@@ -57,11 +57,11 @@ const FAQ = [
   },
   {
     q: 'Hva skjer hvis jeg mister telefonen?',
-    a: 'Har dere slått på sikkerhetskopi, henter dere alt tilbake på en ny telefon med gjenopprettingskoden. Koden er det eneste som kan åpne sikkerhetskopien, så ta godt vare på den.',
+    a: 'Foreløpig ligger alt bare på telefonen, og blir ikke med over til en ny. Kryptert sikkerhetskopi kommer med Egenberedskap+, men er ikke i appen ennå.',
   },
   {
     q: 'Hvordan får jeg sikkerhetskopi og KI-dokumentasjon av innboet?',
-    a: 'Det er inkludert i Egenberedskap+. Foreløpig får dere det bare gjennom utvalgte forsikringsselskaper: dere får en aktiveringskode fra forsikringsselskapet og legger den inn i appen.',
+    a: 'Det kommer med Egenberedskap+, som ikke er i appen ennå. Planlagt pris er 29 kr i måneden, og det er planlagt å komme gjennom forsikringsselskaper også.',
   },
   {
     q: 'Hvilke telefoner virker appen på?',
@@ -191,17 +191,38 @@ const FAQ = [
       />
     </section>
 
-    <section class="belongings" aria-labelledby="f-eiendeler">
+    <section class="feature feature-flip wrap" aria-labelledby="f-eiendeler">
+      <div class="feature-text">
+        <p class="tab">Eiendeler</p>
+        <h2 id="f-eiendeler">Klar når dere må melde en skade</h2>
+        <p>
+          Etter en brann eller vannskade er det vanskelig å huske alt som sto i stua. Legg inn innboet rom for rom, med
+          bilder og hva tingene er verdt. Det er gratis, som resten av appen.
+        </p>
+        <ul class="points">
+          <li>Legg til kvitteringer.</li>
+          <li>Appen sier fra når innboet nærmer seg eller passerer forsikringssummen.</li>
+          <li>Lag en innbooversikt som PDF som dere deler direkte med forsikringsselskapet.</li>
+        </ul>
+      </div>
+      <Phone
+        src={underforsikret}
+        alt="Eiendeler med varselet «Innboet kan være underforsikret»: dokumentert 642 000 kr mot en forsikringssum på 600 000 kr."
+      />
+    </section>
+
+    <section class="belongings" aria-labelledby="f-plus">
       <div class="wrap">
         <div class="belongings-head">
-          <h2 id="f-eiendeler" class="plus-title">Egenberedskap+</h2>
-          <p class="plus-lead">Dokumenter innboet, og ha det trygt selv om telefonen blir borte.</p>
+          <p class="tab">Kommer</p>
+          <h2 id="f-plus" class="plus-title">Egenberedskap+</h2>
+          <p class="plus-lead">Dokumenter innboet med KI, og ha det trygt selv om telefonen blir borte.</p>
           <p>
-            Etter en brann eller vannskade er det vanskelig å huske alt som sto i stua. Film et rom eller ta bilder, så
-            foreslår appen gjenstandene og hva de er verdt. Alt krypteres på telefonen før det sikkerhetskopieres, så
-            bare dere kan åpne det.
+            Egenberedskap+ er ikke i appen ennå. Når det kommer, kan dere filme et rom eller ta bilder, så foreslår appen
+            gjenstandene og hva de er verdt. Alt krypteres på telefonen før det sikkerhetskopieres, så bare dere kan
+            åpne det.
           </p>
-          <p class="price">29 kr/mnd · Foreløpig bare gjennom utvalgte forsikringsselskaper</p>
+          <p class="price">Planlagt pris: 29 kr/mnd · Planlagt også gjennom forsikringsselskaper</p>
         </div>
         <ol class="belongings-flow">
           <li>
@@ -215,25 +236,11 @@ const FAQ = [
             <p>Endre navn, kategori eller verdi. Ingenting legges inn før dere har sagt ja.</p>
           </li>
           <li>
-            <Phone
-              src={underforsikret}
-              alt="Eiendeler med varselet «Innboet kan være underforsikret»: dokumentert 642 000 kr mot en forsikringssum på 600 000 kr."
-            />
-            <h3>Se om forsikringen holder</h3>
-            <p>Appen sier fra når innboet nærmer seg eller passerer forsikringssummen.</p>
+            <Phone src={eiendeler} alt="Eiendeler med samlet verdi og rommene stue, kjøkken, gang, soverom og bod." />
+            <h3>Trygt om telefonen blir borte</h3>
+            <p>Innboet ligger i en kryptert sikkerhetskopi, så listen er der selv om telefonen brenner opp sammen med resten.</p>
           </li>
         </ol>
-        <div class="belongings-more">
-          <Phone src={eiendeler} alt="Eiendeler med samlet verdi og rommene stue, kjøkken, gang, soverom og bod." />
-          <div>
-            <h3>Klar når dere må melde en skade</h3>
-            <p>
-              Legg til kvitteringer, og lag en innbooversikt som PDF som dere deler direkte med forsikringsselskapet.
-              Siden innboet ligger i en kryptert sikkerhetskopi, er listen der selv om telefonen brenner opp sammen med
-              resten.
-            </p>
-          </div>
-        </div>
       </div>
     </section>
   </div>
@@ -258,11 +265,11 @@ const FAQ = [
       </div>
       <div>
         <dt>Kryptert sikkerhetskopi</dt>
-        <dd>Alt krypteres på telefonen før det lagres. Bare gjenopprettingskoden kan åpne det, heller ikke vi.</dd>
+        <dd>Kommer med Egenberedskap+. Alt krypteres på telefonen før det lagres. Bare gjenopprettingskoden kan åpne det, heller ikke vi.</dd>
       </div>
       <div>
         <dt>KI med grenser</dt>
-        <dd>Når dere filmer et rom, går bare stillbildene til en KI-tjeneste i EU. De slettes så snart analysen er gjort.</dd>
+        <dd>Kommer med Egenberedskap+. Når dere filmer et rom, går bare stillbildene til en KI-tjeneste i EU. De slettes så snart analysen er gjort.</dd>
       </div>
       <div>
         <dt>Ingen reklame eller sporing</dt>
@@ -279,7 +286,9 @@ const FAQ = [
       <p class="tab">For forsikringsselskaper</p>
       <h2 id="forsikring-head">Forberedte kunder gir færre og mindre skader</h2>
       <p>
-        Gi kundene Egenberedskap+ som en del av forsikringen. Dere hjelper dem før noe skjer, ikke bare etterpå.
+        Gjennom et samarbeid kan dere gi kundene Egenberedskap+, med KI-dokumentasjon av innboet og kryptert
+        sikkerhetskopi, som en del av forsikringen. Det er ikke lansert ennå, og kommer sammen med de første
+        forsikringsselskapene. Dere hjelper kundene før noe skjer, ikke bare etterpå.
       </p>
     </div>
     <dl class="promises">
@@ -293,7 +302,7 @@ const FAQ = [
       </div>
       <div>
         <dt>Enkelt å ta i bruk</dt>
-        <dd>Kundene får en aktiveringskode fra dere og legger den inn i appen. De trenger ingen konto.</dd>
+        <dd>Kundene skal få en aktiveringskode fra dere og legge den inn i appen. De trenger ingen konto.</dd>
       </div>
     </dl>
     <p class="insurers-note">
@@ -592,32 +601,10 @@ const FAQ = [
   .belongings-flow p {
     margin-top: 6px;
   }
-  .belongings-more {
-    display: grid;
-    grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
-    align-items: center;
-    gap: clamp(32px, 6vw, 80px);
-    margin-top: clamp(56px, 8vw, 96px);
-    padding: clamp(24px, 4vw, 48px);
-    background: var(--page);
-    border-radius: 28px;
-  }
-  .belongings-more p {
-    max-width: 30em;
-    margin-top: 10px;
-    font-size: 1.1875rem;
-  }
   @media (max-width: 860px) {
     .belongings-flow {
       grid-template-columns: 1fr;
       gap: 48px;
-    }
-    .belongings-more {
-      grid-template-columns: 1fr;
-    }
-    .belongings-more :global(.phone) {
-      max-width: 260px;
-      margin-inline: auto;
     }
   }
 
