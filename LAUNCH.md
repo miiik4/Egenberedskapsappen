@@ -12,8 +12,9 @@ How to use it:
 
 ## Decided 2026-10-08
 
-- **1.0 is free, with Egenberedskap+ hidden.** Backup and AI analysis can't be bought in the app yet, and no insurer
-  has signed. They are switched on when the purchase ships or the first insurer signs, whichever comes first.
+- **1.0 is free, with Egenberedskap+ hidden in the app.** Backup and AI analysis can't be bought in the app yet, and no
+  insurer has signed. They are switched on when the purchase ships or the first insurer signs, whichever comes first.
+  The website keeps Egenberedskap+, clearly marked «Kommer» with the planned price, so nobody feels misled later.
 - **Free is what stays on the phone; Egenberedskap+ is what needs our servers** (backup, AI analysis). Entering innbo
   by hand, receipts and the PDF report are free. (To be confirmed with Tarjei.)
 - **A way to hear users without tracking:** a «Gi tilbakemelding» row that opens an email, and counts the server
