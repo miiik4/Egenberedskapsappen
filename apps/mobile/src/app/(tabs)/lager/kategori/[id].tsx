@@ -52,8 +52,10 @@ export default function Kategori() {
           header="Typer"
           footer={
             category === 'food'
-              ? 'Typene følger DSBs liste. Barnemat vises når husstanden har småbarn, og fôr når dere har dyr.'
-              : 'Typene følger DSBs liste.'
+              ? 'Typene bygger på DSBs liste. Barnemat vises når husstanden har småbarn, og fôr når dere har dyr.'
+              : category === 'hygiene'
+                ? 'Typene bygger på DSBs liste. Bleier vises når husstanden har småbarn.'
+                : 'Typene bygger på DSBs liste.'
           }>
           {types.map((type) => (
             <TypeRow key={type.id} type={type} />

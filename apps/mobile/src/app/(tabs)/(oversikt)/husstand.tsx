@@ -1,5 +1,6 @@
+import Constants from 'expo-constants';
 import { router, Stack } from 'expo-router';
-import { Alert, Linking, StyleSheet, Switch } from 'react-native';
+import { Alert, Linking, Platform, StyleSheet, Switch } from 'react-native';
 
 import { CHECK_INTERVALS_MONTHS, type CheckIntervalMonths } from '@egenberedskap/core';
 
@@ -8,6 +9,7 @@ import { MenuField } from '@/components/form/menu-field';
 import { MembersSection } from '@/components/form/members';
 import { Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
+import { CONTACT_EMAIL, EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { deleteEverything } from '@/data/delete-everything';
@@ -42,7 +44,8 @@ export default function Husstand() {
       'Slette alle data?',
       [
         'Alt på denne telefonen slettes: lageret, kontaktene, dokumentene og eiendelene. Appen starter på nytt som første gang.',
-        backup &&
+        EGENBEREDSKAP_PLUS_ENABLED &&
+          backup &&
           'Sikkerhetskopien slettes ikke. Vil du slette den også, gjør du det under Sikkerhetskopi først.',
         'Dette kan ikke angres.',
       ]
@@ -78,14 +81,16 @@ export default function Husstand() {
           value={household}
           onChange={updateHousehold}
         />
-        <Section footer="Kryptert, så bare du kan åpne den. Inkludert hos utvalgte forsikringsselskaper.">
-          <Row
-            title="Sikkerhetskopi"
-            detail={backupStatus === 'off' ? 'Av' : backupStatus === 'unavailable' ? undefined : 'På'}
-            chevron
-            onPress={() => router.push('/sikkerhetskopi')}
-          />
-        </Section>
+        {EGENBEREDSKAP_PLUS_ENABLED && (
+          <Section footer="Kryptert, så bare du kan åpne den. Inkludert hos utvalgte forsikringsselskaper.">
+            <Row
+              title="Sikkerhetskopi"
+              detail={backupStatus === 'off' ? 'Av' : backupStatus === 'unavailable' ? undefined : 'På'}
+              chevron
+              onPress={() => router.push('/sikkerhetskopi')}
+            />
+          </Section>
+        )}
         <Section footer="Før noe i lageret går ut, og når det er tid for beredskapssjekk.">
           <Row
             title="Påminnelser"
@@ -125,10 +130,26 @@ export default function Husstand() {
             }
           />
         </Section>
+        <Section footer="Savner du noe, eller er noe feil? Skriv til oss på e-post.">
+          <Row title="Gi tilbakemelding" chevron onPress={giveFeedback} />
+        </Section>
         <DestructiveButton label="Slett alle data" onPress={wipe} />
       </Screen>
     </>
   );
+}
+
+/** An email to us, with the app version filled in so we know which one it's about. */
+async function giveFeedback() {
+  const system = Platform.OS === 'ios' ? `iOS ${Platform.Version}` : `Android (API ${Platform.Version})`;
+  const subject = 'Tilbakemelding på Egenberedskapsappen';
+  const body = `\n\n\nAppversjon ${Constants.expoConfig?.version ?? 'ukjent'} · ${system}`;
+  try {
+    await Linking.openURL(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+  } catch {
+    // No mail app on the phone: give the address so it can be used some other way.
+    Alert.alert('Fant ingen e-postapp', `Send tilbakemeldingen til ${CONTACT_EMAIL}.`);
+  }
 }
 
 const CHECK_INTERVAL_NAMES: Record<CheckIntervalMonths, string> = {

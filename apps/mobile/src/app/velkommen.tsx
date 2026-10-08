@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/card';
 import { CheckCircle } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
 import { Row, Section } from '@/components/ui/list';
+import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
 import { useActions } from '@/data/data-provider';
 import { todayIso } from '@/lib/format';
@@ -125,9 +126,11 @@ export default function Velkommen() {
               onChange={setMembers}
               footer="Bare antall per aldersgruppe. Ingen navn eller fødselsdatoer."
             />
-            <Pressable onPress={() => router.push('/gjenopprett')} accessibilityRole="button" hitSlop={8}>
-              <Text style={styles.restore}>Ny telefon? Gjenopprett fra sikkerhetskopi</Text>
-            </Pressable>
+            {EGENBEREDSKAP_PLUS_ENABLED && (
+              <Pressable onPress={() => router.push('/gjenopprett')} accessibilityRole="button" hitSlop={8}>
+                <Text style={styles.restore}>Ny telefon? Gjenopprett fra sikkerhetskopi</Text>
+              </Pressable>
+            )}
           </>
         )}
 

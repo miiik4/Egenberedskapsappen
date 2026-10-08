@@ -7,6 +7,7 @@ import { FormSheet } from '@/components/form/sheet';
 import { PrimaryButton } from '@/components/ui/button';
 import { CheckCircle } from '@/components/ui/check-circle';
 import { EmptyRow, Row, Section } from '@/components/ui/list';
+import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { Colors } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { countLabel, formatKr } from '@/lib/format';
@@ -87,9 +88,12 @@ export default function Rapport() {
           })}
         </Section>
 
-        <Section header="Ta med" footer="Anslåtte verdier er KI-anslag. Uten dem står tingene med, men uten verdi.">
+        {/* Estimates only come from the AI analysis, part of Egenberedskap+ (constants/config.ts). */}
+        <Section
+          header="Ta med"
+          footer={EGENBEREDSKAP_PLUS_ENABLED ? 'Anslåtte verdier er KI-anslag. Uten dem står tingene med, men uten verdi.' : undefined}>
           <Toggle label="Bilder" value={pictures} onChange={setPictures} />
-          <Toggle label="Anslåtte verdier" value={estimates} onChange={setEstimates} />
+          {EGENBEREDSKAP_PLUS_ENABLED && <Toggle label="Anslåtte verdier" value={estimates} onChange={setEstimates} />}
           <Toggle label="Kvitteringer" value={receipts} onChange={setReceipts} />
         </Section>
       </FormSheet>

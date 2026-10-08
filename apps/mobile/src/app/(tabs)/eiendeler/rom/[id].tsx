@@ -7,6 +7,7 @@ import { StyleSheet, View } from 'react-native';
 import { AddRow, EmptyRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { ToolbarIcons } from '@/components/toolbar-icons';
+import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { storedFile } from '@/documents/files';
@@ -29,9 +30,11 @@ export default function Rom() {
       <Stack.Screen options={{ title: room.name }} />
       <Stack.Toolbar placement="right">
         <Stack.Toolbar.Menu icon={ToolbarIcons.more}>
-          <Stack.Toolbar.MenuAction icon="sparkles" onPress={() => router.push({ pathname: '/film', params: { roomId: room.id } })}>
-            Dokumenter med KI
-          </Stack.Toolbar.MenuAction>
+          {EGENBEREDSKAP_PLUS_ENABLED && (
+            <Stack.Toolbar.MenuAction icon="sparkles" onPress={() => router.push({ pathname: '/film', params: { roomId: room.id } })}>
+              Dokumenter med KI
+            </Stack.Toolbar.MenuAction>
+          )}
           <Stack.Toolbar.MenuAction icon="pencil" onPress={() => router.push({ pathname: '/rom', params: { id: room.id } })}>
             Endre rommet
           </Stack.Toolbar.MenuAction>

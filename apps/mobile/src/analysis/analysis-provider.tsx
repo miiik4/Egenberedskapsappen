@@ -9,6 +9,7 @@ import { expoCrypto } from '@/backup/crypto';
 import type { RemoteAnalysis } from '@/backup/firebase';
 import { loadFirebase, requireFirebase } from '@/backup/load-firebase';
 import { useBelongings } from '@/belongings/use-belongings';
+import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { useActions, useData } from '@/data/data-provider';
 
 import { frameTimes } from './frame-times';
@@ -53,11 +54,15 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
   const sending = useRef(new Set<string>());
   const finishing = useRef(new Set<string>());
   const vaultId = data.backup?.vaultId ?? null;
-  const ready = useMemo(() => loadFirebase() !== null, []) && vaultId !== null;
+  // As in BackupProvider: with Egenberedskap+ off and no backup linked, Firebase isn't loaded.
+  const wanted = EGENBEREDSKAP_PLUS_ENABLED || vaultId !== null;
+  const firebaseIfWanted = () => (wanted ? loadFirebase() : null);
+  const available = useMemo(() => wanted && loadFirebase() !== null, [wanted]);
+  const ready = available && vaultId !== null;
 
   const fail = async (id: string, error: unknown) => {
     await actions.setAnalysisStatus(id, 'failed', analysisErrorCode(error));
-    await loadFirebase()?.deleteAnalysis(id).catch(() => {});
+    await firebaseIfWanted()?.deleteAnalysis(id).catch(() => {});
   };
 
   /** The answer is in: open it, cut each thing's picture from our own photos, keep the suggestions. */
@@ -109,8 +114,9 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
     return () => subscription.remove();
   }, []);
   useEffect(() => {
-    const firebase = loadFirebase();
-    if (!firebase || !waitingKey) return;
+    if (!waitingKey) return;
+    const firebase = firebaseIfWanted();
+    if (!firebase) return;
     let stops: (() => void)[] = [];
     let cancelled = false;
     // Signed in first: after a restart the job may be read before Firebase has the user back.
@@ -124,7 +130,7 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
       stops.forEach((stop) => stop());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [waitingKey, foregrounded]);
+  }, [waitingKey, foregrounded, wanted]);
 
   // An upload the app was closed in the middle of can't be resumed: the photos may be half sent.
   const uploadingKey = data.analyses
@@ -225,7 +231,7 @@ export function AnalysisProvider({ children }: { children: ReactNode }) {
     async discard(id) {
       await actions.deleteAnalysis(id);
       deleteAnalysisFolder(id);
-      await loadFirebase()?.deleteAnalysis(id).catch(() => {});
+      await firebaseIfWanted()?.deleteAnalysis(id).catch(() => {});
     },
 
     async updateSuggestion(id, index, change) {

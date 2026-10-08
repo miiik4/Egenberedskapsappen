@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { AnalysisProvider } from '@/analysis/analysis-provider';
 import { BackupProvider } from '@/backup/backup-provider';
+import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { DataProvider, useData } from '@/data/data-provider';
 import { DocumentLockProvider } from '@/documents/lock';
 import { NotificationsProvider } from '@/notifications/notifications-provider';
@@ -59,7 +60,6 @@ function Routes() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={!onboarded}>
         <Stack.Screen name="velkommen" />
-        <Stack.Screen name="gjenopprett" options={sheet} />
       </Stack.Protected>
       <Stack.Protected guard={onboarded}>
         <Stack.Screen name="(tabs)" />
@@ -70,15 +70,22 @@ function Routes() {
         <Stack.Screen name="rom" options={sheet} />
         <Stack.Screen name="gjenstand" options={sheet} />
         <Stack.Screen name="rapport" options={sheet} />
+        <Stack.Screen name="eiendom" options={sheet} />
+        <Stack.Screen name="forsikring" options={sheet} />
+        <Stack.Screen name="dokument" options={sheet} />
+        <Stack.Screen name="fil" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
+      </Stack.Protected>
+      {/* Egenberedskap+ (constants/config.ts): restore, backup and AI analysis. While it's off,
+          a link to any of them lands on the start screen instead. */}
+      <Stack.Protected guard={EGENBEREDSKAP_PLUS_ENABLED && !onboarded}>
+        <Stack.Screen name="gjenopprett" options={sheet} />
+      </Stack.Protected>
+      <Stack.Protected guard={EGENBEREDSKAP_PLUS_ENABLED && onboarded}>
         <Stack.Screen name="film/index" options={sheet} />
         <Stack.Screen name="film/[id]" options={sheet} />
         <Stack.Screen name="film/forslag" options={sheet} />
         <Stack.Screen name="film/video" options={{ presentation: 'fullScreenModal' }} />
-        <Stack.Screen name="eiendom" options={sheet} />
-        <Stack.Screen name="forsikring" options={sheet} />
-        <Stack.Screen name="dokument" options={sheet} />
         <Stack.Screen name="sikkerhetskopi" options={sheet} />
-        <Stack.Screen name="fil" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
       </Stack.Protected>
       {/* Last, so it's never the fallback a guard redirects to. Not there at all in a release build. */}
       <Stack.Protected guard={__DEV__}>

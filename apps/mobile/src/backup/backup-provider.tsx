@@ -12,6 +12,7 @@ import { SYNC_ORDER } from '@egenberedskap/store';
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
 
+import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { useActions, useData, useSyncSource } from '@/data/data-provider';
 import { ensureFolder, storedFile } from '@/documents/files';
 
@@ -73,10 +74,13 @@ export function BackupProvider({ children }: { children: ReactNode }) {
   const data = useData();
   const actions = useActions();
   const { source, reload } = useSyncSource();
-  const available = useMemo(() => loadFirebase() !== null, []);
+  const vaultId = data.backup?.vaultId ?? null;
+  // With Egenberedskap+ off, Firebase isn't even loaded: no calls, no anonymous sign-in. A phone
+  // that already has a backup linked keeps syncing.
+  const wanted = EGENBEREDSKAP_PLUS_ENABLED || vaultId !== null;
+  const available = useMemo(() => wanted && loadFirebase() !== null, [wanted]);
   const [status, setStatus] = useState<BackupStatus>(available ? 'off' : 'unavailable');
 
-  const vaultId = data.backup?.vaultId ?? null;
   const entitled = data.backup ? new Date(data.backup.entitledUntil) > new Date() : false;
 
   // One sync at a time; a request during a run starts one more run afterwards.

@@ -11,13 +11,21 @@ import { AddRow, Row, Section } from '@/components/ui/list';
 import { ProgressBar } from '@/components/ui/progress';
 import { Screen } from '@/components/ui/screen';
 import { ToolbarIcons } from '@/components/toolbar-icons';
+import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { Colors, Fonts } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { storedFile } from '@/documents/files';
 import { countLabel, formatKr } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
-const document = (roomId?: string) => router.push(roomId ? { pathname: '/film', params: { roomId } } : '/film');
+/**
+ * With Egenberedskap+ on, «+» and «Dokumenter» start «Dokumenter med KI». Without it, «+» adds a
+ * room and «Dokumenter» opens a new thing in that room, both entered by hand.
+ */
+const document = (roomId?: string) => {
+  if (EGENBEREDSKAP_PLUS_ENABLED) router.push(roomId ? { pathname: '/film', params: { roomId } } : '/film');
+  else router.push(roomId ? { pathname: '/gjenstand', params: { roomId } } : '/rom');
+};
 
 export default function Eiendeler() {
   const { properties, selectedPropertyId } = useData();
@@ -52,7 +60,7 @@ export default function Eiendeler() {
           icon={ToolbarIcons.plus}
           variant="prominent"
           tintColor={Colors.accent}
-          accessibilityLabel="Dokumenter et rom med KI"
+          accessibilityLabel={EGENBEREDSKAP_PLUS_ENABLED ? 'Dokumenter et rom med KI' : 'Legg til rom'}
           onPress={() => document()}
         />
       </Stack.Toolbar>
@@ -93,7 +101,7 @@ function Innbo() {
         </Card>
       )}
 
-      <PendingAnalyses />
+      {EGENBEREDSKAP_PLUS_ENABLED && <PendingAnalyses />}
 
       <Card>
         <View style={styles.sumHead}>
