@@ -1,17 +1,15 @@
 import { summarizeRooms } from '@egenberedskap/core';
 import { Image } from 'expo-image';
 import { router, Stack } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { INSURANCE_ALERT_TITLE, useHomeInsurance } from '@/components/preparedness/home-insurance';
 import { Card } from '@/components/ui/card';
 import { WarningDot } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
-import { AddRow, EmptyRow, Row, Section } from '@/components/ui/list';
+import { AddRow, Row, Section } from '@/components/ui/list';
 import { ProgressBar } from '@/components/ui/progress';
 import { Screen } from '@/components/ui/screen';
-import { Segmented } from '@/components/ui/segmented';
 import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Fonts } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
@@ -19,14 +17,11 @@ import { storedFile } from '@/documents/files';
 import { countLabel, formatKr } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
-type Tab = 'innbo' | 'reise';
-
 const document = (roomId?: string) => router.push(roomId ? { pathname: '/film', params: { roomId } } : '/film');
 
 export default function Eiendeler() {
   const { properties, selectedPropertyId } = useData();
   const { selectProperty } = useActions();
-  const [tab, setTab] = useState<Tab>('innbo');
   const property = properties.find((p) => p.id === selectedPropertyId);
 
   return (
@@ -63,15 +58,7 @@ export default function Eiendeler() {
       </Stack.Toolbar>
 
       <Screen>
-        <Segmented
-          options={[
-            { value: 'innbo', label: 'Innbo' },
-            { value: 'reise', label: 'Reise' },
-          ]}
-          value={tab}
-          onChange={setTab}
-        />
-        {tab === 'innbo' ? <Innbo /> : <Reise />}
+        <Innbo />
       </Screen>
     </>
   );
@@ -168,13 +155,6 @@ function Innbo() {
           onPress={() => router.push('/forsikring')}
         />
         <Row title="Lag innbooversikt (PDF)" chevron onPress={() => router.push('/rapport')} />
-        <Row
-          title="Meld en skade"
-          chevron
-          onPress={() =>
-            Alert.alert('Meld en skade', 'Veiviseren kommer i en senere versjon. Legg gjerne ved en innbooversikt når du melder skaden.')
-          }
-        />
       </Section>
     </>
   );
@@ -216,14 +196,6 @@ function SmallButton({ label, onPress, prominent }: { label: string; onPress: ()
       style={({ pressed }) => [styles.small, prominent && styles.smallProminent, pressed && { opacity: 0.8 }]}>
       <Text style={[styles.smallText, prominent && styles.smallTextProminent]}>{label}</Text>
     </Pressable>
-  );
-}
-
-function Reise() {
-  return (
-    <Section footer="Ta med ting fra innboet på en reise, og film bagasjen før avreise.">
-      <EmptyRow text="Reiser kommer i en senere versjon." />
-    </Section>
   );
 }
 

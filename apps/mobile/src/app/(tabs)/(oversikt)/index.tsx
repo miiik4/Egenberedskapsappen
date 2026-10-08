@@ -77,6 +77,8 @@ export default function Oversikt() {
           <Notice
             title={checkIn > 0 ? `Beredskapssjekk ${formatIn(checkIn)}` : 'Tid for beredskapssjekk'}
             subtitle={data.lastCheck ? `Sist sjekket ${formatDate(data.lastCheck)}` : 'Ikke sjekket ennå'}
+            // Yellow only once it's due. Before the first check that's one interval after setup, like any other.
+            attention={checkIn <= 0}
             onPress={() => router.push('/beredskapssjekk')}
           />
         </View>
@@ -172,16 +174,36 @@ function Task({ action }: { action: NextAction }) {
   );
 }
 
-/** The yellow banner: something that needs doing soon, here the beredskapssjekk. */
-function Notice({ title, subtitle, onPress }: { title: string; subtitle: string; onPress: () => void }) {
+/**
+ * The beredskapssjekk: a plain card while it's a while off, the yellow banner once it needs
+ * doing.
+ */
+function Notice({
+  title,
+  subtitle,
+  attention,
+  onPress,
+}: {
+  title: string;
+  subtitle: string;
+  attention: boolean;
+  onPress: () => void;
+}) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.notice, pressed && { opacity: 0.8 }]}>
-      <WarningDot />
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={({ pressed }) => [styles.notice, attention && styles.noticeAttention, pressed && { opacity: 0.8 }]}>
+      {attention && <WarningDot />}
       <View style={styles.noticeText}>
         <Text style={styles.noticeTitle}>{title}</Text>
-        <Text style={styles.noticeSubtitle}>{subtitle}</Text>
+        <Text style={[styles.noticeSubtitle, attention && styles.noticeSubtitleAttention]}>{subtitle}</Text>
       </View>
-      <Icon name={{ ios: 'chevron.right', android: 'chevron_right' }} size={13} color={Colors.warningText} />
+      <Icon
+        name={{ ios: 'chevron.right', android: 'chevron_right' }}
+        size={13}
+        color={attention ? Colors.warningText : Colors.tertiaryLabel}
+      />
     </Pressable>
   );
 }
@@ -207,10 +229,12 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderCurve: 'continuous',
     borderWidth: 1,
-    borderColor: Colors.noticeBorder,
-    backgroundColor: Colors.notice,
+    borderColor: Colors.cardBorder,
+    backgroundColor: Colors.card,
   },
+  noticeAttention: { borderColor: Colors.noticeBorder, backgroundColor: Colors.notice },
   noticeText: { flex: 1 },
   noticeTitle: { fontSize: 16, fontWeight: '600', color: Colors.label },
-  noticeSubtitle: { fontSize: 14, color: Colors.warningText },
+  noticeSubtitle: { fontSize: 14, color: Colors.secondaryLabel },
+  noticeSubtitleAttention: { color: Colors.warningText },
 });

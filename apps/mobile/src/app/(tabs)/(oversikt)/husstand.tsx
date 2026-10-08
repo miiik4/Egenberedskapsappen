@@ -22,7 +22,7 @@ import { Text } from '@/components/ui/text';
  * Opened from the button at the top of Oversikt. Changes save as they're made.
  */
 export default function Husstand() {
-  const { household, documentLock, properties, selectedPropertyId, checkIntervalMonths } = useData();
+  const { household, documentLock, properties, selectedPropertyId, checkIntervalMonths, backup } = useData();
   const { updateHousehold, reset, setDocumentLock, setCheckInterval } = useActions();
   const property = properties.find((p) => p.id === selectedPropertyId);
   const { method, unlock } = useDocumentLock();
@@ -35,18 +35,34 @@ export default function Husstand() {
   };
   const { permission, requestPermission } = useNotifications();
 
+  // Everything on this phone, and the key to the backup with it. The backup itself stays:
+  // only Sikkerhetskopi deletes that, and the recovery code still opens it.
   const wipe = () =>
-    Alert.alert('Slette alle data?', 'Appen går tilbake til første oppstart. Dette kan ikke angres.', [
-      { text: 'Avbryt', style: 'cancel' },
-      {
-        text: 'Slett alt',
-        style: 'destructive',
-        onPress: async () => {
-          router.back();
-          await deleteEverything(reset);
+    Alert.alert(
+      'Slette alle data?',
+      [
+        'Alt på denne telefonen slettes: lageret, kontaktene, dokumentene og eiendelene. Appen starter på nytt som første gang.',
+        backup &&
+          'Sikkerhetskopien slettes ikke. Vil du slette den også, gjør du det under Sikkerhetskopi først.',
+        'Dette kan ikke angres.',
+      ]
+        .filter(Boolean)
+        .join('\n\n'),
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        {
+          text: 'Slett alt',
+          style: 'destructive',
+          onPress: async () => {
+            // It deletes the documents too, so it needs what opening them needs.
+            if (documentLock && method !== null && !(await unlock())) return;
+            router.back();
+            // Clearing the data ends onboarding, so the guard in the root layout opens velkommen.
+            await deleteEverything(reset);
+          },
         },
-      },
-    ]);
+      ],
+    );
 
   return (
     <>
@@ -109,7 +125,7 @@ export default function Husstand() {
             }
           />
         </Section>
-        {__DEV__ && <DestructiveButton label="Slett alle data (utvikling)" onPress={wipe} />}
+        <DestructiveButton label="Slett alle data" onPress={wipe} />
       </Screen>
     </>
   );

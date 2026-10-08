@@ -4,6 +4,7 @@ import { SQLiteProvider, useSQLiteContext, type SQLiteDatabase } from 'expo-sqli
 import { Component, createContext, use, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { deleteDataKey } from '@/backup/keychain';
 import { Text } from '@/components/ui/text';
 import { Colors, Spacing } from '@/constants/theme';
 import { todayIso } from '@/lib/format';
@@ -76,7 +77,27 @@ class LoadFailedBoundary extends Component<{ children: ReactNode }, { error?: un
 }
 
 async function migrateOnOpen(db: SQLiteDatabase) {
+  await clearKeychainAfterInstall(db);
   await storeFor(db).migrate();
+}
+
+/**
+ * The iOS Keychain outlives deleting the app, so a reinstall would find the old backup key.
+ * A database that has never been migrated (`user_version` 0) was created just now, and the
+ * database lives in the app's own folder, which goes with the app: so this is the first launch
+ * since installing, and nothing in the Keychain can be ours to keep. A restart or an update
+ * opens a database that is already migrated and leaves the Keychain alone. Runs before any
+ * screen or the backup can read the key.
+ */
+async function clearKeychainAfterInstall(db: SQLiteDatabase) {
+  const row = await db.getFirstAsync<{ user_version: number }>('PRAGMA user_version');
+  if ((row?.user_version ?? 0) !== 0) return;
+  try {
+    await deleteDataKey();
+  } catch (error) {
+    // Not worth keeping the app from opening: an old key without a backup link is never read.
+    console.error('Could not clear the Keychain', error);
+  }
 }
 
 function storeFor(db: SQLiteDatabase) {

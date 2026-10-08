@@ -1,7 +1,7 @@
-import { addDays, EXPIRY_REVIEW_AFTER_DAYS, expiresBeforeNextCheck, nextCheck } from '@egenberedskap/core';
+import { addDays, EXPIRY_REVIEW_AFTER_DAYS, expiresBeforeNextCheck, nextCheck, renewExpiring } from '@egenberedskap/core';
 import { router, type Href } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
@@ -22,7 +22,7 @@ type Step = {
 
 export default function Beredskapssjekk() {
   const { household, stock, checkIntervalMonths } = useData();
-  const { recordCheck, setExpiryReview } = useActions();
+  const { recordCheck, setExpiryReview, saveStockItem } = useActions();
   const { permission, requestPermission } = useNotifications();
   const today = todayIso();
   const expiring = stock.filter(
@@ -61,7 +61,11 @@ export default function Beredskapssjekk() {
     if (saving.current) return;
     saving.current = true;
     const answered = Object.fromEntries(steps.map((step, i) => [step.key, answers[i]!]));
+    // «Byttet»: what the check brought up was bought today. Dates first, so a failure leaves the check unrecorded.
+    const { renewed, needDate } =
+      answered.expiry === 'Byttet' ? renewExpiring(stock, today, checkIntervalMonths) : { renewed: [], needDate: [] };
     try {
+      for (const item of renewed) await saveStockItem(item);
       await recordCheck(answered);
       if (answered.expiry === 'Påminn meg') {
         await setExpiryReview(addDays(today, EXPIRY_REVIEW_AFTER_DAYS));
@@ -75,6 +79,20 @@ export default function Beredskapssjekk() {
     const fix = steps.find((step, i) => step.fix && answers[i] === step.answers[1])?.fix;
     router.back();
     if (fix) router.navigate(fix);
+    const [first] = needDate;
+    if (first) {
+      // With no shelf life to go by, only the new pack knows the date.
+      const href: Href =
+        needDate.length === 1 ? { pathname: '/lager/vare/[id]', params: { id: first.id } } : '/lager';
+      Alert.alert(
+        `${needDate.length} ${needDate.length === 1 ? 'vare trenger' : 'varer trenger'} ny dato`,
+        'Sett utløpsdatoen fra den nye pakningen.',
+        [
+          { text: 'Senere', style: 'cancel' },
+          { text: 'Til lageret', onPress: () => router.navigate(href, { withAnchor: true }) },
+        ],
+      );
+    }
   };
 
   return (

@@ -146,6 +146,10 @@ export function DateField({
               <DateTimePicker
                 value={date}
                 mode="date"
+                // The calendar itself follows the phone's language on Android; the buttons don't have to.
+                locale="nb-NO"
+                positiveButton={{ label: 'OK' }}
+                negativeButton={{ label: 'Avbryt' }}
                 onChange={(event, d) => {
                   setAndroidOpen(false);
                   if (event.type === 'set') pick(d);
