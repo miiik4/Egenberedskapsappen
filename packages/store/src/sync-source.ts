@@ -52,6 +52,7 @@ const SYNCED_SETTINGS = [
   'meetingPlaceName',
   'meetingPlaceAddress',
   'expiryReviewOn',
+  'checkIntervalMonths',
   'ownerName',
   'ownerBirthDate',
 ];

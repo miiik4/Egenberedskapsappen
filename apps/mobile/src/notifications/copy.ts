@@ -25,16 +25,16 @@ export function reminderMessage(reminder: Reminder): ReminderMessage {
         url: '/lager',
       };
     }
-    case 'quarterlyCheck':
+    case 'check':
       return {
-        title: 'Tid for kvartalssjekk',
-        body: 'Fire raske spørsmål holder tallet riktig. Det tar omtrent fem minutter.',
-        url: '/kvartalssjekk',
+        title: 'Fremdeles beredt?',
+        body: 'Tid for beredskapssjekk. Fire raske spørsmål holder tallet riktig, og det tar omtrent fem minutter.',
+        url: '/beredskapssjekk',
       };
     case 'expiryReview':
       return {
         title: 'Gå gjennom utløpsdatoer',
-        body: 'Du ba om en påminnelse i kvartalssjekken.',
+        body: 'Du ba om en påminnelse i beredskapssjekken.',
         url: '/lager',
       };
   }

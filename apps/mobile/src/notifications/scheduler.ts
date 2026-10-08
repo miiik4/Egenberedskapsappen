@@ -23,7 +23,7 @@ export async function ensureAndroidChannel() {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL, {
     name: 'Påminnelser',
-    description: 'Når noe i beredskapslageret går ut, og når det er tid for kvartalssjekk',
+    description: 'Når noe i beredskapslageret går ut, og når det er tid for beredskapssjekk',
     importance: Notifications.AndroidImportance.DEFAULT,
   });
 }

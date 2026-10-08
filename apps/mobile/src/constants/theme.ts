@@ -30,7 +30,7 @@ export const Colors = {
   warning: '#D08A1C',
   warningText: color('#8A5300', '#F1B95B'),
   warningSoft: color('#FFF1D6', '#3A2A0E'),
-  /** The yellow banner, as the quarterly check on Oversikt. */
+  /** The yellow banner, as the beredskapssjekk on Oversikt. */
   notice: color('#FFF6E5', '#2A2111'),
   noticeBorder: color('#F3DDB0', '#4A3A1A'),
   /** Text on a pale fill, for the second avatar and similar quiet badges. */

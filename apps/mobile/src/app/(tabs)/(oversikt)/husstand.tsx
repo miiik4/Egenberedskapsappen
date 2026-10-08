@@ -1,7 +1,10 @@
 import { router, Stack } from 'expo-router';
 import { Alert, Linking, StyleSheet, Switch } from 'react-native';
 
+import { CHECK_INTERVALS_MONTHS, type CheckIntervalMonths } from '@egenberedskap/core';
+
 import { DestructiveButton } from '@/components/form/fields';
+import { MenuField } from '@/components/form/menu-field';
 import { MembersSection } from '@/components/form/members';
 import { Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
@@ -19,8 +22,8 @@ import { Text } from '@/components/ui/text';
  * Opened from the button at the top of Oversikt. Changes save as they're made.
  */
 export default function Husstand() {
-  const { household, documentLock, properties, selectedPropertyId } = useData();
-  const { updateHousehold, reset, setDocumentLock } = useActions();
+  const { household, documentLock, properties, selectedPropertyId, checkIntervalMonths } = useData();
+  const { updateHousehold, reset, setDocumentLock, setCheckInterval } = useActions();
   const property = properties.find((p) => p.id === selectedPropertyId);
   const { method, unlock } = useDocumentLock();
   const { status: backupStatus } = useBackup();
@@ -67,7 +70,7 @@ export default function Husstand() {
             onPress={() => router.push('/sikkerhetskopi')}
           />
         </Section>
-        <Section footer="Før noe i lageret går ut, og når det er tid for kvartalssjekk.">
+        <Section footer="Før noe i lageret går ut, og når det er tid for beredskapssjekk.">
           <Row
             title="Påminnelser"
             detail={permission === 'granted' ? 'På' : permission === 'denied' ? 'Av' : 'Slå på'}
@@ -80,6 +83,12 @@ export default function Husstand() {
                   ? () => Linking.openSettings()
                   : undefined
             }
+          />
+          <MenuField
+            label="Beredskapssjekk"
+            value={String(checkIntervalMonths)}
+            options={CHECK_INTERVALS_MONTHS.map((months) => ({ value: String(months), label: CHECK_INTERVAL_NAMES[months] }))}
+            onChange={(value) => setCheckInterval(Number(value) as CheckIntervalMonths)}
           />
         </Section>
         <Section
@@ -105,6 +114,12 @@ export default function Husstand() {
     </>
   );
 }
+
+const CHECK_INTERVAL_NAMES: Record<CheckIntervalMonths, string> = {
+  1: 'Hver måned',
+  3: 'Hver tredje måned',
+  6: 'Hvert halvår',
+};
 
 const styles = StyleSheet.create({
   subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: -16, fontSize: 17, color: Colors.secondaryLabel },

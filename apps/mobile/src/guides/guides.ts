@@ -13,6 +13,8 @@ export type Guide = {
   title: string;
   minutes: number;
   sections: { heading: string; points: string[] }[];
+  /** Where to read more, opened in the browser. */
+  link?: { label: string; url: string };
 };
 
 const week = `${TARGET_DAYS} døgn`;
@@ -67,7 +69,7 @@ export const GUIDES: Record<GuideId, Guide> = {
         points: [
           `DSB anbefaler at husstanden klarer seg selv i ${week}.`,
           'Fyll ut Lager i appen, så ser dere hva som mangler.',
-          'Gjør kvartalssjekken, så holder dere lageret oppdatert.',
+          'Gjør beredskapssjekken, så holder dere lageret oppdatert.',
         ],
       },
     ],
@@ -120,7 +122,45 @@ export const GUIDES: Record<GuideId, Guide> = {
       },
     ],
   },
+  // Beredskapsvenn is DSB's campaign: the guide explains it and links to them, and the
+  // agreement itself is made between neighbours, not in the app.
+  preparednessFriend: {
+    id: 'preparednessFriend',
+    title: 'Avtal en beredskapsvenn',
+    minutes: 3,
+    sections: [
+      {
+        heading: 'Hva det er',
+        points: [
+          'En beredskapsvenn er en nabo, venn eller et familiemedlem dere har avtalt å hjelpe når noe skjer, og som hjelper dere tilbake.',
+          'Det er DSB som oppfordrer alle til å finne en beredskapsvenn.',
+        ],
+      },
+      {
+        heading: 'Avtal det før det skjer',
+        points: [
+          'Bli enige om hva dere kan hjelpe hverandre med, som å se til hverandre, dele vann, lade telefonen, overnatte eller hente barn.',
+          'Fortell hverandre om noen trenger medisiner eller ekstra hjelp.',
+          'Legg beredskapsvennen inn som nødkontakt under Nødinfo, så har dere nummeret uten nett.',
+        ],
+      },
+      {
+        heading: 'Når noe skjer',
+        points: [
+          'Ta kontakt så snart du kan, og gjør det dere har avtalt.',
+          'Får dere ikke kontakt, gå bort og se til hverandre hvis det er trygt.',
+        ],
+      },
+    ],
+    link: { label: 'Les om beredskapsvenn hos DSB', url: 'https://www.dsb.no/feature/finn-din-beredskapsvenn/' },
+  },
 };
 
 /** In the order «Kom i gang» lists them. */
-export const GUIDE_LIST: Guide[] = [GUIDES.planSevenDays, GUIDES.storeWater, GUIDES.childrenAndPets, GUIDES.winterPowerOutage];
+export const GUIDE_LIST: Guide[] = [
+  GUIDES.planSevenDays,
+  GUIDES.storeWater,
+  GUIDES.childrenAndPets,
+  GUIDES.preparednessFriend,
+  GUIDES.winterPowerOutage,
+];

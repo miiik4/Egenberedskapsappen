@@ -1,9 +1,9 @@
 import {
   addDays,
   daysBetween,
+  CHECK_EXPIRY_LOOKAHEAD_DAYS,
   EXPIRY_REVIEW_AFTER_DAYS,
-  nextQuarterlyCheck,
-  QUARTERLY_EXPIRY_LOOKAHEAD_DAYS,
+  nextCheck,
 } from '@egenberedskap/core';
 import { router, type Href } from 'expo-router';
 import { useState } from 'react';
@@ -26,15 +26,15 @@ type Step = {
   fix?: Href;
 };
 
-export default function Kvartalssjekk() {
-  const { household, stock } = useData();
-  const { recordQuarterlyCheck, setExpiryReview } = useActions();
+export default function Beredskapssjekk() {
+  const { household, stock, checkIntervalMonths } = useData();
+  const { recordCheck, setExpiryReview } = useActions();
   const { permission, requestPermission } = useNotifications();
   const today = todayIso();
   const expiringThisMonth = stock.filter((item) => {
     if (!item.expiresOn) return false;
     const left = daysBetween(today, item.expiresOn);
-    return left >= 0 && left <= QUARTERLY_EXPIRY_LOOKAHEAD_DAYS;
+    return left >= 0 && left <= CHECK_EXPIRY_LOOKAHEAD_DAYS;
   }).length;
 
   const steps: Step[] = [
@@ -64,7 +64,7 @@ export default function Kvartalssjekk() {
 
   const save = async () => {
     const answered = Object.fromEntries(steps.map((step, i) => [step.key, answers[i]!]));
-    await recordQuarterlyCheck(answered);
+    await recordCheck(answered);
     if (answered.expiry === 'Påminn meg') {
       await setExpiryReview(addDays(today, EXPIRY_REVIEW_AFTER_DAYS));
       if (permission === 'undetermined') await requestPermission();
@@ -91,7 +91,7 @@ export default function Kvartalssjekk() {
       </View>
 
       <View style={styles.intro}>
-        <Text style={styles.title}>Kvartalssjekk</Text>
+        <Text style={styles.title}>Beredskapssjekk</Text>
         <Text style={styles.lead}>Beredskap blir fort utdatert. Fire raske spørsmål holder tallet riktig.</Text>
       </View>
 
@@ -146,7 +146,8 @@ export default function Kvartalssjekk() {
       </View>
 
       <Text style={styles.footnote}>
-        Neste sjekk blir foreslått rundt {formatDate(nextQuarterlyCheck(today))}.
+        Neste sjekk blir foreslått rundt {formatDate(nextCheck(today, checkIntervalMonths))}. Hvor ofte velger du under
+        Husstand.
       </Text>
 
       {complete && (

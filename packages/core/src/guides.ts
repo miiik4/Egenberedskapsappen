@@ -1,6 +1,11 @@
 import type { HouseholdMembers } from './types';
 
-export type GuideId = 'winterPowerOutage' | 'planSevenDays' | 'storeWater' | 'childrenAndPets';
+export type GuideId =
+  | 'winterPowerOutage'
+  | 'planSevenDays'
+  | 'storeWater'
+  | 'childrenAndPets'
+  | 'preparednessFriend';
 
 /** October to March, when a power cut is at its most dangerous. */
 const WINTER_MONTHS = [10, 11, 12, 1, 2, 3];

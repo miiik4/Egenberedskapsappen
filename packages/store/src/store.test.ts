@@ -87,6 +87,14 @@ describe('migrations', () => {
     expect(old.prepare("SELECT COUNT(*) AS n FROM settings WHERE key = 'syncCursor'").get()).toEqual({ n: 0 });
   });
 
+  it('starts the backup download over for the check interval, a new synced setting', async () => {
+    const old = new DatabaseSync(':memory:');
+    await migrate(nodeExecutor(old), 7);
+    old.exec(`INSERT INTO settings (key, value, updated_at) VALUES ('syncCursor', '2026-10-01T10:00:00Z', '2026-10-01T10:00:00Z')`);
+    await migrate(nodeExecutor(old));
+    expect(old.prepare("SELECT COUNT(*) AS n FROM settings WHERE key = 'syncCursor'").get()).toEqual({ n: 0 });
+  });
+
   it('upgrades a version 1 database without losing data', async () => {
     // A phone that installed the very first release: schema 1, with data written then.
     const old = new DatabaseSync(':memory:');
@@ -104,7 +112,7 @@ describe('migrations', () => {
     const data = await upgraded.load();
     expect(old.prepare('PRAGMA user_version').get()).toEqual({ user_version: SCHEMA_VERSION });
     expect(data.stock).toEqual([{ id: 'w1', name: 'Vann', type: 'drinkingWater', litres: 30, ...item }]);
-    expect(data.lastQuarterlyCheck).toBe('2026-10-01');
+    expect(data.lastCheck).toBe('2026-10-01');
     expect(data.documents).toEqual([]);
   });
 });
@@ -114,7 +122,7 @@ describe('first launch', () => {
     const data = await store.load();
     expect(data.onboarded).toBe(false);
     expect(data.properties).toEqual([]);
-    expect(data.lastQuarterlyCheck).toBeNull();
+    expect(data.lastCheck).toBeNull();
   });
 
   it('sets up the household, home and a starter set of rooms', async () => {
@@ -461,7 +469,7 @@ describe('AI analyses', () => {
   });
 });
 
-describe('insurance and quarterly check', () => {
+describe('insurance and beredskapssjekk', () => {
   beforeEach(onboard);
 
   it('stores policies with only the fields that were given', async () => {
@@ -518,11 +526,18 @@ describe('insurance and quarterly check', () => {
     expect((await store.load()).expiryReviewOn).toBeNull();
   });
 
-  it('remembers the latest quarterly check', async () => {
-    await store.recordQuarterlyCheck({ household: 'Ja' });
+  it('remembers the latest beredskapssjekk', async () => {
+    await store.recordCheck({ household: 'Ja' });
     today = '2027-01-03';
-    await store.recordQuarterlyCheck({ household: 'Ja' });
-    expect((await store.load()).lastQuarterlyCheck).toBe('2027-01-03');
+    await store.recordCheck({ household: 'Ja' });
+    expect((await store.load()).lastCheck).toBe('2027-01-03');
+  });
+
+  it('checks every quarter until the household picks another interval', async () => {
+    expect((await store.load()).checkIntervalMonths).toBe(3);
+    await store.setCheckInterval(1);
+    expect((await store.load()).checkIntervalMonths).toBe(1);
+    await expect(store.setCheckInterval(2 as never)).rejects.toThrow();
   });
 });
 

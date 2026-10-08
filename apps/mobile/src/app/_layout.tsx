@@ -48,7 +48,7 @@ export default function RootLayout() {
   );
 }
 
-// Forms and the quarterly check are page sheets, as in the design: the screen behind
+// Forms and the beredskapssjekk are page sheets, as in the design: the screen behind
 // stays visible as a card at the top.
 const sheet = { presentation: 'modal' } as const;
 
@@ -63,7 +63,7 @@ function Routes() {
       </Stack.Protected>
       <Stack.Protected guard={onboarded}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="kvartalssjekk" options={sheet} />
+        <Stack.Screen name="beredskapssjekk" options={sheet} />
         <Stack.Screen name="vare" options={sheet} />
         <Stack.Screen name="kontakt" options={sheet} />
         <Stack.Screen name="motested" options={sheet} />

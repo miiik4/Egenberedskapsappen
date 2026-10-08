@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '@/components/ui/screen';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
@@ -29,6 +29,15 @@ export default function Guide() {
               ))}
             </View>
           ))}
+          {guide.link && (
+            <Pressable
+              onPress={() => guide.link && Linking.openURL(guide.link.url)}
+              accessibilityRole="link"
+              hitSlop={8}
+              style={styles.link}>
+              <Text style={styles.linkText}>{guide.link.label}</Text>
+            </Pressable>
+          )}
         </View>
       </Screen>
     </>
@@ -44,4 +53,6 @@ const styles = StyleSheet.create({
   point: { flexDirection: 'row', gap: 8 },
   bullet: { fontSize: 17, lineHeight: 24, color: Colors.secondaryLabel },
   text: { flex: 1, fontSize: 17, lineHeight: 24, color: Colors.label },
+  link: { alignSelf: 'flex-start', marginTop: 20 },
+  linkText: { fontSize: 17, fontWeight: '600', color: Colors.accent },
 });

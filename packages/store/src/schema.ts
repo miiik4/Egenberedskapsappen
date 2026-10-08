@@ -275,6 +275,11 @@ const MIGRATIONS: string[] = [
   -- New synced tables, skipped by older phones: start over.
   DELETE FROM settings WHERE key = 'syncCursor';
   `,
+  // 8: how often the beredskapssjekk comes round (checkIntervalMonths), a new synced setting.
+  // Settings need no new column, but older phones skipped it: start over.
+  `
+  DELETE FROM settings WHERE key = 'syncCursor';
+  `,
 ];
 
 export const SCHEMA_VERSION = MIGRATIONS.length;

@@ -1,6 +1,6 @@
 import { addDays, daysBetween } from './dates';
-import { EXPIRY_REMINDER_DAYS } from './guidance';
-import { nextQuarterlyCheck } from './quarterly';
+import { nextCheck } from './check';
+import { EXPIRY_REMINDER_DAYS, type CheckIntervalMonths } from './guidance';
 import type { IsoDate, StockItem } from './types';
 
 /**
@@ -12,14 +12,15 @@ export const MAX_REMINDERS = 60;
 export type Reminder =
   /** Everything whose warning falls on the same day, in one notification. */
   | { kind: 'expiring'; on: IsoDate; expiresOn: IsoDate; items: StockItem[] }
-  | { kind: 'quarterlyCheck'; on: IsoDate }
-  /** «Påminn meg» from the quarterly check. */
+  | { kind: 'check'; on: IsoDate }
+  /** «Påminn meg» from the beredskapssjekk. */
   | { kind: 'expiryReview'; on: IsoDate };
 
 export type ReminderInput = {
   items: StockItem[];
   /** The last check, or when the household was set up if there hasn't been one. */
-  lastQuarterlyCheck: IsoDate;
+  lastCheck: IsoDate;
+  checkIntervalMonths: CheckIntervalMonths;
   expiryReviewOn: IsoDate | null;
   today: IsoDate;
 };
@@ -28,7 +29,13 @@ export type ReminderInput = {
  * Every reminder still ahead, soonest first. Days already past are left out: Home shows
  * what's expiring or overdue, so a late notification would add nothing.
  */
-export function planReminders({ items, lastQuarterlyCheck, expiryReviewOn, today }: ReminderInput): Reminder[] {
+export function planReminders({
+  items,
+  lastCheck,
+  checkIntervalMonths,
+  expiryReviewOn,
+  today,
+}: ReminderInput): Reminder[] {
   const ahead = (on: IsoDate) => daysBetween(today, on) >= 0;
   const reminders: Reminder[] = [];
 
@@ -43,8 +50,8 @@ export function planReminders({ items, lastQuarterlyCheck, expiryReviewOn, today
     reminders.push({ kind: 'expiring', on, expiresOn: addDays(on, EXPIRY_REMINDER_DAYS), items: dayItems });
   }
 
-  const checkDue = nextQuarterlyCheck(lastQuarterlyCheck);
-  if (ahead(checkDue)) reminders.push({ kind: 'quarterlyCheck', on: checkDue });
+  const checkDue = nextCheck(lastCheck, checkIntervalMonths);
+  if (ahead(checkDue)) reminders.push({ kind: 'check', on: checkDue });
 
   if (expiryReviewOn && ahead(expiryReviewOn)) reminders.push({ kind: 'expiryReview', on: expiryReviewOn });
 

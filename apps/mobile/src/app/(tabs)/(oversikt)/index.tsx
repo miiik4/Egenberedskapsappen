@@ -1,6 +1,6 @@
 import {
   computeCoverage,
-  daysUntilQuarterlyCheck,
+  daysUntilCheck,
   featuredGuide,
   missingTypes,
   nextActions,
@@ -40,8 +40,8 @@ export default function Oversikt() {
   // «Utstyr»: the categories that aren't counted in days.
   const gearMissing = missingTypes(household, stock, today).filter((t) => !DAY_ROWS.some((r) => r.kind === t.category)).length;
   const guide = GUIDES[featuredGuide(household, Number(today.slice(5, 7)))];
-  // The first check falls due a quarter after the household was set up.
-  const checkIn = daysUntilQuarterlyCheck(data.lastQuarterlyCheck ?? data.onboardedOn ?? today, today);
+  // The first check falls due one interval after the household was set up.
+  const checkIn = daysUntilCheck(data.lastCheck ?? data.onboardedOn ?? today, data.checkIntervalMonths, today);
   const { property, policy, alert } = useHomeInsurance();
   const { permission, requestPermission } = useNotifications();
 
@@ -75,11 +75,9 @@ export default function Oversikt() {
             onPressKind={(kind) => toLager({ pathname: '/lager/kategori/[id]', params: { id: kind } })}
           />
           <Notice
-            title={checkIn > 0 ? `Kvartalssjekk ${formatIn(checkIn)}` : 'Tid for kvartalssjekk'}
-            subtitle={
-              data.lastQuarterlyCheck ? `Sist sjekket ${formatDate(data.lastQuarterlyCheck)}` : 'Ikke sjekket ennå'
-            }
-            onPress={() => router.push('/kvartalssjekk')}
+            title={checkIn > 0 ? `Beredskapssjekk ${formatIn(checkIn)}` : 'Tid for beredskapssjekk'}
+            subtitle={data.lastCheck ? `Sist sjekket ${formatDate(data.lastCheck)}` : 'Ikke sjekket ennå'}
+            onPress={() => router.push('/beredskapssjekk')}
           />
         </View>
 
@@ -100,7 +98,7 @@ export default function Oversikt() {
         <LinkText label="Se alle guider" onPress={() => router.push('/guider')} />
 
         {permission === 'undetermined' && (
-          <Section footer="Før noe går ut, og når det er tid for kvartalssjekk.">
+          <Section footer="Før noe går ut, og når det er tid for beredskapssjekk.">
             <Row title="Slå på påminnelser" titleColor={Colors.accent} onPress={requestPermission} />
           </Section>
         )}
@@ -174,7 +172,7 @@ function Task({ action }: { action: NextAction }) {
   );
 }
 
-/** The yellow banner: something that needs doing soon, here the quarterly check. */
+/** The yellow banner: something that needs doing soon, here the beredskapssjekk. */
 function Notice({ title, subtitle, onPress }: { title: string; subtitle: string; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.notice, pressed && { opacity: 0.8 }]}>

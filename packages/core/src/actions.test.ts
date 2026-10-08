@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { nextActions, type NextAction } from './actions';
 import { item } from './test-items';
-import { daysUntilQuarterlyCheck, nextQuarterlyCheck } from './quarterly';
 import type { HouseholdMembers, StockItem } from './types';
 
 const today = '2026-09-30';
@@ -75,13 +74,5 @@ describe('nextActions', () => {
       ].map((type) => item(type, { type: type as StockItem['type'], meals: 0 })),
     ];
     expect(nextActions(two, full, today)).toEqual([]);
-  });
-});
-
-describe('quarterly check', () => {
-  it('falls due a quarter after the last one, and counts down to it', () => {
-    expect(nextQuarterlyCheck('2026-07-02')).toBe('2026-10-01');
-    expect(daysUntilQuarterlyCheck('2026-07-02', '2026-09-22')).toBe(9);
-    expect(daysUntilQuarterlyCheck('2026-07-02', '2026-10-05')).toBe(-4);
   });
 });

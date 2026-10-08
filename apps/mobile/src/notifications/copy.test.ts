@@ -44,8 +44,10 @@ describe('reminderMessage', () => {
     );
   });
 
-  it('opens the quarterly check and the stockpile review where they belong', () => {
-    expect(reminderMessage({ kind: 'quarterlyCheck', on: '2026-10-09' }).url).toBe('/kvartalssjekk');
+  it('opens the beredskapssjekk and the stockpile review where they belong', () => {
+    const check = reminderMessage({ kind: 'check', on: '2026-10-09' });
+    expect(check.title).toBe('Fremdeles beredt?');
+    expect(check.url).toBe('/beredskapssjekk');
     expect(reminderMessage({ kind: 'expiryReview', on: '2026-10-09' }).url).toBe('/lager');
   });
 });

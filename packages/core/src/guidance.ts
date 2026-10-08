@@ -27,13 +27,20 @@ export const EXPIRY_WARNING_DAYS = 14;
 /** How long before expiry the reminder arrives: «Varsle meg 1 uke før». */
 export const EXPIRY_REMINDER_DAYS = 7;
 
-/** Preparedness drifts as things expire and households change, so it's checked every quarter. */
-export const QUARTERLY_CHECK_INTERVAL_DAYS = 91;
+/**
+ * Preparedness drifts as things expire and households change, so the beredskapssjekk comes
+ * round every few months. The household picks how often: many start keen and want it monthly.
+ */
+export const CHECK_INTERVALS_MONTHS = [1, 3, 6] as const;
+export type CheckIntervalMonths = (typeof CHECK_INTERVALS_MONTHS)[number];
 
-/** The quarterly check goes through what expires within this many days: «innen en måned». */
-export const QUARTERLY_EXPIRY_LOOKAHEAD_DAYS = 30;
+/** Every quarter unless the household picks something else. */
+export const DEFAULT_CHECK_INTERVAL_MONTHS: CheckIntervalMonths = 3;
 
-/** «Påminn meg» on the expiry dates in the quarterly check comes back this many days later. */
+/** The beredskapssjekk goes through what expires within this many days: «innen en måned». */
+export const CHECK_EXPIRY_LOOKAHEAD_DAYS = 30;
+
+/** «Påminn meg» on the expiry dates in the beredskapssjekk comes back this many days later. */
 export const EXPIRY_REVIEW_AFTER_DAYS = 7;
 
 /** «Varsle ved 90 %»: warn when documented belongings reach this share of the sum insured. */

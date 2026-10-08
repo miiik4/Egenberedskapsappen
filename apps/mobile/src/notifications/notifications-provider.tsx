@@ -28,7 +28,7 @@ function toPermission(status: Notifications.NotificationPermissionsStatus): Perm
 /**
  * Keeps the phone's scheduled reminders in step with the data, and opens the right screen
  * when one is tapped. Never asks for permission on its own: the user does that from Home or
- * the quarterly check, where it's clear what the reminders are for.
+ * the beredskapssjekk, where it's clear what the reminders are for.
  */
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const data = useData();
@@ -61,7 +61,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     if (permission !== 'granted' || !data.onboarded) return;
     const plan = planReminders({
       items: data.stock,
-      lastQuarterlyCheck: data.lastQuarterlyCheck ?? data.onboardedOn ?? todayIso(),
+      lastCheck: data.lastCheck ?? data.onboardedOn ?? todayIso(),
+      checkIntervalMonths: data.checkIntervalMonths,
       expiryReviewOn: data.expiryReviewOn,
       today: todayIso(),
     });

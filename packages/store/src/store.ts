@@ -1,11 +1,14 @@
 import {
+  DEFAULT_CHECK_INTERVAL_MONTHS,
   isBelongingCategory,
+  isCheckInterval,
   isClaimKind,
   isDamage,
   isStockType,
   peopleIn,
   stockType,
   type Belonging,
+  type CheckIntervalMonths,
   type Claim,
   type ClaimItem,
   type Household,
@@ -31,7 +34,7 @@ export type Policy = {
   /** «Ikke nå» on the underinsurance warning, at this documented value. */
   alertDismissedKr?: number;
 };
-export type QuarterlyAnswers = Record<string, string>;
+export type CheckAnswers = Record<string, string>;
 /** This phone's link to an encrypted backup. The key itself lives in the Keychain, not here. */
 export type BackupState = { vaultId: string; entitledUntil: string; lastSyncedAt: string | null };
 export type DocumentFile = { id: string; fileName: string; mimeType: string; size: number };
@@ -78,8 +81,11 @@ export type AppData = {
   policies: Policy[];
   documents: StoredDocument[];
   belongings: StoredBelonging[];
-  lastQuarterlyCheck: IsoDate | null;
-  /** «Påminn meg» from the quarterly check: when to remind about expiry dates again. */
+  /** The last beredskapssjekk. The table keeps its old name, quarterly_checks. */
+  lastCheck: IsoDate | null;
+  /** How often the beredskapssjekk comes round. */
+  checkIntervalMonths: CheckIntervalMonths;
+  /** «Påminn meg» from the beredskapssjekk: when to remind about expiry dates again. */
   expiryReviewOn: IsoDate | null;
   /** Ask for Face ID or the phone's code before showing documents. On unless turned off. */
   documentLock: boolean;
@@ -250,6 +256,7 @@ export function createStore({ db, newId, now, today }: Deps) {
         analysisConsent,
         ownerName,
         ownerBirthDate,
+        checkInterval,
       ] = await Promise.all(
         [
           'onboardedOn',
@@ -265,6 +272,7 @@ export function createStore({ db, newId, now, today }: Deps) {
           'analysisConsent',
           'ownerName',
           'ownerBirthDate',
+          'checkIntervalMonths',
         ].map(
           getSetting,
         ),
@@ -453,7 +461,11 @@ export function createStore({ db, newId, now, today }: Deps) {
             ...(receipt && { receipt }),
           };
         }),
-        lastQuarterlyCheck: lastCheck?.checked_on ?? null,
+        lastCheck: lastCheck?.checked_on ?? null,
+        // An interval from a newer version reads as the default until this one learns it.
+        checkIntervalMonths: isCheckInterval(Number(checkInterval))
+          ? (Number(checkInterval) as CheckIntervalMonths)
+          : DEFAULT_CHECK_INTERVAL_MONTHS,
         expiryReviewOn: expiryReviewOn ?? null,
         documentLock: documentLock !== 'off',
         analysisConsent: analysisConsent === 'yes',
@@ -813,7 +825,7 @@ export function createStore({ db, newId, now, today }: Deps) {
       }),
     deleteDocumentFile: (id: string) => softDelete('document_files', id),
 
-    async recordQuarterlyCheck(answers: QuarterlyAnswers) {
+    async recordCheck(answers: CheckAnswers) {
       const at = stamp();
       await db.run(
         'INSERT INTO quarterly_checks (id, checked_on, answers, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
@@ -824,6 +836,11 @@ export function createStore({ db, newId, now, today }: Deps) {
     async setExpiryReview(on: IsoDate | null) {
       if (on !== null) validDate(on, 'expiryReviewOn');
       await setSetting('expiryReviewOn', on);
+    },
+
+    async setCheckInterval(months: CheckIntervalMonths) {
+      if (!isCheckInterval(months)) throw new Error(`Not a check interval: ${months}`);
+      await setSetting('checkIntervalMonths', String(months));
     },
 
     setDocumentLock: (on: boolean) => setSetting('documentLock', on ? 'on' : 'off'),
