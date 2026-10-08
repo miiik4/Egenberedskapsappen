@@ -196,28 +196,33 @@ export const onAnalysisDeleted = onDocumentDeleted('analysisJobs/{jobId}', async
 /**
  * Hourly: deletes jobs past their lifetime with any photos they left, and fails jobs that
  * stopped half way (a phone that never finished uploading, an analysis that died).
+ * Cloud Scheduler isn't offered in europe-north1, so this one runs in europe-west1. It only
+ * lists and deletes; it never reads a photo or a result.
  */
-export const sweepAnalyses = onSchedule({ schedule: 'every 60 minutes', timeZone: 'Europe/Oslo' }, async () => {
-  const now = Date.now();
-  const old = await jobs.where('createdAt', '<', Timestamp.fromMillis(now - STALE_AFTER_MS)).get();
-  for (const doc of old.docs) {
-    const job = doc.data() as Job;
-    try {
-      if (job.expiresAt.toMillis() < now) {
-        await deleteFrames(job, doc.id);
-        await doc.ref.delete();
-      } else if (job.status === 'uploading' || job.status === 'queued' || job.status === 'analysing') {
-        await deleteFrames(job, doc.id);
-        await doc.ref.update({ status: 'failed', error: 'timed-out' });
-      } else {
-        continue;
+export const sweepAnalyses = onSchedule(
+  { schedule: 'every 60 minutes', timeZone: 'Europe/Oslo', region: 'europe-west1' },
+  async () => {
+    const now = Date.now();
+    const old = await jobs.where('createdAt', '<', Timestamp.fromMillis(now - STALE_AFTER_MS)).get();
+    for (const doc of old.docs) {
+      const job = doc.data() as Job;
+      try {
+        if (job.expiresAt.toMillis() < now) {
+          await deleteFrames(job, doc.id);
+          await doc.ref.delete();
+        } else if (job.status === 'uploading' || job.status === 'queued' || job.status === 'analysing') {
+          await deleteFrames(job, doc.id);
+          await doc.ref.update({ status: 'failed', error: 'timed-out' });
+        } else {
+          continue;
+        }
+        await releaseUsage(job.vaultId, doc.id);
+      } catch (e) {
+        console.error(`sweep: analysis ${doc.id}`, e);
       }
-      await releaseUsage(job.vaultId, doc.id);
-    } catch (e) {
-      console.error(`sweep: analysis ${doc.id}`, e);
     }
-  }
-});
+  },
+);
 
 async function releaseUsage(vaultId: string, jobId: string) {
   const ref = usageOf(vaultId);

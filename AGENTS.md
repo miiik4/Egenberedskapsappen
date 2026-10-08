@@ -2,6 +2,8 @@
 
 npm workspaces monorepo: `apps/mobile` (Expo), `packages/core` (domain logic) and `packages/store` (on-device storage). See README.md.
 
+- **Remaining work lives in `LAUNCH.md`.** Work only on items listed there; new ideas go under *After launch*, not into the code. Never name a partner or sponsor without a signed agreement, and never mark a fact as verified that a person hasn't checked.
+
 - Expo changes every SDK. Read `apps/mobile/AGENTS.md` before touching Expo, EAS or React Native APIs.
 - Domain logic belongs in `packages/core`, with tests. It must not import React or React Native, so the app, functions and web can all share it. Consumed as TypeScript source, with no build step.
 - The app is local-first: the stockpile, contacts and documents must work with no network. All data lives in SQLite through `packages/store`; screens read it with `useData()` and write with `useActions()`, which reloads after every write.
