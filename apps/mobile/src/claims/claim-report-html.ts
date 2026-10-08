@@ -51,13 +51,13 @@ export function claimReportHtml(input: ClaimReportHtmlInput): string {
     ? `<section class="photos-section">
         <h2>Bilder av skaden (${photos.length})</h2>
         <div class="grid">
-          ${photos.map((uri) => `<div class="photo-card"><img src="${uri}" /></div>`).join('')}
+          ${photos.map((uri) => `<div class="photo-card"><img src="${escape(uri)}" /></div>`).join('')}
         </div>
       </section>`
     : '';
 
   const receiptSections = receipts
-    .map((r) => `<section class="receipt"><h2>Kvittering: ${escape(r.name)}</h2><img src="${r.dataUri}" /></section>`)
+    .map((r) => `<section class="receipt"><h2>Kvittering: ${escape(r.name)}</h2><img src="${escape(r.dataUri)}" /></section>`)
     .join('');
 
   const hasEstimates = claim.items.some((i) => i.valueEstimated && i.valueKr !== undefined);
