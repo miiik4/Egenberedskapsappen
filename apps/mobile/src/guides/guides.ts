@@ -15,6 +15,13 @@ export type Guide = {
   sections: { heading: string; points: string[] }[];
   /** Where to read more, opened in the browser. */
   link?: { label: string; url: string };
+  sponsored?: {
+    partner: string;
+    title: string;
+    text: string;
+    url?: string;
+    urlLabel?: string;
+  };
 };
 
 const week = `${TARGET_DAYS} døgn`;
@@ -51,6 +58,13 @@ export const GUIDES: Record<GuideId, Guide> = {
       },
     ],
     link: { label: 'Les om strømbrudd på sikkerhverdag.no', url: 'https://www.sikkerhverdag.no/strombrudd' },
+    sponsored: {
+      partner: 'Gjensidige',
+      title: 'FG-godkjent brannteppe og slokkeutstyr',
+      text: 'Når du tar i bruk alternative varmekilder som vedovn eller gassovn, er det ekstra viktig å passe på brannsikkerheten. Ha alltid et FG-godkjent brannteppe og egnet slokkeutstyr lett tilgjengelig i nærheten.',
+      url: 'https://www.gjensidige.no',
+      urlLabel: 'Les om trygg oppvarming og brannsikkerhet',
+    },
   },
   planSevenDays: {
     id: 'planSevenDays',

@@ -6,6 +6,7 @@ import { Text } from '@/components/ui/text';
 const tones = {
   accent: { background: Colors.accentSoft, text: Colors.accent },
   warning: { background: Colors.warningSoft, text: Colors.warningText },
+  neutral: { background: Colors.fill, text: Colors.secondaryLabel },
 } as const;
 
 export type PillTone = keyof typeof tones;

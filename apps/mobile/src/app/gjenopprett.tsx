@@ -1,5 +1,5 @@
 import { normalizeRecoveryCode } from '@egenberedskap/sync';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet } from 'react-native';
 
@@ -8,16 +8,27 @@ import { backupErrorMessage } from '@/backup/messages';
 import { TextField } from '@/components/form/fields';
 import { FormSheet } from '@/components/form/sheet';
 import { PrimaryButton } from '@/components/ui/button';
-import { Section } from '@/components/ui/list';
+import { Icon } from '@/components/ui/icon';
+import { Row, Section } from '@/components/ui/list';
 import { Colors, Spacing } from '@/constants/theme';
 import { Text } from '@/components/ui/text';
+import { registerBarcodeCallback } from '@/lib/scanner';
 
 /** On a new phone: the recovery code brings the whole household back, documents included. */
 export default function Gjenopprett() {
+  const params = useLocalSearchParams<{ barcode?: string }>();
   const { status, restore } = useBackup();
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(() => (params.barcode ? (normalizeRecoveryCode(params.barcode) ?? params.barcode) : ''));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const scanCode = () => {
+    registerBarcodeCallback((scanned) => {
+      const normalized = normalizeRecoveryCode(scanned);
+      setCode(normalized ?? scanned);
+    });
+    router.push({ pathname: '/skann', params: { returnTo: '/gjenopprett' } });
+  };
 
   const start = async () => {
     setBusy(true);
@@ -54,7 +65,13 @@ export default function Gjenopprett() {
           onChange={setCode}
           placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
           autoCapitalize="none"
-          autoFocus
+          autoFocus={!params.barcode}
+        />
+        <Row
+          title="Skann kode"
+          leading={<Icon name={{ ios: 'qrcode.viewfinder', android: 'qr_code_scanner' }} size={18} color={Colors.accent} />}
+          chevron
+          onPress={scanCode}
         />
       </Section>
       {error && <Text style={styles.error}>{error}</Text>}
