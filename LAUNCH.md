@@ -10,6 +10,15 @@ How to use it:
   Nothing is marked verified that a person hasn't actually checked.
 - Items marked **(Mikkel)** need a decision or an account that only Mikkel has.
 
+## Decided 2026-10-08
+
+- **1.0 is free, with Egenberedskap+ hidden.** Backup and AI analysis can't be bought in the app yet, and no insurer
+  has signed. They are switched on when the purchase ships or the first insurer signs, whichever comes first.
+- **Free is what stays on the phone; Egenberedskap+ is what needs our servers** (backup, AI analysis). Entering innbo
+  by hand, receipts and the PDF report are free. (To be confirmed with Tarjei.)
+- **A way to hear users without tracking:** a «Gi tilbakemelding» row that opens an email, and counts the server
+  already sees (codes redeemed, active backups, analyses per month).
+
 ## 1. Content and facts
 
 - [ ] **(Mikkel)** Confirm the company details in `apps/web/src/company.ts` (org.nr., address, email, phone come
@@ -74,8 +83,11 @@ How to use it:
 
 - [ ] App icon, splash and Android adaptive icon are still Expo's template (`assets/images/icon.png`,
       `assets/expo.icon`, colours in `app.json`); the name is cut to «Egenbereds…» on the home screen
-- [ ] **(Mikkel)** Backup and AI analysis need an insurer code, and there's none at launch. Hide them for 1.0, or
-      give App Review a working code (guideline 2.1)
+- [ ] Hide Egenberedskap+ (backup, AI analysis, restore from backup) in 1.0 behind one switch, so it can be turned on
+      without a new native build
+- [ ] «Gi tilbakemelding» row that opens an email to the contact address
+- [ ] The stockpile category footer still says «Typene følger DSBs liste» (→ «bygger på»), and the hygiene page
+      doesn't say nappies only show for households with infants
 - [ ] Remove the unfinished «Reise» tab and the «Meld en skade» row from Eiendeler (both say «kommer i en senere
       versjon»)
 - [ ] Beredskapssjekk: «Byttet» doesn't change the item's date; it looks only 30 days ahead whatever the interval;
@@ -126,7 +138,11 @@ How to use it:
 
 ## After launch (1.1 and later, only when users ask)
 
-- Buying Egenberedskap+ in the app (subscription, 29 kr/mnd; consider a yearly price and the store's 15–30 %)
+- Buying Egenberedskap+ in the app (subscription, 29 kr/mnd; consider a yearly price and the store's 15–30 %).
+  Check Apple's guidelines 3.1.1 and 3.1.3(b) and Google's payments policy as they stand then: insurer codes are
+  safest once the same thing can also be bought in the app. Needs a function that checks receipts and extends
+  `entitledUntil`, and Mikkel's paid-apps agreements with bank and tax details in both stores.
+- Server counts for insurers (codes redeemed, active backups, analyses per month), without tracking users
 - «Meld en skade» guide on top of the damage claims already stored on the phone
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
 - Ideas waiting for user demand: «Jeg er trygg», hazard warnings, power-saving mode, evacuation bag, barcode
