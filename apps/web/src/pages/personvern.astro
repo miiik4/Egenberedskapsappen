@@ -35,7 +35,10 @@ import Page from '../layouts/Page.astro';
   <p>Sletter dere appen, slettes alt som ligger på telefonen.</p>
 
   <h2>Når noe sendes fra telefonen</h2>
-  <p>Bare to funksjoner sender noe fra telefonen, og begge slås på av dere selv.</p>
+  <p>
+    Bare to funksjoner sender noe av det dere har lagt inn fra telefonen, og begge slås på av dere selv. I tillegg
+    spør appen etter oppdateringer når den starter.
+  </p>
 
   <h3>Kryptert sikkerhetskopi</h3>
   <p>
@@ -57,19 +60,36 @@ import Page from '../layouts/Page.astro';
   <h3>KI-analyse av rom</h3>
   <p>
     Når dere filmer et rom eller tar bilder for å finne gjenstander, tar telefonen stillbilder og sletter selve
-    filmen. Bare stillbildene sendes, aldri lyd eller video. De analyseres av Googles KI-tjeneste Vertex AI i EU, og
-    slettes så snart analysen er gjort. Det som kan ligge igjen, ryddes bort av en opprydding som går hver time.
-    Svaret, en liste over gjenstander, krypteres med en nøkkel som bare telefonen har, før det sendes tilbake.
+    filmen. Bare stillbildene sendes, aldri lyd eller video. De analyseres av Googles KI-tjeneste Vertex AI i EU, på
+    Googles vilkår for Vertex AI, og slettes fra vår lagring så snart analysen er gjort. Det som kan ligge igjen,
+    ryddes bort av en opprydding som går hver halvtime. Svaret, en liste over gjenstander, krypteres med en nøkkel som
+    bare telefonen har, før det sendes tilbake.
   </p>
   <p>
-    Vi lagrer ikke bildene og bruker dem ikke til noe annet. Ingen opplysninger om hva som står i hjemmet havner i
-    loggene våre.
+    Mens analysen pågår, lagrer vi en oppføring med en ID for jobben, status, en engangsnøkkel som telefonen har laget
+    (den offentlige delen), og til slutt det krypterte svaret. Oppføringen slettes når telefonen har hentet svaret, og
+    aldri senere enn etter et døgn.
+  </p>
+  <p>
+    Vi tar ikke vare på bildene og bruker dem ikke til noe annet. Google kan for en kort periode logge det som sendes
+    til Vertex AI for å oppdage misbruk. Ingen opplysninger om hva som står i hjemmet havner i loggene våre.
   </p>
 
   <h3>Kontroll av at det er appen som spør</h3>
   <p>
     For at bare appen vår skal kunne bruke serverne, sjekker vi hver forespørsel med Apples App Attest eller Googles
     Play Integrity. Det sier oss at forespørselen kommer fra en ekte installasjon av appen, ikke hvem dere er.
+  </p>
+
+  <h3>Oppdateringer av appen</h3>
+  <p>
+    Når appen starter, spør den Expos server om det finnes en oppdatering. Da sendes en tilfeldig ID for
+    installasjonen, hvilken versjon av appen dere har, om det er iPhone eller Android, og IP-adressen. Ingenting av det
+    dere har lagt inn i appen, sendes med.
+  </p>
+  <p>
+    Som all trafikk på nettet når IP-adressen fram til de som tar imot forespørslene, altså Expo og Google (Firebase).
+    Vi bruker den ikke til å finne ut hvem dere er.
   </p>
 
   <h2>Hvorfor vi har lov</h2>
@@ -89,6 +109,8 @@ import Page from '../layouts/Page.astro';
     </dd>
     <dt>Apple og Google</dt>
     <dd>Bekrefter at forespørsler kommer fra appen (App Attest og Play Integrity).</dd>
+    <dt>Expo (650 Industries, Inc., USA)</dt>
+    <dd>Leverer oppdateringer av appen og ser forespørslene når appen spør etter dem.</dd>
   </dl>
   <p>Vi selger ikke opplysninger, og vi deler dem ikke med forsikringsselskaper, sponsorer eller andre.</p>
 
@@ -108,9 +130,11 @@ import Page from '../layouts/Page.astro';
   <h2>Hvor lenge vi lagrer</h2>
   <ul>
     <li>Bilder til KI-analyse: til analysen er gjort, og aldri mer enn et døgn.</li>
+    <li>Oppføringen for en KI-analyse: til telefonen har hentet svaret, og aldri mer enn et døgn.</li>
     <li>
       Den krypterte sikkerhetskopien: til dere sletter den. Det gjør dere i appen under Sikkerhetskopi, med «Slett
-      sikkerhetskopien». Da slettes alt med en gang, også for andre telefoner som er koblet til.
+      sikkerhetskopien». Da slettes alt med en gang, også for andre telefoner som er koblet til, og med det
+      oppføringer og bilder fra KI-analyser som ikke er ryddet bort ennå.
     </li>
   </ul>
 
