@@ -22,6 +22,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     scheme: production ? 'egenberedskapsappen' : 'egenberedskapsappen-dev',
     ios: {
       ...config.ios,
+      // The home-screen name is short (app.json); «dev» tells the two builds apart.
+      infoPlist: production
+        ? config.ios?.infoPlist
+        : {
+            ...config.ios?.infoPlist,
+            CFBundleDisplayName: `${config.ios?.infoPlist?.CFBundleDisplayName} dev`,
+          },
       bundleIdentifier: id,
       googleServicesFile: `./firebase/${firebase}/GoogleService-Info.plist`,
     },
