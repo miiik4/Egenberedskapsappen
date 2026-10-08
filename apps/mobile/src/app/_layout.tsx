@@ -65,7 +65,6 @@ function Routes() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="beredskapssjekk" options={sheet} />
         <Stack.Screen name="vare" options={sheet} />
-        <Stack.Screen name="skann" options={{ presentation: 'fullScreenModal' }} />
         <Stack.Screen name="kontakt" options={sheet} />
         <Stack.Screen name="motested" options={sheet} />
         <Stack.Screen name="rom" options={sheet} />
@@ -79,9 +78,6 @@ function Routes() {
         <Stack.Screen name="forsikring" options={sheet} />
         <Stack.Screen name="dokument" options={sheet} />
         <Stack.Screen name="sikkerhetskopi" options={sheet} />
-        <Stack.Screen name="skader" options={sheet} />
-        <Stack.Screen name="skade" options={sheet} />
-        <Stack.Screen name="skade-ting" options={sheet} />
         <Stack.Screen name="fil" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
       </Stack.Protected>
       {/* Last, so it's never the fallback a guard redirects to. */}

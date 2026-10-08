@@ -17,10 +17,7 @@ const EMERGENCY_NUMBERS = [
   { number: '116117', display: '116 117', label: 'Legevakt' },
 ];
 
-const call = (number: string) => {
-  const cleaned = number.replace(/[^\d+*#]/g, '');
-  if (cleaned) Linking.openURL(`tel:${cleaned}`);
-};
+const call = (number: string) => Linking.openURL(`tel:${number.replace(/\s/g, '')}`);
 
 /** Opens the meeting place in the phone's maps app. */
 const openMap = (address: string) => {

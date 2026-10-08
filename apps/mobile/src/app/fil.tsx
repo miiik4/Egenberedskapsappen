@@ -19,11 +19,11 @@ import { Text } from '@/components/ui/text';
  */
 export default function FileViewer() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { documents, belongings, claims } = useData();
+  const { documents, belongings } = useData();
   const document = documents.find((d) => d.files.some((f) => f.id === id));
   const docFile = document?.files.find((f) => f.id === id);
   const { removeFile } = useDocumentFiles();
-  const { removeBelongingFile, removeClaimFile } = useActions();
+  const { removeBelongingFile } = useActions();
 
   if (document && docFile) {
     return (
@@ -41,47 +41,16 @@ export default function FileViewer() {
 
   const belonging = belongings.find((b) => b.receipt?.id === id || b.photo?.id === id);
   const file = belonging && (belonging.receipt?.id === id ? belonging.receipt : belonging.photo);
-  if (belonging && file) {
-    return (
-      <Viewer
-        title={belonging.name}
-        fileName={file.fileName}
-        mimeType={file.mimeType}
-        removeQuestion={`Den blir slettet fra ${belonging.name}.`}
-        onRemove={async () => deleteStoredFiles(await removeBelongingFile(file.id))}
-      />
-    );
-  }
-
-  const claimWithPhoto = claims.find((c) => c.photos.some((p) => p.id === id));
-  const claimPhoto = claimWithPhoto?.photos.find((p) => p.id === id);
-  if (claimPhoto) {
-    return (
-      <Viewer
-        title="Skadebilde"
-        fileName={claimPhoto.fileName}
-        mimeType={claimPhoto.mimeType}
-        removeQuestion="Bildet blir slettet fra skademeldingen."
-        onRemove={async () => deleteStoredFiles(await removeClaimFile(claimPhoto.id))}
-      />
-    );
-  }
-
-  const claimItem = claims.flatMap((c) => c.items).find((i) => i.receipt?.id === id);
-  const claimReceipt = claimItem?.receipt;
-  if (claimItem && claimReceipt) {
-    return (
-      <Viewer
-        title={`Kvittering: ${claimItem.name}`}
-        fileName={claimReceipt.fileName}
-        mimeType={claimReceipt.mimeType}
-        removeQuestion={`Kvitteringen blir slettet fra ${claimItem.name}.`}
-        onRemove={async () => deleteStoredFiles(await removeClaimFile(claimReceipt.id))}
-      />
-    );
-  }
-
-  return null;
+  if (!belonging || !file) return null;
+  return (
+    <Viewer
+      title={belonging.name}
+      fileName={file.fileName}
+      mimeType={file.mimeType}
+      removeQuestion={`Den blir slettet fra ${belonging.name}.`}
+      onRemove={async () => deleteStoredFiles(await removeBelongingFile(file.id))}
+    />
+  );
 }
 
 function Viewer({

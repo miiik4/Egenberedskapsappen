@@ -2,7 +2,6 @@ import {
   CATEGORIES,
   CATEGORY_NAMES,
   isStockType,
-  lookupBarcode,
   MEALS_PER_PERSON_PER_DAY,
   stockType,
   suggestType,
@@ -19,13 +18,11 @@ import { Switch } from 'react-native';
 import { confirmDelete, CountField, DateField, DestructiveButton, NumberField, parseNumber, TextField } from '@/components/form/fields';
 import { MenuField } from '@/components/form/menu-field';
 import { FormSheet } from '@/components/form/sheet';
-import { Icon } from '@/components/ui/icon';
 import { Row, Section } from '@/components/ui/list';
 import { Colors } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
-import { registerBarcodeCallback } from '@/lib/scanner';
 
-type Params = { id?: string; type?: string; litres?: string; meals?: string; barcode?: string };
+type Params = { id?: string; type?: string; litres?: string; meals?: string };
 
 /**
  * «Ny vare», the same sheet from every «+» and «Legg til», and for editing. Category and type
@@ -38,52 +35,21 @@ export default function Vare() {
   const { saveStockItem, deleteStockItem } = useActions();
   const existing = stock.find((item) => item.id === params.id);
 
-  const barcodeInitial = params.barcode ? lookupBarcode(params.barcode) : undefined;
-
   const initialType: StockType =
     existing?.type ??
     (params.type && isStockType(params.type)
       ? params.type
-      : barcodeInitial?.type ?? (typesFor(household, 'water')[0]?.id ?? 'drinkingWater'));
+      : (typesFor(household, 'water')[0]?.id ?? 'drinkingWater'));
   const [type, setType] = useState<StockType>(initialType);
   // Once the user picks a type themselves, the name stops steering it.
-  const [typeChosen, setTypeChosen] = useState(existing !== undefined || params.type !== undefined || barcodeInitial !== undefined);
-  const [name, setName] = useState(
-    existing?.name ?? barcodeInitial?.name ?? (params.barcode ? `Strekkode ${params.barcode}` : '')
-  );
+  const [typeChosen, setTypeChosen] = useState(existing !== undefined || params.type !== undefined);
+  const [name, setName] = useState(existing?.name ?? '');
   const [quantity, setQuantity] = useState(existing?.quantity ?? 1);
-  const [litres, setLitres] = useState(
-    existing?.litres !== undefined
-      ? String(existing.litres)
-      : barcodeInitial?.litres !== undefined
-        ? String(barcodeInitial.litres)
-        : (params.litres ?? '')
-  );
+  const [litres, setLitres] = useState(existing?.litres !== undefined ? String(existing.litres) : (params.litres ?? ''));
   const [meals, setMeals] = useState(existing?.meals !== undefined ? String(existing.meals) : (params.meals ?? ''));
   const [expiresOn, setExpiresOn] = useState(existing?.expiresOn);
   const [remind, setRemind] = useState(existing?.remind ?? true);
   const [location, setLocation] = useState(existing?.location ?? '');
-  const [scannedCode, setScannedCode] = useState<string | null>(params.barcode ?? null);
-
-  const applyBarcode = (barcode: string) => {
-    setScannedCode(barcode);
-    const known = lookupBarcode(barcode);
-    if (known) {
-      setName(known.name);
-      setType(known.type);
-      setTypeChosen(true);
-      if (known.litres !== undefined) {
-        setLitres(String(known.litres));
-      }
-    } else {
-      setName((prev) => (prev.trim() ? prev : `Strekkode ${barcode}`));
-    }
-  };
-
-  const scanBarcode = () => {
-    registerBarcodeCallback(applyBarcode);
-    router.push({ pathname: '/skann', params: { returnTo: '/vare' } });
-  };
 
   const info = stockType(type);
   const category = info.category;
@@ -130,13 +96,6 @@ export default function Vare() {
     <FormSheet title={existing ? 'Rediger vare' : 'Ny vare'} canSave={amountOk} onSave={save}>
       <Section header="Vare">
         <TextField label="Navn" value={name} onChange={changeName} placeholder={info.name} autoFocus={!existing && !params.type} />
-        <Row
-          title="Skann strekkode"
-          detail={scannedCode ?? undefined}
-          leading={<Icon name={{ ios: 'barcode.viewfinder', android: 'barcode_scanner' }} size={18} color={Colors.accent} />}
-          chevron
-          onPress={scanBarcode}
-        />
         <MenuField
           label="Kategori"
           value={category}

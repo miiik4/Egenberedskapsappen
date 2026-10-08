@@ -1,9 +1,8 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 
-import { Pill } from '@/components/ui/pill';
 import { Screen } from '@/components/ui/screen';
-import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
+import { Colors, Fonts, Spacing } from '@/constants/theme';
 import { GUIDES } from '@/guides/guides';
 import { Text } from '@/components/ui/text';
 
@@ -39,25 +38,6 @@ export default function Guide() {
               <Text style={styles.linkText}>{guide.link.label}</Text>
             </Pressable>
           )}
-          {guide.sponsored && (
-            <View style={styles.sponsoredCard}>
-              <View style={styles.sponsoredHeader}>
-                <Pill label="Sponset" tone="neutral" />
-                <Text style={styles.sponsoredPartner}>{guide.sponsored.partner}</Text>
-              </View>
-              <Text style={styles.sponsoredTitle}>{guide.sponsored.title}</Text>
-              <Text style={styles.sponsoredText}>{guide.sponsored.text}</Text>
-              {guide.sponsored.url && (
-                <Pressable
-                  onPress={() => guide.sponsored?.url && Linking.openURL(guide.sponsored.url)}
-                  accessibilityRole="link"
-                  hitSlop={8}
-                  style={styles.sponsoredButton}>
-                  <Text style={styles.sponsoredButtonText}>{guide.sponsored.urlLabel ?? 'Les mer'}</Text>
-                </Pressable>
-              )}
-            </View>
-          )}
         </View>
       </Screen>
     </>
@@ -75,48 +55,4 @@ const styles = StyleSheet.create({
   text: { flex: 1, fontSize: 17, lineHeight: 24, color: Colors.label },
   link: { alignSelf: 'flex-start', marginTop: 20 },
   linkText: { fontSize: 17, fontWeight: '600', color: Colors.accent },
-  sponsoredCard: {
-    marginTop: 24,
-    padding: 16,
-    borderRadius: Radius.card,
-    borderCurve: 'continuous',
-    backgroundColor: Colors.card,
-    borderWidth: 1,
-    borderColor: Colors.cardBorder,
-    gap: 8,
-  },
-  sponsoredHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  sponsoredPartner: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.secondaryLabel,
-  },
-  sponsoredTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: Colors.label,
-  },
-  sponsoredText: {
-    fontSize: 15,
-    lineHeight: 21,
-    color: Colors.label,
-  },
-  sponsoredButton: {
-    alignSelf: 'flex-start',
-    marginTop: 4,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: Radius.pill,
-    borderCurve: 'continuous',
-    backgroundColor: Colors.accentSoft,
-  },
-  sponsoredButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.accent,
-  },
 });

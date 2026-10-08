@@ -1,5 +1,4 @@
 export * from './actions';
-export * from './barcodes';
 export * from './belongings';
 export * from './catalogue';
 export * from './check';

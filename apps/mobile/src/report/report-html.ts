@@ -44,7 +44,7 @@ export function reportHtml(input: ReportInput): string {
                   ? 'Anslag utelatt'
                   : 'Ukjent';
             return `<tr>
-          ${input.pictures.size > 0 ? `<td class="pic">${picture ? `<img src="${escape(picture)}" />` : ''}</td>` : ''}
+          ${input.pictures.size > 0 ? `<td class="pic">${picture ? `<img src="${picture}" />` : ''}</td>` : ''}
           <td><div class="name">${escape(line.belonging.name)}</div><div class="muted">${escape(line.belonging.category)}</div></td>
           <td class="value">${value}</td>
         </tr>`;
@@ -57,7 +57,7 @@ export function reportHtml(input: ReportInput): string {
 
   const hasEstimates = report.rooms.some((r) => r.lines.some((l) => l.estimate && l.valueKr !== undefined));
   const receipts = input.receipts
-    .map((r) => `<section class="receipt"><h2>Kvittering: ${escape(r.name)}</h2><img src="${escape(r.dataUri)}" /></section>`)
+    .map((r) => `<section class="receipt"><h2>Kvittering: ${escape(r.name)}</h2><img src="${r.dataUri}" /></section>`)
     .join('');
 
   return `<!doctype html>
