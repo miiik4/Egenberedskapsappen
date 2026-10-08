@@ -60,9 +60,9 @@ How to use it:
 - [x] Storage: default bucket in **europe-north1**, and `roles/firebaserules.firestoreServiceAgent` for the
       Storage service agent (2026-10-08)
 - [x] Vertex AI: API on, `roles/aiplatform.user`, both models answer in europe-north1, cache off (2026-10-08)
-- [ ] `functions/.env.prod` with the three `ANALYSIS_*` values (the deploy refuses to run without them)
-- [ ] Deploy `firestore,storage,functions --project prod`, then a container cleanup policy
-      (`functions:artifacts:setpolicy`) in both europe-north1 and europe-west1
+- [x] `functions/.env.prod` with the three `ANALYSIS_*` values (5ffcb36)
+- [x] Deploy `firestore,storage,functions --project prod`: all nine functions live, cleanup policy in
+      europe-north1 and europe-west1 (2026-10-08)
 - [x] `roles/firebaseappcheck.tokenVerifier` for the functions' service account (2026-10-08)
 - [ ] **(Mikkel)** The functions' service account also got `roles/editor` by default, as on test. Keep it, or cut it
       down to the roles it needs
