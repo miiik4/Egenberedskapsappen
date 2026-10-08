@@ -4,6 +4,7 @@ import { FieldValue, Timestamp, type Transaction } from 'firebase-admin/firestor
 import { getStorage } from 'firebase-admin/storage';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
+import { deleteVaultAnalyses } from './analysis/jobs.js';
 import { db, HEX_64, PROTECTED, requireString, requireUser, type Vault } from './shared.js';
 
 export { onAnalysisDeleted, onAnalysisQueued, startAnalysis, submitAnalysis, sweepAnalyses } from './analysis/jobs.js';
@@ -98,6 +99,7 @@ export const joinVault = onCall(PROTECTED, async (request) => {
     const matches =
       vault !== undefined && timingSafeEqual(Buffer.from(sha256Hex(proof)), Buffer.from(vault.proofHash));
     if (!vault || !matches) throw new HttpsError('not-found', 'recovery-code-invalid');
+    if (vault.deleting) throw new HttpsError('not-found', 'recovery-code-invalid');
     if (!vault.members[uid] && Object.keys(vault.members).length >= MAX_MEMBERS) {
       throw new HttpsError('resource-exhausted', 'too-many-devices');
     }
@@ -117,6 +119,7 @@ export const extendVault = onCall(PROTECTED, async (request) => {
   return db.runTransaction(async (tx) => {
     const vault = (await tx.get(ref)).data() as Vault | undefined;
     if (!vault?.members[uid]) throw new HttpsError('permission-denied', 'not-a-member');
+    if (vault.deleting) throw new HttpsError('failed-precondition', 'vault-deleting');
     const { partner, days } = await redeem(tx, activationCode);
     const entitledUntil = daysFrom(Math.max(Date.now(), vault.entitledUntil.toMillis()), days);
     tx.update(ref, { entitledUntil, partner });
@@ -127,8 +130,9 @@ export const extendVault = onCall(PROTECTED, async (request) => {
 /**
  * Deletes the backup for good, from any phone linked to it: the user's right to erasure, and
  * the only way to do it, since we can't tell whose a vault is. Writes are shut first, so no
- * phone can add a file while the files go; then the files, then the records and the vault
- * itself. Each step can run again, so a call that fails half-way is finished by the next one.
+ * phone can add a file while the files go; then the files, the household's analysis jobs and
+ * usage, the records and the vault itself. Each step can run again, so a call that fails
+ * half-way is finished by the next one.
  * The insurer's activation code is spent and not given back.
  */
 export const deleteVault = onCall({ ...PROTECTED, timeoutSeconds: 300 }, async (request) => {
@@ -142,8 +146,13 @@ export const deleteVault = onCall({ ...PROTECTED, timeoutSeconds: 300 }, async (
   if (!vault) return { deleted: true };
   if (!vault.members[uid]) throw new HttpsError('permission-denied', 'not-a-member');
 
-  await ref.update({ entitledUntil: Timestamp.now() });
-  await getStorage().bucket().deleteFiles({ prefix: `vaults/${vaultId}/` });
+  // extendVault and joinVault refuse a vault marked as deleting, so nothing reopens it.
+  await ref.update({ entitledUntil: Timestamp.now(), deleting: true });
+  const files = { prefix: `vaults/${vaultId}/` };
+  await getStorage().bucket().deleteFiles(files);
+  await deleteVaultAnalyses(vaultId);
   await db.recursiveDelete(ref);
+  // Again, for a file whose upload was already under way when writes were shut.
+  await getStorage().bucket().deleteFiles(files);
   return { deleted: true };
 });

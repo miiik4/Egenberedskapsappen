@@ -20,6 +20,8 @@ export type Vault = {
   partner: string;
   entitledUntil: Timestamp;
   createdAt: Timestamp;
+  /** Set by deleteVault: nothing may join or extend a vault on its way out. */
+  deleting?: boolean;
 };
 
 export function requireUser(request: CallableRequest): string {

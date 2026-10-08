@@ -50,6 +50,8 @@ type Job = {
 };
 
 const JOB_LIFETIME_MS = 24 * 60 * 60 * 1000;
+/** Larger than any phone photo; a frame beyond this is refused unread. */
+const MAX_FRAME_PIXELS = 50_000_000;
 
 // Vertex AI region and models. Photos are processed where the model runs, so the region must
 // be in the EU. Check that both models are offered there before deploying.
@@ -128,7 +130,8 @@ export const submitAnalysis = onCall(PROTECTED, async (request) => {
  * more than once.
  */
 export const onAnalysisQueued = onDocumentUpdated(
-  { document: 'analysisJobs/{jobId}', memory: '2GiB', timeoutSeconds: 300 },
+  // One analysis per instance: each holds up to 60 photos in memory while sharp decodes them.
+  { document: 'analysisJobs/{jobId}', memory: '2GiB', timeoutSeconds: 300, concurrency: 1 },
   async (event) => {
     const before = event.data?.before.data() as Job | undefined;
     const after = event.data?.after.data() as Job | undefined;
@@ -156,6 +159,13 @@ export const onAnalysisQueued = onDocumentUpdated(
         .sort((a, b) => a.n - b.n);
       if (numbered.length !== after.frameCount || numbered.some(({ n }, i) => n !== i)) throw new JobError('frames-missing');
       const frames = await Promise.all(numbered.map(async ({ file }) => (await file.download())[0]));
+      // The upload's content type is only what the phone declared: check what the bytes are
+      // before decoding them, so a small file can't unpack into a huge image.
+      const { default: sharp } = await import('sharp');
+      for (const frame of frames) {
+        const { format, width = 0, height = 0 } = await sharp(frame).metadata();
+        if (format !== 'jpeg' || width * height > MAX_FRAME_PIXELS) throw new JobError('invalid-frame');
+      }
 
       // Loaded here, not at the top: every function shares this module, and the vault functions
       // shouldn't pay for loading sharp and the model SDK on a cold start.
@@ -190,39 +200,62 @@ export const onAnalysisDeleted = onDocumentDeleted('analysisJobs/{jobId}', async
   const job = event.data?.data() as Job | undefined;
   if (!job) return;
   await deleteFrames(job, event.params.jobId).catch((e: unknown) => console.error(`analysis ${event.params.jobId}: could not delete frames`, e));
-  await releaseUsage(job.vaultId, event.params.jobId);
+  // A running analysis frees the slot itself when it ends; freeing it here would let a phone
+  // run several at once by cancelling and starting again.
+  if (job.status !== 'analysing') await releaseUsage(job.vaultId, event.params.jobId);
 });
 
 /**
- * Hourly: deletes jobs past their lifetime with any photos they left, and fails jobs that
- * stopped half way (a phone that never finished uploading, an analysis that died).
- * Cloud Scheduler isn't offered in europe-north1, so this one runs in europe-west1. It only
- * lists and deletes; it never reads a photo or a result.
+ * Every half hour: deletes jobs past their lifetime, fails jobs that stopped half way (a phone
+ * that never finished uploading, an analysis that died), and deletes any photos still left
+ * behind by a finished job. So no photo outlives its job by more than about an hour.
+ * Cloud Scheduler isn't offered in europe-north1, so this one runs in europe-west1. It reads
+ * only the fields below, never a photo or a result.
  */
 export const sweepAnalyses = onSchedule(
-  { schedule: 'every 60 minutes', timeZone: 'Europe/Oslo', region: 'europe-west1' },
+  { schedule: 'every 30 minutes', timeZone: 'Europe/Oslo', region: 'europe-west1' },
   async () => {
     const now = Date.now();
-    const old = await jobs.where('createdAt', '<', Timestamp.fromMillis(now - STALE_AFTER_MS)).get();
+    const stale = (t: Timestamp | undefined) => t !== undefined && now - t.toMillis() > STALE_AFTER_MS;
+    const old = await jobs
+      .where('createdAt', '<', Timestamp.fromMillis(now - STALE_AFTER_MS))
+      .select('uid', 'vaultId', 'status', 'expiresAt', 'claimedAt')
+      .get();
     for (const doc of old.docs) {
-      const job = doc.data() as Job;
+      const job = doc.data() as Pick<Job, 'uid' | 'vaultId' | 'status' | 'expiresAt' | 'claimedAt'>;
+      const expired = job.expiresAt.toMillis() < now;
+      // A running analysis still needs its photos; it is timed from when it started, so a slow
+      // upload doesn't cut it short.
+      if (!expired && job.status === 'analysing' && !stale(job.claimedAt)) continue;
       try {
-        if (job.expiresAt.toMillis() < now) {
-          await deleteFrames(job, doc.id);
+        await deleteFrames(job, doc.id);
+        if (expired) {
           await doc.ref.delete();
         } else if (job.status === 'uploading' || job.status === 'queued' || job.status === 'analysing') {
-          await deleteFrames(job, doc.id);
           await doc.ref.update({ status: 'failed', error: 'timed-out' });
         } else {
           continue;
         }
         await releaseUsage(job.vaultId, doc.id);
       } catch (e) {
-        console.error(`sweep: analysis ${doc.id}`, e);
+        console.error(`sweep: analysis ${doc.id}`, e instanceof Error ? e.name : typeof e);
       }
     }
   },
 );
+
+/**
+ * For deleteVault: every analysis job of a household goes, with its photos and the usage count.
+ * Deleting a job also sets off onAnalysisDeleted, which finds nothing left to do.
+ */
+export async function deleteVaultAnalyses(vaultId: string) {
+  const owned = await jobs.where('vaultId', '==', vaultId).select('uid').get();
+  for (const doc of owned.docs) {
+    await deleteFrames(doc.data() as Pick<Job, 'uid'>, doc.id);
+    await doc.ref.delete();
+  }
+  await usageOf(vaultId).delete();
+}
 
 async function releaseUsage(vaultId: string, jobId: string) {
   const ref = usageOf(vaultId);
