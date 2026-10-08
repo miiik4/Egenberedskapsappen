@@ -23,7 +23,10 @@ service cloud.firestore {
     }
 
     match /vaults/{vaultId} {
-      allow read: if request.auth != null && resource.data.members.get(request.auth.uid, false) == true;
+      // A deleted vault reads as missing rather than as an error, so its other phones learn it's
+      // gone and unlink themselves. Vault ids are hashes of recovery codes, so this reveals nothing.
+      allow read: if request.auth != null
+        && (resource == null || resource.data.members.get(request.auth.uid, false) == true);
       allow write: if false;
 
       match /records/{recordId} {

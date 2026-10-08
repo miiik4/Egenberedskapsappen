@@ -136,6 +136,13 @@ const readRecords = async (user, vaultId, { withAppCheck = true } = {}) =>
     })
   ).status;
 
+const readVault = async (user, vaultId) =>
+  (
+    await fetch(`${FIRESTORE}/vaults/${vaultId}`, {
+      headers: { Authorization: `Bearer ${user.token}`, 'X-Firebase-AppCheck': await appCheck() },
+    })
+  ).status;
+
 async function upload(user, vaultId, { withAppCheck = true } = {}) {
   const name = encodeURIComponent(`vaults/${vaultId}/files/a.jpg`);
   const res = await fetch(`https://firebasestorage.googleapis.com/v0/b/${BUCKET}/o?name=${name}`, {
@@ -225,6 +232,19 @@ describe('backup backend (test project)', () => {
     refused(await readRecords(alice, vaultId, { withAppCheck: false }));
     refused(await writeRecord(alice, vaultId, { withAppCheck: false }));
     refused(await upload(alice, vaultId, { withAppCheck: false }));
+  });
+
+  it('deletes the vault with its records and files, for members only', async () => {
+    assert.equal((await call('deleteVault', stranger, { vaultId })).error, 'not-a-member');
+    assert.equal(await readVault(phone2, vaultId), 200);
+    assert.deepEqual((await call('deleteVault', phone2, { vaultId })).result, { deleted: true });
+    // Gone for every phone: the vault reads as missing, records and files are refused.
+    assert.equal(await readVault(alice, vaultId), 404);
+    assert.equal(await readRecords(alice, vaultId), 403);
+    assert.equal(await writeRecord(alice, vaultId), 403);
+    assert.equal(await upload(alice, vaultId), 403);
+    // Asking again is fine.
+    assert.deepEqual((await call('deleteVault', alice, { vaultId })).result, { deleted: true });
   });
 
   it('refuses requests without sign-in', async () => {

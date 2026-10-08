@@ -10,6 +10,7 @@ import { PrimaryButton } from '@/components/ui/button';
 import { Row, Section } from '@/components/ui/list';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
+import { useDocumentLock } from '@/documents/lock';
 import { formatDateWithYear, formatTime } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
@@ -126,10 +127,13 @@ function TurnOn() {
 
 function Status() {
   const { backup } = useData();
-  const { status, syncNow, extend, disconnect } = useBackup();
+  const { status, syncNow, extend, disconnect, deleteBackup } = useBackup();
+  const { method, unlock } = useDocumentLock();
   const [activationCode, setActivationCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   // Read the clock once per opening, not on every render.
   const [now] = useState(Date.now);
   if (!backup) return null;
@@ -170,6 +174,31 @@ function Status() {
       ],
     );
 
+  const remove = async () => {
+    // Whoever holds the unlocked phone mustn't be able to wipe the household's safety net.
+    if (method && !(await unlock())) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await deleteBackup();
+      router.back();
+    } catch (e) {
+      setDeleteError(backupErrorMessage(e));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const confirmDelete = () =>
+    Alert.alert(
+      'Slette sikkerhetskopien?',
+      'Alt i sikkerhetskopien slettes for godt, også for andre telefoner som er koblet til. Det som ligger på denne telefonen blir liggende. Aktiveringskoden fra forsikringsselskapet kan ikke brukes igjen.',
+      [
+        { text: 'Avbryt', style: 'cancel' },
+        { text: 'Slett', style: 'destructive', onPress: remove },
+      ],
+    );
+
   return (
     <>
       <Section footer="Alt krypteres på telefonen før det lagres. Bare gjenopprettingskoden kan åpne det.">
@@ -200,7 +229,15 @@ function Status() {
         </>
       )}
 
-      <DestructiveButton label="Koble fra denne telefonen" onPress={confirmDisconnect} />
+      {deleteError && <Text style={styles.error}>{deleteError}</Text>}
+      {deleting ? (
+        <ActivityIndicator />
+      ) : (
+        <>
+          <DestructiveButton label="Koble fra denne telefonen" onPress={confirmDisconnect} />
+          <DestructiveButton label="Slett sikkerhetskopien" onPress={confirmDelete} />
+        </>
+      )}
     </>
   );
 }

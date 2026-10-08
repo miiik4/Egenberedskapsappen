@@ -6,6 +6,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   getFirestore,
   onSnapshot,
@@ -76,7 +77,7 @@ export async function ensureSignedIn() {
 
 type VaultResult = { entitledUntil: string };
 
-type FunctionName = 'createVault' | 'joinVault' | 'extendVault' | 'startAnalysis' | 'submitAnalysis';
+type FunctionName = 'createVault' | 'joinVault' | 'extendVault' | 'deleteVault' | 'startAnalysis' | 'submitAnalysis';
 
 export async function callFunction<T>(name: FunctionName, data: object): Promise<T> {
   await ensureSignedIn();
@@ -93,6 +94,14 @@ export const joinVault = (data: { vaultId: string; proof: string }) =>
   callFunction<VaultResult & { wrappedKey: string }>('joinVault', data);
 export const extendVault = (data: { vaultId: string; activationCode: string }) =>
   callFunction<VaultResult>('extendVault', data);
+/** Deletes the backup for every phone linked to it. Fine if it's gone already. */
+export const deleteVault = (vaultId: string) => callFunction<{ deleted: true }>('deleteVault', { vaultId });
+
+/** Whether the vault is still there; another phone may have deleted it. */
+export async function vaultExists(vaultId: string): Promise<boolean> {
+  await ensureSignedIn();
+  return (await getDoc(doc(getFirestore(), 'vaults', vaultId))).exists();
+}
 
 /** AI analysis of a room (functions/src/analysis/jobs.ts): ask, upload the photos, submit. */
 export const startAnalysis = (data: {

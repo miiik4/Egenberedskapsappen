@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 
 import { FieldValue, Timestamp, type Transaction } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 
 import { db, HEX_64, PROTECTED, requireString, requireUser, type Vault } from './shared.js';
@@ -121,4 +122,28 @@ export const extendVault = onCall(PROTECTED, async (request) => {
     tx.update(ref, { entitledUntil, partner });
     return { entitledUntil: entitledUntil.toDate().toISOString() };
   });
+});
+
+/**
+ * Deletes the backup for good, from any phone linked to it: the user's right to erasure, and
+ * the only way to do it, since we can't tell whose a vault is. Writes are shut first, so no
+ * phone can add a file while the files go; then the files, then the records and the vault
+ * itself. Each step can run again, so a call that fails half-way is finished by the next one.
+ * The insurer's activation code is spent and not given back.
+ */
+export const deleteVault = onCall({ ...PROTECTED, timeoutSeconds: 300 }, async (request) => {
+  const uid = requireUser(request);
+  const { vaultId } = request.data ?? {};
+  requireString(vaultId, 'vault-id', HEX_64);
+
+  const ref = db.collection('vaults').doc(vaultId);
+  const vault = (await ref.get()).data() as Vault | undefined;
+  // Already gone, perhaps from another phone: that's what was asked for.
+  if (!vault) return { deleted: true };
+  if (!vault.members[uid]) throw new HttpsError('permission-denied', 'not-a-member');
+
+  await ref.update({ entitledUntil: Timestamp.now() });
+  await getStorage().bucket().deleteFiles({ prefix: `vaults/${vaultId}/` });
+  await db.recursiveDelete(ref);
+  return { deleted: true };
 });

@@ -43,6 +43,8 @@ type BackupContextValue = {
   syncNow: () => Promise<void>;
   /** Unlinks this phone. The backup itself stays, reachable with the recovery code. */
   disconnect: () => Promise<void>;
+  /** Deletes the backup for good, for every phone. What's on this phone stays. */
+  deleteBackup: () => Promise<void>;
 };
 
 const BackupContext = createContext<BackupContextValue | null>(null);
@@ -81,6 +83,12 @@ export function BackupProvider({ children }: { children: ReactNode }) {
   const running = useRef(false);
   const again = useRef(false);
 
+  /** This phone stops using the backup: the key goes, and the data on the phone stays. */
+  const forget = useCallback(async () => {
+    await deleteDataKey();
+    await actions.setBackup(null);
+  }, [actions]);
+
   const syncNow = useCallback(async () => {
     if (!available || !vaultId) return;
     if (running.current) {
@@ -108,7 +116,11 @@ export function BackupProvider({ children }: { children: ReactNode }) {
       } while (again.current);
       setStatus(entitled ? 'synced' : 'readOnly');
     } catch (error) {
-      if (errorCode(error).includes('permission-denied')) setStatus('readOnly');
+      if (errorCode(error).includes('permission-denied')) {
+        // Refused: either the entitlement ran out, or another phone deleted the backup.
+        if (await requireFirebase().vaultExists(vaultId).catch(() => true)) setStatus('readOnly');
+        else await forget();
+      }
       else if (isOffline(error)) setStatus('offline');
       else {
         console.error('Backup failed', error);
@@ -117,7 +129,7 @@ export function BackupProvider({ children }: { children: ReactNode }) {
     } finally {
       running.current = false;
     }
-  }, [available, vaultId, entitled, source, actions]);
+  }, [available, vaultId, entitled, source, actions, forget]);
 
   // Sync when the app starts and whenever it comes back, to pick up other phones' changes.
   useEffect(() => {
@@ -180,12 +192,15 @@ export function BackupProvider({ children }: { children: ReactNode }) {
 
       syncNow,
 
-      async disconnect() {
-        await deleteDataKey();
-        await actions.setBackup(null);
+      disconnect: forget,
+
+      async deleteBackup() {
+        if (!vaultId) return;
+        await requireFirebase().deleteVault(vaultId);
+        await forget();
       },
     }),
-    [available, vaultId, status, syncNow, source, actions, reload],
+    [available, vaultId, status, syncNow, source, actions, reload, forget],
   );
 
   return <BackupContext value={value}>{children}</BackupContext>;
