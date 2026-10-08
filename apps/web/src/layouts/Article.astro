@@ -8,12 +8,14 @@ interface Props {
   date: string;
   readingTime: string;
   category: string;
+  image?: string;
+  isoDate?: string;
 }
 
-const { title, description, heading, date, readingTime, category } = Astro.props;
+const { title, description, heading, date, readingTime, category, image, isoDate } = Astro.props;
 ---
 
-<Base title={title} description={description}>
+<Base title={title} description={description} ogType="article" image={image} publishedTime={isoDate}>
   <div class="wrap article-container">
     <nav class="breadcrumbs" aria-label="Brødsmulesti">
       <a href="/blogg" class="back-link">

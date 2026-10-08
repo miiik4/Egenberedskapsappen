@@ -65,6 +65,7 @@ function Routes() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="beredskapssjekk" options={sheet} />
         <Stack.Screen name="vare" options={sheet} />
+        <Stack.Screen name="skann" options={{ presentation: 'fullScreenModal' }} />
         <Stack.Screen name="kontakt" options={sheet} />
         <Stack.Screen name="motested" options={sheet} />
         <Stack.Screen name="rom" options={sheet} />

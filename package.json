@@ -13,6 +13,7 @@
     "mobile": "npm --workspace mobile run start",
     "test": "npm --workspaces --if-present run test",
     "typecheck": "npm --workspaces --if-present run typecheck",
-    "lint": "npm --workspaces --if-present run lint"
+    "lint": "npm --workspaces --if-present run lint",
+    "preflight": "node scripts/preflight.mjs"
   }
 }
