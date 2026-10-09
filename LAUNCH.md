@@ -119,8 +119,10 @@ How to use it:
 - [ ] *(fixed in code, 5de5d53; check on a device)* Android layout: forms and the Beredskapssjekk under the status bar; subtitles clipped by `marginTop: -16`;
       keyboard covering fields; back on Velkommen leaves the app
 - [ ] *(fixed in code, 5de5d53; check on a device)* Android native config: notification icon, `blockedPermissions` for overlay, storage and media permissions
-- [ ] *(PDF margins and file timing fixed in 5de5d53)* Android documents: relock while adding a file, «fingeravtrykk» wording, no pinch-zoom, «Åpne PDF» opening a
-      share sheet; report PDF margins and the file deleted before the mail app reads it
+- [ ] *(fixed in code, 5de5d53 and the commit after; check on a device)* Android documents: relock while adding a
+      file, sensor wording, pinch-zoom, report PDF margins and timing
+- [ ] **(Mikkel)** On Android «Åpne PDF» can only share the file, so a passport PDF is one tap from mail apps. Opening
+      it in a viewer needs expo-intent-launcher (a new native package, so a `version` bump). Before 1.0, or later?
 - [ ] Run the 16 device checks in `docs/android-review.md` on a real Android phone or emulator
 - [x] App language declared as Norwegian on iOS, so system parts (date picker) show Norwegian (5de5d53)
 - [ ] Walk through every flow in the simulator, including with no network (the QA agent couldn't: it needs simulator
