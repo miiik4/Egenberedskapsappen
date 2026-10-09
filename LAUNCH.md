@@ -55,6 +55,17 @@ How to use it:
 - [x] A release build has no way to delete all data («Slett alle data» is `__DEV__` only, `husstand.tsx`)
 - [x] Camera and photo permission texts say that photos may be sent for AI analysis in the EU
 
+- [x] Security review of the app, sync, backend and website: no critical issues; three major ones fixed (9a48948),
+      full report in `docs/security-review-2026-10.md`
+- [ ] **(Mikkel)** Over-the-air updates aren't code-signed and are published from the personal Expo account «mkl96»:
+      move the project to a company account, and turn on expo-updates code signing before 1.0 is built (native
+      change; decide who keeps the private key and where)
+- [ ] Website: clickjacking and CSP headers in `firebase.json` hosting
+- [ ] Reminders show item names on the lock screen (medicine names); use a neutral text
+- [ ] The recovery-code screen is visible in the app switcher (decide: protect it, which also blocks screenshots of
+      the code on Android)
+- [ ] Before Egenberedskap+: drop v1 sync records, delete analysis photos from the phone's cache after the job
+
 ## 3. AI analysis of rooms, on the test project
 
 - [x] Vertex AI API enabled, `roles/aiplatform.user` granted to the functions' service account (2026-10-08)
