@@ -4,9 +4,8 @@ Draft for LAUNCH.md section 6, redone 2026-10-09 for 1.0. Mikkel answers the for
 
 1. **1.0, Egenberedskap+ off** (`EGENBEREDSKAP_PLUS_ENABLED = false` in `apps/mobile/src/constants/config.ts`).
    Use these for the first submission.
-2. **Egenberedskap+ on** (backup, AI analysis of rooms, restore). Switching it on is an `eas update`, with no new
-   build and no store review. Update both forms *before* that update goes out; both can be edited at any time,
-   without a new version.
+2. **Egenberedskap+ on** (backup, AI analysis of rooms, restore). Switched on in a new version that goes through
+   store review (never with `eas update`). Update both forms before that version is submitted.
 
 Based on the code (`apps/mobile/src/backup/`, `apps/mobile/src/analysis/`, `apps/mobile/app.json`, `functions/src`)
 and on `apps/web/src/pages/personvern.astro`. What was read in code is stated as such. Nothing here has been checked
@@ -96,7 +95,7 @@ info and performance.
 
 ## Egenberedskap+ on
 
-Same as the 1.0 answers, plus the flows below. Use these from the `eas update` that turns the switch on.
+Same as the 1.0 answers, plus the flows below. Use these from the version that turns the switch on.
 
 ### What leaves the phone, in addition to the update check
 
@@ -172,4 +171,4 @@ collect IP addresses for security, and the Functions SDK lists an FCM token. The
 - [ ] A release build with Egenberedskap+ off, behind a proxy (e.g. Proxyman or Charles): only `u.expo.dev` on
       launch, nothing to `*.googleapis.com` / `firebase*`, also after using every screen. This is what confirms the
       1.0 answers above.
-- [ ] Same build with the switch on (an `eas update` to a test channel): the flows in the table, and no FCM token.
+- [ ] A build with the switch on: the flows in the table, and no FCM token.

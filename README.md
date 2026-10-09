@@ -38,7 +38,7 @@ Only our app may reach the backend. The functions require App Check and take eac
 
 «Film et rom» sends photos of a room to Gemini on Vertex AI, which lists the things in them with a category, an estimated value and where each one is (`functions/src/analysis`). It is the one place content leaves the phone unencrypted, so:
 
-- Only photos go up, never video or sound: when a room is filmed, the phone takes still frames from the recording and deletes it. The photos are deleted as soon as the analysis is done, and a sweep every hour removes anything left behind.
+- Only photos go up, never video or sound: when a room is filmed, the phone takes still frames from the recording and deletes it. The photos are deleted as soon as the analysis is done, and a sweep every 30 minutes removes anything left behind.
 - The answer is text only, encrypted to a key made on the phone for that one analysis (X25519, `packages/sync/src/analysis.ts`). The phone cuts each thing's picture from its own copy of the photo.
 - It runs in the EU and needs a vault with a current entitlement: the insurer pays for it as for backup. One analysis at a time per household, at most 20 a day.
 
@@ -60,7 +60,7 @@ The prod project (`egenberedskapsappen`) is set up and deployed: Anonymous Auth,
 
 ### Egenberedskap+ switch
 
-Backup, AI analysis of rooms and restore are off in 1.0: `EGENBEREDSKAP_PLUS_ENABLED` in `apps/mobile/src/constants/config.ts`. While it's off their screens are hidden and Firebase isn't loaded, unless the phone already has a backup linked. The native Firebase code is in every build, so turning it on is a JS-only change shipped with `eas update`. Update the store privacy answers (`docs/store/privacy-answers.md`) first.
+Backup, AI analysis of rooms and restore are off in 1.0: `EGENBEREDSKAP_PLUS_ENABLED` in `apps/mobile/src/constants/config.ts`. While it's off their screens are hidden and Firebase isn't loaded, unless the phone already has a backup linked. Turn it on only in a new build that goes through store review, never with `eas update`: Apple doesn't allow features unlocked by downloaded code (guidelines 2.3.1 and 2.5.2), and on iPhone the in-app purchase has to ship in the same version (3.1.1). Update the store privacy answers (`docs/store/privacy-answers.md`) first.
 
 ## Builds
 

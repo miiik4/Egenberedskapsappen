@@ -13,7 +13,9 @@ How to use it:
 ## Decided 2026-10-08
 
 - **1.0 is free, with Egenberedskap+ hidden in the app.** Backup and AI analysis can't be bought in the app yet, and no
-  insurer has signed. They are switched on when the purchase ships or the first insurer signs, whichever comes first.
+  insurer has signed. They come in a new version through store review (never with `eas update`; Apple guidelines
+  2.3.1, 2.5.2), and on iPhone only together with the in-app purchase, even if an insurer signs first (3.1.1,
+  3.1.3(b)).
   The website keeps Egenberedskap+, clearly marked «Kommer» with the planned price, so nobody feels misled later.
 - **Free is what stays on the phone; Egenberedskap+ is what needs our servers** (backup, AI analysis). Entering innbo
   by hand, receipts and the PDF report are free. (To be confirmed with Tarjei.)
