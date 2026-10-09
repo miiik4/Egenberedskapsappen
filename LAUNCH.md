@@ -153,7 +153,7 @@ How to use it:
       choice of interval, once the app version that has it is out
 - [ ] App Store and Google Play links
 - [x] Every claim checked against the app; false ones fixed (287df93)
-- [ ] **(Mikkel)** The Egenberedskap+ section sells the innbo list, receipts and PDF as paid, but the app lets
+- [x] *(resolved: the innbo list, receipts and PDF are shown as free, df22ba5)* The Egenberedskap+ section sells the innbo list, receipts and PDF as paid, but the app lets
       anyone add things by hand (depends on Tarjei's answer in section 7)
 - [x] **(Mikkel)** «Sponset innhold er alltid merket» describes sponsored content the app doesn't have: keep it as a
       promise, or say «ingen reklame eller sporing»
