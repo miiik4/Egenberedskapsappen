@@ -12,20 +12,71 @@ import { Text } from '@/components/ui/text';
 type LockContextValue = {
   /** True while documents must stay hidden. */
   locked: boolean;
-  /** How the user unlocks, for button text: «Face ID», «Touch ID» or «kode». Null if the phone has no lock. */
+  /**
+   * How the user unlocks, for text such as «Dokumentene krever … for å åpnes»: «Face ID», «Touch ID»,
+   * «kode», or on Android «ansiktsgjenkjenning», «fingeravtrykk» or «biometri eller kode».
+   * Null if the phone has no lock.
+   */
   method: string | null;
+  /** The unlock button's label. */
+  unlockLabel: string;
   unlock: () => Promise<boolean>;
 };
 
 const LockContext = createContext<LockContextValue | null>(null);
 
-async function unlockMethod(): Promise<string | null> {
+type UnlockMethod = { method: string; label: string };
+
+const withMethod = (method: string): UnlockMethod => ({ method, label: `Lås opp med ${method}` });
+
+async function unlockMethod(): Promise<UnlockMethod | null> {
   if ((await LocalAuthentication.getEnrolledLevelAsync()) === LocalAuthentication.SecurityLevel.NONE) return null;
-  if (!(await LocalAuthentication.isEnrolledAsync())) return 'kode';
+  if (!(await LocalAuthentication.isEnrolledAsync())) return withMethod('kode');
   const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
-  if (Platform.OS === 'ios' && types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) return 'Face ID';
-  if (Platform.OS === 'ios' && types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) return 'Touch ID';
-  return Platform.OS === 'ios' ? 'kode' : 'fingeravtrykk';
+  const face = types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION);
+  const fingerprint = types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT);
+  if (Platform.OS === 'ios') {
+    if (face) return withMethod('Face ID');
+    if (fingerprint) return withMethod('Touch ID');
+    return withMethod('kode');
+  }
+  // Android reports the sensors the phone has, not which one is set up, and the prompt also
+  // takes the PIN. Name a sensor only when it's the only kind; otherwise stay neutral.
+  if (face && !fingerprint) return { method: 'ansiktsgjenkjenning', label: 'Lås opp med ansiktet' };
+  if (fingerprint && !face) return { method: 'fingeravtrykk', label: 'Lås opp med fingeravtrykk' };
+  return { method: 'biometri eller kode', label: 'Lås opp' };
+}
+
+/**
+ * Expected external activity (Android only).
+ *
+ * On Android the camera, the photo picker, the file picker, the share sheet and even the camera
+ * permission dialog are separate activities, so React Native reports `background` when they
+ * open, and documents would lock and ask for biometrics again on the way back.
+ * `withExternalActivity()` opens a window just before launching one of them. A trip to the
+ * background inside the window doesn't lock, but:
+ * - the window closes as soon as the call returns (the picker or sheet is closed), so leaving
+ *   the app afterwards (home, app switch) locks as usual. It isn't closed on `active`: asking
+ *   for the camera permission is its own trip out and back before the camera opens;
+ * - the window lasts at most EXTERNAL_ACTIVITY_MS from when it opened. If the app comes back
+ *   later than that (say the user pressed home while in the picker and came back much later),
+ *   it locks on return. JS timers stop in the background, so this is checked on return.
+ * The documents stay mounted while the picker is open, so FLAG_SECURE stays on throughout.
+ * On iOS these pickers and sheets run inside the app, so nothing changes there.
+ */
+const EXTERNAL_ACTIVITY_MS = 2 * 60_000;
+
+let externalActivity: { token: object; until: number } | null = null;
+
+export async function withExternalActivity<T>(launch: () => Promise<T>): Promise<T> {
+  if (Platform.OS !== 'android') return launch();
+  const token = {};
+  externalActivity = { token, until: Date.now() + EXTERNAL_ACTIVITY_MS };
+  try {
+    return await launch();
+  } finally {
+    if (externalActivity?.token === token) externalActivity = null;
+  }
 }
 
 /**
@@ -36,17 +87,29 @@ async function unlockMethod(): Promise<string | null> {
 export function DocumentLockProvider({ children }: { children: ReactNode }) {
   const { documentLock } = useData();
   const [unlocked, setUnlocked] = useState(false);
-  const [method, setMethod] = useState<string | null | undefined>(undefined);
+  const [method, setMethod] = useState<UnlockMethod | null | undefined>(undefined);
 
   useEffect(() => {
     let live = true;
+    // The time a lock was skipped for an expected external activity (see withExternalActivity).
+    let skippedLockUntil: number | null = null;
     const check = () => unlockMethod().then((m) => live && setMethod(m));
     check();
     const subscription = AppState.addEventListener('change', (state) => {
       // Only a real trip to the background locks: the Face ID prompt itself makes the app
       // briefly «inactive», and locking then would undo the unlock it's in the middle of.
-      if (state === 'background') setUnlocked(false);
-      if (state === 'active') check();
+      if (state === 'background') {
+        if (externalActivity && Date.now() < externalActivity.until) {
+          skippedLockUntil = externalActivity.until;
+        } else {
+          setUnlocked(false);
+        }
+      }
+      if (state === 'active') {
+        if (skippedLockUntil !== null && Date.now() >= skippedLockUntil) setUnlocked(false);
+        skippedLockUntil = null;
+        check();
+      }
     });
     return () => {
       live = false;
@@ -67,7 +130,11 @@ export function DocumentLockProvider({ children }: { children: ReactNode }) {
   // Until the phone's lock has been checked, err on the side of locked.
   const locked = documentLock && method !== null && !unlocked;
 
-  return <LockContext value={{ locked, method: method ?? null, unlock }}>{children}</LockContext>;
+  return (
+    <LockContext value={{ locked, method: method?.method ?? null, unlockLabel: method?.label ?? 'Lås opp', unlock }}>
+      {children}
+    </LockContext>
+  );
 }
 
 export function useDocumentLock(): LockContextValue {
@@ -83,7 +150,7 @@ export function useDocumentLock(): LockContextValue {
  * never lifts the protection at the moment the system takes its snapshot.
  */
 export function DocumentGate({ children, dark }: { children: ReactNode; dark?: boolean }) {
-  const { locked, method, unlock } = useDocumentLock();
+  const { locked, unlockLabel, unlock } = useDocumentLock();
   const asked = useRef(false);
   useScreenProtection();
 
@@ -101,7 +168,7 @@ export function DocumentGate({ children, dark }: { children: ReactNode; dark?: b
     <View style={[styles.locked, dark && styles.dark]}>
       <Icon name={{ ios: 'lock.fill', android: 'lock' }} size={40} color={dark ? '#FFFFFF' : Colors.secondaryLabel} />
       <Text style={[styles.title, dark && { color: '#FFFFFF' }]}>Dokumentene er låst</Text>
-      <PrimaryButton label={method ? `Lås opp med ${method}` : 'Lås opp'} onPress={unlock} />
+      <PrimaryButton label={unlockLabel} onPress={unlock} />
     </View>
   );
 }

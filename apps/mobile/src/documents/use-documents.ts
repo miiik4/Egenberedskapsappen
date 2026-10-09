@@ -6,6 +6,7 @@ import { Alert, Linking } from 'react-native';
 import { useActions } from '@/data/data-provider';
 
 import { deleteStoredFiles, importAndRecord } from './files';
+import { withExternalActivity } from './lock';
 
 export type Source = 'camera' | 'photos' | 'files';
 
@@ -51,7 +52,8 @@ export function useDocumentFiles() {
 
   return {
     async addFrom(documentId: string, source: Source) {
-      for (const picked of await pickFiles(source)) {
+      // The picker or camera leaves the app on Android; don't relock the document for it.
+      for (const picked of await withExternalActivity(() => pickFiles(source))) {
         await importAndRecord(picked.uri, picked.mimeType, (file) =>
           addDocumentFile({ documentId, ...file, mimeType: picked.mimeType }),
         );
