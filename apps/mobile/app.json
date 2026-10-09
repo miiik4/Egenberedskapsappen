@@ -11,7 +11,9 @@
       "infoPlist": {
         "CFBundleDisplayName": "Beredskap",
         "CFBundleDevelopmentRegion": "nb",
-        "CFBundleLocalizations": ["nb"]
+        "CFBundleLocalizations": [
+          "nb"
+        ]
       },
       "supportsTablet": false,
       "entitlements": {
@@ -56,15 +58,15 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Velg bilder for \u00e5 dokumentere innbo og dokumenter. Bildene sendes ikke noe sted uten at du velger det.",
-          "cameraPermission": "Ta bilder og film for \u00e5 dokumentere innbo og dokumenter. Bildene sendes ikke noe sted uten at du velger det.",
+          "photosPermission": "Velg bilder for å dokumentere innbo og dokumenter. Bildene sendes ikke noe sted uten at du velger det.",
+          "cameraPermission": "Ta bilder og film for å dokumentere innbo og dokumenter. Bildene sendes ikke noe sted uten at du velger det.",
           "microphonePermission": false
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Ta bilder og film for \u00e5 dokumentere innbo og dokumenter. Bildene sendes ikke noe sted uten at du velger det.",
+          "cameraPermission": "Ta bilder og film for å dokumentere innbo og dokumenter. Bildene sendes ikke noe sted uten at du velger det.",
           "microphonePermission": false,
           "recordAudioAndroid": false
         }
@@ -72,14 +74,14 @@
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Bruk Face ID for \u00e5 \u00e5pne dokumentene dine."
+          "faceIDPermission": "Bruk Face ID for å åpne dokumentene dine."
         }
       ],
       [
         "expo-secure-store",
         {
           "configureAndroidBackup": false,
-          "faceIDPermission": "Bruk Face ID for \u00e5 \u00e5pne dokumentene dine."
+          "faceIDPermission": "Bruk Face ID for å åpne dokumentene dine."
         }
       ],
       [
@@ -110,7 +112,12 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/b92cddc0-f00c-4701-b7f9-99dfcf4a2ccc"
+      "url": "https://u.expo.dev/b92cddc0-f00c-4701-b7f9-99dfcf4a2ccc",
+      "codeSigningCertificate": "./certs/certificate.pem",
+      "codeSigningMetadata": {
+        "keyid": "main",
+        "alg": "rsa-v1_5-sha256"
+      }
     }
   }
 }

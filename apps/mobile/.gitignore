@@ -29,6 +29,9 @@ yarn-error.*
 # macOS
 .DS_Store
 *.pem
+# The public certificate for signed updates is needed by every build. The private key
+# lives outside the repo, in ~/.egenberedskapsappen/keys (see README).
+!certs/certificate.pem
 
 # local env files
 .env*.local

@@ -64,6 +64,20 @@ Backup, AI analysis of rooms and restore are off in 1.0: `EGENBEREDSKAP_PLUS_ENA
 
 ## Builds
 
+Builds and updates belong to the Expo account `holm-and-tall-as`.
+
+### Signed updates
+
+Over-the-air updates are code-signed: a build only accepts updates signed with the key that matches `apps/mobile/certs/certificate.pem`. The private key is never in git and never sent to Expo; `eas update` signs locally. It lives in `~/.egenberedskapsappen/keys/private-key.pem` on Mikkel's Mac, with a backup in his password manager. Publish updates with the script, which passes the key:
+
+```sh
+cd apps/mobile
+npm run publish-update -- --channel production --message "…"
+```
+
+An update published without the key is rejected by every build. If the key is lost, published builds can't receive updates until a new build with a new certificate is out (`npx expo-updates codesigning:generate`, then a `version` bump).
+
+
 Backup needs the native Firebase SDK, so it only works in a development build, not in Expo Go (everything else still does).
 
 ```sh
