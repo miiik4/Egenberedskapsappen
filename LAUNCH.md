@@ -99,7 +99,18 @@ How to use it:
 - [x] Deleting an item from its detail page leaves «Varen er slettet.» with no way on
 - [x] A failed database load or migration shows a blank screen with no message
 - [x] `/utvikling` can be opened by deep link in a release build
-- [ ] Check Android dark mode (the colours may fall back to light values)
+- [x] Static Android review: `docs/android-review.md` (2026-10-09; nothing run on a device)
+- [ ] Android blockers: adding/editing a property (header menu with no icon, `eiendeler/index.tsx`) and «Rediger»
+      on a stock item (`lager/vare/[id].tsx`) don't render on Android
+- [ ] Date picker saves the day before on Android (local midnight passed as UTC, `fields.tsx`)
+- [ ] Android dark mode: unreadable headers and menus; force light (`android.userInterfaceStyle`) and set the
+      navigation theme and tab bar colours explicitly
+- [ ] Android layout: forms and the Beredskapssjekk under the status bar; subtitles clipped by `marginTop: -16`;
+      keyboard covering fields; back on Velkommen leaves the app
+- [ ] Android native config: notification icon, `blockedPermissions` for overlay, storage and media permissions
+- [ ] Android documents: relock while adding a file, «fingeravtrykk» wording, no pinch-zoom, «Åpne PDF» opening a
+      share sheet; report PDF margins and the file deleted before the mail app reads it
+- [ ] Run the 16 device checks in `docs/android-review.md` on a real Android phone or emulator
 - [ ] Walk through every flow in the simulator, including with no network (the QA agent couldn't: it needs simulator
       access)
 - [ ] **(Mikkel)** EAS updates and the project ID belong to the personal Expo account «mkl96», not the company
