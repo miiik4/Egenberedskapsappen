@@ -15,33 +15,29 @@ const item = (id: string, name: string): StockItem => ({
 });
 
 describe('reminderMessage', () => {
-  it('names a single item and opens it directly', () => {
+  it('does not name a single item, but opens it directly', () => {
     expect(
-      reminderMessage({ kind: 'expiring', on: '2026-10-18', expiresOn: '2026-11-01', items: [item('a b', '6 liter vann')] }),
+      reminderMessage({ kind: 'expiring', on: '2026-10-18', expiresOn: '2026-11-01', items: [item('a b', 'Insulin')] }),
     ).toEqual({
-      title: 'Går ut om 1 uke',
-      body: '6 liter vann går ut 1. november. Bytt det ut, så teller det fortsatt.',
+      title: 'Noe i beredskapslageret går snart ut',
+      body: 'Én vare går ut 1. november. Bytt den ut, så teller den fortsatt.',
       url: '/lager/vare/a%20b',
     });
   });
 
-  it('lists several items and opens the stockpile', () => {
+  it('counts several items without naming them and opens the stockpile', () => {
     const message = reminderMessage({
       kind: 'expiring',
       on: '2026-10-18',
       expiresOn: '2026-11-01',
-      items: [item('a', 'Vann'), item('b', 'Knekkebrød'), item('c', 'Hermetikk')],
+      items: [item('a', 'Insulin'), item('b', 'Knekkebrød'), item('c', 'Hermetikk')],
     });
-    expect(message.title).toBe('3 varer går ut om 1 uke');
-    expect(message.body).toBe('Vann, Knekkebrød og Hermetikk går ut 1. november.');
-    expect(message.url).toBe('/lager');
-  });
-
-  it('shortens a long list', () => {
-    const items = ['A', 'B', 'C', 'D', 'E'].map((name) => item(name, name));
-    expect(reminderMessage({ kind: 'expiring', on: '2026-10-18', expiresOn: '2026-11-01', items }).body).toBe(
-      'A, B og 3 til går ut 1. november.',
-    );
+    expect(message).toEqual({
+      title: '3 varer går snart ut',
+      body: 'De går ut 1. november. Bytt dem ut, så teller de fortsatt.',
+      url: '/lager',
+    });
+    expect(JSON.stringify(message)).not.toMatch(/Insulin|Knekkebrød|Hermetikk/);
   });
 
   it('opens the beredskapssjekk and the stockpile review where they belong', () => {

@@ -21,7 +21,7 @@ const PEOPLE = [
 ---
 
 <div class="calc" data-calc>
-  <form class="inputs" onsubmit="return false">
+  <form class="inputs">
     <fieldset>
       <legend>Hvem bor hjemme?</legend>
       <div class="steppers">
@@ -138,6 +138,9 @@ const PEOPLE = [
       state.members[key] = Math.min(9, Math.max(Number(button.dataset.min ?? 0), state.members[key] + Number(button.dataset.by)));
       render();
     });
+
+    // Here rather than an inline onsubmit, which the Content-Security-Policy in firebase.json would block.
+    form.addEventListener('submit', (event) => event.preventDefault());
 
     form.addEventListener('input', () => {
       const data = new FormData(form);

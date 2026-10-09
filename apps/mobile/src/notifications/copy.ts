@@ -1,27 +1,28 @@
-import { EXPIRY_REMINDER_DAYS, type Reminder } from '@egenberedskap/core';
+import type { Reminder } from '@egenberedskap/core';
 
-import { formatDate, formatDuration, listWords } from '@/lib/format';
-
-const LEAD = formatDuration(EXPIRY_REMINDER_DAYS);
+import { formatDate } from '@/lib/format';
 
 export type ReminderMessage = { title: string; body: string; url: string };
 
-/** What each reminder says, and where tapping it leads. */
+/**
+ * What each reminder says, and where tapping it leads. Reminders show on the lock screen, so they never name an item
+ * (it could be a medicine); the text and the data payload carry only a count, a date and an id.
+ */
 export function reminderMessage(reminder: Reminder): ReminderMessage {
   switch (reminder.kind) {
     case 'expiring': {
       const when = formatDate(reminder.expiresOn);
       const [first, ...rest] = reminder.items;
-      if (rest.length === 0) {
+      if (first && rest.length === 0) {
         return {
-          title: `Går ut om ${LEAD}`,
-          body: `${first!.name} går ut ${when}. Bytt det ut, så teller det fortsatt.`,
-          url: `/lager/vare/${encodeURIComponent(first!.id)}`,
+          title: 'Noe i beredskapslageret går snart ut',
+          body: `Én vare går ut ${when}. Bytt den ut, så teller den fortsatt.`,
+          url: `/lager/vare/${encodeURIComponent(first.id)}`,
         };
       }
       return {
-        title: `${reminder.items.length} varer går ut om ${LEAD}`,
-        body: `${listNames(reminder.items.map((item) => item.name))} går ut ${when}.`,
+        title: `${reminder.items.length} varer går snart ut`,
+        body: `De går ut ${when}. Bytt dem ut, så teller de fortsatt.`,
         url: '/lager',
       };
     }
@@ -40,8 +41,3 @@ export function reminderMessage(reminder: Reminder): ReminderMessage {
   }
 }
 
-/** "a", "a og b", "a, b og c", "a, b og 3 til" */
-function listNames(names: string[]): string {
-  const shown = names.length > 3 ? [...names.slice(0, 2), `${names.length - 2} til`] : names;
-  return listWords(shown);
-}
