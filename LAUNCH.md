@@ -60,8 +60,8 @@ How to use it:
 - [ ] **(Mikkel)** Over-the-air updates aren't code-signed and are published from the personal Expo account «mkl96»:
       move the project to a company account, and turn on expo-updates code signing before 1.0 is built (native
       change; decide who keeps the private key and where)
-- [ ] Website: clickjacking and CSP headers in `firebase.json` hosting
-- [ ] Reminders show item names on the lock screen (medicine names); use a neutral text
+- [x] Website: clickjacking and CSP headers in `firebase.json` hosting (1ac953b, live on the test site)
+- [x] Reminders show item names on the lock screen (medicine names); use a neutral text (1ac953b)
 - [ ] The recovery-code screen is visible in the app switcher (decide: protect it, which also blocks screenshots of
       the code on Android)
 - [ ] Before Egenberedskap+: drop v1 sync records, delete analysis photos from the phone's cache after the job
