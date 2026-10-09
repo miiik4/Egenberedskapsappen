@@ -5,9 +5,9 @@ import { createStore, createSyncSource, SYNC_ORDER, type SqlExecutor, type SqlVa
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { fromUtf8, utf8 } from './encoding';
-import { syncOnce, type LocalFiles, type RemoteRecord, type RemoteVault } from './engine';
+import { isSafeFileName, syncOnce, type LocalFiles, type RemoteRecord, type RemoteVault } from './engine';
 import type { CryptoPrimitives } from './primitives';
-import { createDataKey } from './vault';
+import { createDataKey, DecryptionError } from './vault';
 
 const subtle = webcrypto.subtle;
 const aes = (key: Uint8Array) => subtle.importKey('raw', key, 'AES-GCM', false, ['encrypt', 'decrypt']);
@@ -234,6 +234,36 @@ describe('sync between two phones', () => {
     expect(vault.files.has('p.jpg')).toBe(false);
     await sync(a);
     expect(a.files.exists('p.jpg')).toBe(false);
+  });
+
+  it('refuses a deletion the server made up, and keeps the document', async () => {
+    const doc = await a.store.saveDocument({ name: 'Pass' });
+    await a.store.addDocumentFile({ documentId: doc, fileName: 'p.jpg', mimeType: 'image/jpeg', size: 4 });
+    await a.files.write('p.jpg', utf8('PIXELS'));
+    await sync(a);
+    await sync(b);
+    // The server can't read the records, but it can change what's in the clear.
+    for (const record of vault.records.values()) {
+      record.deleted = true;
+      record.updatedAt = '2030-01-01T00:00:00.000Z';
+      record.serverTime = '2030-01-01T00:00:00.000Z';
+    }
+    await expect(sync(b)).rejects.toThrow(DecryptionError);
+    expect((await b.store.load()).documents.map((d) => d.files.length)).toEqual([1]);
+    expect(b.files.exists('p.jpg')).toBe(true);
+  });
+
+  it('never writes or deletes a file outside the folder, whatever name a record gives it', async () => {
+    expect(isSafeFileName('3f2a9c1e-7b4d-4e8a-9f00-123456789abc.jpg')).toBe(true);
+    expect(isSafeFileName('p.jpg')).toBe(true);
+    for (const name of ['../egenberedskap.db', '..', '.hidden', 'a/b.jpg', 'a\\b.jpg', 'a..jpg', '']) {
+      expect(isSafeFileName(name)).toBe(false);
+    }
+    const doc = await a.store.saveDocument({ name: 'Pass' });
+    await a.store.addDocumentFile({ documentId: doc, fileName: '../SQLite/egenberedskap.db', mimeType: 'image/jpeg', size: 4 });
+    await a.files.write('../SQLite/egenberedskap.db', utf8('DATABASE'));
+    expect((await sync(a)).uploaded).toBe(0);
+    expect(vault.files.size).toBe(0);
   });
 
   it('fails loudly with the wrong key rather than storing garbage', async () => {

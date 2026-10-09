@@ -44,6 +44,13 @@ export interface LocalFiles {
 export type SyncReport = { pushed: number; pulled: number; uploaded: number; downloaded: number };
 
 /**
+ * A stored file's name, as the app makes them: a random id and an extension. File names arrive
+ * in records from other phones, so anything else (a path, «..») is refused rather than used to
+ * write or delete outside the documents folder.
+ */
+export const isSafeFileName = (name: string) => name.length <= 100 && /^[A-Za-z0-9][A-Za-z0-9_-]*(\.[A-Za-z0-9_]{1,10})?$/.test(name);
+
+/**
  * One round of sync: send what changed here, take in what changed elsewhere, then bring the
  * document files in line. Safe to run at any time and as often as wanted; an interrupted run
  * picks up where it stopped, because each step is only marked done after it succeeded.
@@ -98,6 +105,7 @@ export async function syncOnce({
 
   // 3. Files: upload what's new here, fetch what's missing, and remove what was deleted.
   for (const file of await source.files()) {
+    if (!isSafeFileName(file.fileName)) continue;
     if (file.deleted) {
       if (files.exists(file.fileName)) files.delete(file.fileName);
       if (file.uploaded) {

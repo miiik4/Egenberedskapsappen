@@ -1,6 +1,6 @@
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as ScreenCapture from 'expo-screen-capture';
-import { createContext, use, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, use, useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { AppState, Platform, StyleSheet, View } from 'react-native';
 
 import { PrimaryButton } from '@/components/ui/button';
@@ -78,12 +78,14 @@ export function useDocumentLock(): LockContextValue {
 
 /**
  * Shows its children only while documents are unlocked, and asks to unlock straight away.
- * While they're on screen, they're also kept out of the app switcher, screenshots on Android
- * and screen recordings.
+ * While a gate is on screen, the app is also kept out of the app switcher, screenshots on
+ * Android and screen recordings: locked or not, so that locking on the way to the background
+ * never lifts the protection at the moment the system takes its snapshot.
  */
 export function DocumentGate({ children, dark }: { children: ReactNode; dark?: boolean }) {
   const { locked, method, unlock } = useDocumentLock();
   const asked = useRef(false);
+  useScreenProtection();
 
   useEffect(() => {
     if (locked && !asked.current) {
@@ -93,7 +95,7 @@ export function DocumentGate({ children, dark }: { children: ReactNode; dark?: b
     if (!locked) asked.current = false;
   }, [locked, unlock]);
 
-  if (!locked) return <Protected>{children}</Protected>;
+  if (!locked) return children;
 
   return (
     <View style={[styles.locked, dark && styles.dark]}>
@@ -104,19 +106,25 @@ export function DocumentGate({ children, dark }: { children: ReactNode; dark?: b
   );
 }
 
-function Protected({ children }: { children: ReactNode }) {
-  // On Android this also blanks the screen in recent apps; on iOS it stops recordings.
-  ScreenCapture.usePreventScreenCapture('documents');
+/** How many mounted screens want protection. The blur over the app switcher is one switch for the whole app. */
+let protectedScreens = 0;
+
+/**
+ * Keeps this screen out of the app switcher (iOS), recents, screenshots (Android) and screen
+ * recordings while it's mounted. Each screen counts on its own: closing a file on top of a
+ * document must not lift the protection the document page under it still needs.
+ */
+export function useScreenProtection() {
+  // A key per screen: expo-screen-capture allows capture again once no key is left.
+  ScreenCapture.usePreventScreenCapture(`documents-${useId()}`);
 
   useEffect(() => {
     if (Platform.OS !== 'ios') return;
-    ScreenCapture.enableAppSwitcherProtectionAsync(1);
+    if (protectedScreens++ === 0) ScreenCapture.enableAppSwitcherProtectionAsync(1);
     return () => {
-      ScreenCapture.disableAppSwitcherProtectionAsync();
+      if (--protectedScreens === 0) ScreenCapture.disableAppSwitcherProtectionAsync();
     };
   }, []);
-
-  return children;
 }
 
 const styles = StyleSheet.create({

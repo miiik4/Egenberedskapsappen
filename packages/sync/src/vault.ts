@@ -8,10 +8,22 @@ import { recoveryKey } from './recovery';
  * cloud is wrapped with a key derived from the recovery code the user keeps.
  *
  * Every ciphertext is bound to where it belongs (record type and id, or file name), so the
- * server can't swap one sealed record for another without decryption failing.
+ * server can't swap one sealed record for another without decryption failing. A record is
+ * also bound to the version the server lists it as (`updatedAt`) and whether it's deleted:
+ * those travel in the clear, and phones act on them, so a server that changed them could
+ * otherwise delete a household's documents from every phone, or bring back an old version.
  */
 const VERSION = 'v1';
 const context = (purpose: string) => utf8(`egenberedskapsappen/${VERSION}/${purpose}`);
+
+/** Records since 1.3.0. `v1` records were bound to type and id only. */
+const RECORD_VERSION = 'v2';
+
+/** A record as the server lists it: what it is, and which version. */
+export type RecordPlace = { type: string; id: string; updatedAt: string; deleted: boolean };
+
+const recordContext = (where: RecordPlace) =>
+  utf8(`egenberedskapsappen/${RECORD_VERSION}/record/${JSON.stringify([where.type, where.id, where.updatedAt, where.deleted])}`);
 
 export class DecryptionError extends Error {
   constructor(message = 'Could not decrypt: wrong key, or the data was altered') {
@@ -40,20 +52,25 @@ export async function unwrapDataKey(crypto: CryptoPrimitives, wrapped: string, c
 export async function encryptRecord(
   crypto: CryptoPrimitives,
   dataKey: Uint8Array,
-  where: { type: string; id: string },
+  where: RecordPlace,
   value: unknown,
 ): Promise<string> {
-  const sealed = await crypto.seal(dataKey, utf8(JSON.stringify(value)), context(`record/${where.type}/${where.id}`));
-  return `${VERSION}.${toBase64(sealed)}`;
+  const sealed = await crypto.seal(dataKey, utf8(JSON.stringify(value)), recordContext(where));
+  return `${RECORD_VERSION}.${toBase64(sealed)}`;
 }
 
 export async function decryptRecord<T>(
   crypto: CryptoPrimitives,
   dataKey: Uint8Array,
-  where: { type: string; id: string },
+  where: RecordPlace,
   envelope: string,
 ): Promise<T> {
-  return JSON.parse(fromUtf8(await open(crypto, dataKey, envelope, context(`record/${where.type}/${where.id}`)))) as T;
+  // Records written before 1.3.0 (development and test vaults only: Egenberedskap+ was never
+  // released before then) are still read. Stop accepting v1 once those vaults are gone.
+  const plain = envelope.startsWith('v1.')
+    ? await open(crypto, dataKey, envelope, context(`record/${where.type}/${where.id}`))
+    : await open(crypto, dataKey, envelope, recordContext(where), RECORD_VERSION);
+  return JSON.parse(fromUtf8(plain)) as T;
 }
 
 export const encryptFile = (crypto: CryptoPrimitives, dataKey: Uint8Array, fileName: string, bytes: Uint8Array) =>
@@ -67,9 +84,9 @@ export async function decryptFile(crypto: CryptoPrimitives, dataKey: Uint8Array,
   }
 }
 
-async function open(crypto: CryptoPrimitives, key: Uint8Array, envelope: string, aad: Uint8Array) {
+async function open(crypto: CryptoPrimitives, key: Uint8Array, envelope: string, aad: Uint8Array, expected = VERSION) {
   const [version, body] = envelope.split('.');
-  if (version !== VERSION || !body) throw new DecryptionError(`Unknown envelope version: ${version}`);
+  if (version !== expected || !body) throw new DecryptionError(`Unknown envelope version: ${version}`);
   try {
     return await crypto.open(key, fromBase64(body), aad);
   } catch {

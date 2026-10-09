@@ -89,7 +89,13 @@ export default function DocumentPage() {
                       <Text style={styles.pdfLabel}>PDF</Text>
                     </View>
                   ) : (
-                    <Image source={{ uri: storedFile(file.fileName).uri }} style={styles.image} contentFit="cover" />
+                    // Memory only: a disk cache would keep a copy of the passport outside dokumenter/.
+                    <Image
+                      source={{ uri: storedFile(file.fileName).uri }}
+                      style={styles.image}
+                      contentFit="cover"
+                      cachePolicy="memory"
+                    />
                   )}
                 </Pressable>
               ))}

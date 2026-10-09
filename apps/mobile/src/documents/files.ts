@@ -1,3 +1,4 @@
+import { isSafeFileName } from '@egenberedskap/sync';
 import { randomUUID } from 'expo-crypto';
 import { Directory, File, Paths } from 'expo-file-system';
 
@@ -11,7 +12,11 @@ import { excludeFromBackup } from '../../modules/backup-exclusion';
  */
 const folder = () => new Directory(Paths.document, 'dokumenter');
 
-export const storedFile = (fileName: string) => new File(folder(), fileName);
+export function storedFile(fileName: string) {
+  // Names also arrive from other phones through the backup: never a path out of the folder.
+  if (!isSafeFileName(fileName)) throw new Error('Not a stored file name');
+  return new File(folder(), fileName);
+}
 
 /**
  * Creates the folder if needed, always kept out of iCloud backups: passports and

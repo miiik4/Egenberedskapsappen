@@ -68,7 +68,8 @@ function Viewer({
 }) {
   const insets = useSafeAreaInsets();
   const stored = storedFile(fileName);
-  const pdf = isPdf(mimeType);
+  // Only a file that is a PDF by name goes into the web view, which would run anything else as a page.
+  const pdf = isPdf(mimeType) && fileName.endsWith('.pdf');
   const share = () => Sharing.shareAsync(stored.uri, { mimeType, dialogTitle: title });
   const remove = () =>
     Alert.alert('Slette filen?', removeQuestion, [
@@ -107,7 +108,14 @@ function Viewer({
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.zoom}>
-          <Image source={{ uri: stored.uri }} style={styles.image} contentFit="contain" accessibilityLabel={title} />
+          {/* Memory only: a disk cache would keep a copy outside dokumenter/, after the file is deleted. */}
+          <Image
+            source={{ uri: stored.uri }}
+            style={styles.image}
+            contentFit="contain"
+            cachePolicy="memory"
+            accessibilityLabel={title}
+          />
         </ScrollView>
       )}
 

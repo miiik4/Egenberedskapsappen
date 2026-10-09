@@ -39,14 +39,14 @@ const node: CryptoPrimitives = {
   },
 };
 
-const contact = { type: 'contacts', id: 'c1' };
+const contact = { type: 'contacts', id: 'c1', updatedAt: '2026-10-09T10:00:00.000Z', deleted: false };
 const value = { name: 'Ola Nordmann', phone: '+47 900 00 000', relation: 'Partner' };
 
 describe('records', () => {
   it('round-trips, and the ciphertext reveals nothing of the content', async () => {
     const key = createDataKey(node);
     const envelope = await encryptRecord(node, key, contact, value);
-    expect(envelope.startsWith('v1.')).toBe(true);
+    expect(envelope.startsWith('v2.')).toBe(true);
     expect(envelope).not.toContain('Ola');
     expect(await decryptRecord(node, key, contact, envelope)).toEqual(value);
   });
@@ -64,8 +64,23 @@ describe('records', () => {
   it('fails if the server moves a record to another id or type', async () => {
     const key = createDataKey(node);
     const envelope = await encryptRecord(node, key, contact, value);
-    await expect(decryptRecord(node, key, { type: 'contacts', id: 'c2' }, envelope)).rejects.toThrow(DecryptionError);
-    await expect(decryptRecord(node, key, { type: 'policies', id: 'c1' }, envelope)).rejects.toThrow(DecryptionError);
+    await expect(decryptRecord(node, key, { ...contact, id: 'c2' }, envelope)).rejects.toThrow(DecryptionError);
+    await expect(decryptRecord(node, key, { ...contact, type: 'policies' }, envelope)).rejects.toThrow(DecryptionError);
+  });
+
+  it('fails if the server marks a record as deleted, or passes an old version off as new', async () => {
+    const key = createDataKey(node);
+    const envelope = await encryptRecord(node, key, contact, value);
+    await expect(decryptRecord(node, key, { ...contact, deleted: true }, envelope)).rejects.toThrow(DecryptionError);
+    await expect(
+      decryptRecord(node, key, { ...contact, updatedAt: '2026-10-10T10:00:00.000Z' }, envelope),
+    ).rejects.toThrow(DecryptionError);
+  });
+
+  it('still reads records written before 1.3.0, bound to type and id only', async () => {
+    const key = createDataKey(node);
+    const sealed = await node.seal(key, utf8(JSON.stringify(value)), utf8('egenberedskapsappen/v1/record/contacts/c1'));
+    expect(await decryptRecord(node, key, contact, `v1.${toBase64(sealed)}`)).toEqual(value);
   });
 
   it('fails if a single byte was altered', async () => {
