@@ -64,7 +64,7 @@ Backup, AI analysis of rooms and restore are off in 1.0: `EGENBEREDSKAP_PLUS_ENA
 
 ## Builds
 
-Builds and updates belong to the Expo account `holm-and-tall-as`.
+Builds and updates belong to the Expo account `holm-and-tall-as`. The full runbook (profiles, when a new build is needed, publishing signed updates, the signing key and what to do if it's lost) is in `docs/releasing.md`.
 
 ### Signed updates
 
