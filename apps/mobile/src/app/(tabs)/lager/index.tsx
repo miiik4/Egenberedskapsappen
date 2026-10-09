@@ -91,6 +91,6 @@ function TypeRow({ type, today }: { type: ChecklistType; today: string }) {
 }
 
 const styles = StyleSheet.create({
-  subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: -16, fontSize: 17, color: Colors.secondaryLabel },
+  subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: Spacing.underTitle, fontSize: 17, color: Colors.secondaryLabel },
   footnote: { marginHorizontal: Spacing.screen + Spacing.rowInset, marginTop: -14, fontSize: 13, lineHeight: 18, color: Colors.secondaryLabel },
 });

@@ -12,13 +12,14 @@ import {
 } from '@egenberedskap/core';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
-import { Pressable, StyleSheet, Switch, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
 
 import { DateField } from '@/components/form/fields';
 import { WarningDot } from '@/components/ui/check-circle';
 import { Card } from '@/components/ui/card';
 import { Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
+import { AndroidToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { capitalize, formatDate, formatDays, formatDuration, formatExpiry, formatMeals, formatNumber, todayIso } from '@/lib/format';
@@ -63,7 +64,13 @@ export default function Vare() {
     <>
       <Stack.Screen options={{ title: item.name }} />
       <Stack.Toolbar placement="right">
-        <Stack.Toolbar.Button onPress={() => router.push({ pathname: '/vare', params: { id: item.id } })}>Rediger</Stack.Toolbar.Button>
+        {/* Text on iOS; Android can't show a text-only header button, so it gets a pencil. */}
+        <Stack.Toolbar.Button
+          icon={AndroidToolbarIcons.edit}
+          {...(Platform.OS === 'android' ? { accessibilityLabel: 'Rediger' } : {})}
+          onPress={() => router.push({ pathname: '/vare', params: { id: item.id } })}>
+          Rediger
+        </Stack.Toolbar.Button>
       </Stack.Toolbar>
 
       <Screen>
@@ -155,7 +162,7 @@ function ExpiryCard({ item, today }: { item: StockItem; today: string }) {
 }
 
 const styles = StyleSheet.create({
-  subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: -16, fontSize: 17, color: Colors.secondaryLabel },
+  subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: Spacing.underTitle, fontSize: 17, color: Colors.secondaryLabel },
   expiry: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   expiryText: { flex: 1 },
   expiryTitle: { fontSize: 17, fontWeight: '600', color: Colors.label },

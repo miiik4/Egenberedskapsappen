@@ -1,6 +1,6 @@
 /**
- * Renders the app icon, Android adaptive icon, splash image and the iOS 26 Icon Composer
- * layers from one mark: the website favicon (apps/web/public/favicon.svg) drawn on a
+ * Renders the app icon, Android adaptive icon, splash image, Android notification icon and the
+ * iOS 26 Icon Composer layers from one mark: the website favicon (apps/web/public/favicon.svg) drawn on a
  * 1024 grid. A white tile and the days bar from the navy preparedness card on Oversikt.
  *
  * Run from the repo root after changing the mark:
@@ -68,6 +68,37 @@ await Promise.all([
   png('android-icon-monochrome.svg', 'android-icon-monochrome.png'),
   png('splash-icon.svg', 'splash-icon.png'),
 ]);
+
+/**
+ * Android's small notification icon: only its alpha is drawn, so it's the white mark on
+ * transparent, cropped close so it doesn't look tiny in the status bar. 96 px, as
+ * expo-notifications asks for.
+ */
+const notificationSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="160 160 704 704">${tile(white)}${barTrack(white, 0.35)}${barFill(white)}</svg>`;
+await sharp(Buffer.from(notificationSvg)).resize(96, 96).png().toFile(join(images, 'notification-icon.png'));
+
+/**
+ * Header button icons for Android, where toolbar buttons and menus need an image (iOS uses SF
+ * Symbols or text). Material Symbols glyphs (Apache 2.0) on a 24 dp grid in 1x–3x, black on
+ * transparent: the header tints them. Same format as plus.png and more.png.
+ */
+const toolbarGlyphs = {
+  // Material Symbols «home»
+  home: 'M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z',
+  // Material Symbols «edit»
+  edit: 'M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z',
+};
+const toolbarIcons = join(brand, '..', 'icons');
+await Promise.all(
+  Object.entries(toolbarGlyphs).flatMap(([name, d]) =>
+    [1, 2, 3].map((scale) => {
+      const size = 24 * scale;
+      const glyph = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 -960 960 960"><path d="${d}" fill="#000000"/></svg>`;
+      const file = scale === 1 ? `${name}.png` : `${name}@${scale}x.png`;
+      return sharp(Buffer.from(glyph)).resize(size, size).png().toFile(join(toolbarIcons, file));
+    }),
+  ),
+);
 
 /**
  * The iOS 26 icon (Icon Composer format): a solid navy fill and the mark as two layers, so

@@ -1,6 +1,7 @@
 import { buildReport, summarizeRooms } from '@egenberedskap/core';
 import { useState } from 'react';
-import { Alert, StyleSheet, Switch, View } from 'react-native';
+import { Alert, Platform, StyleSheet, Switch, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DateField, TextField } from '@/components/form/fields';
 import { FormSheet } from '@/components/form/sheet';
@@ -32,6 +33,7 @@ export default function Rapport() {
   const [estimates, setEstimates] = useState(true);
   const [receipts, setReceipts] = useState(true);
   const [making, setMaking] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const roomIds = documented.filter((r) => chosen.has(r.id)).map((r) => r.id);
   const report = buildReport(documented, belongings, { roomIds, includeEstimates: estimates });
@@ -98,7 +100,8 @@ export default function Rapport() {
         </Section>
       </FormSheet>
 
-      <View style={styles.bottom}>
+      {/* Edge to edge on Android, the button keeps clear of the navigation bar. */}
+      <View style={[styles.bottom, Platform.OS === 'android' && { paddingBottom: insets.bottom + 12 }]}>
         <Text style={styles.summary}>
           {countLabel(report.count)} · {formatKr(report.totalKr)}
         </Text>

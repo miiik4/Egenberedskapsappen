@@ -20,6 +20,11 @@ export type ReportInput = {
   /** Receipts that are PDFs, which can't be put inside this one. */
   pdfReceipts: string[];
   includeEstimates: boolean;
+  /**
+   * Page margins in CSS, for Android, where expo-print's `margins` option does nothing. Off on
+   * iOS, which sets them through that option instead.
+   */
+  pageMargins?: boolean;
 };
 
 const escape = (text: string) =>
@@ -62,7 +67,7 @@ export function reportHtml(input: ReportInput): string {
 
   return `<!doctype html>
 <html lang="nb"><head><meta charset="utf-8" />
-<style>
+<style>${input.pageMargins ? '\n  @page { margin: 40pt 36pt; }' : ''}
   body { font-family: -apple-system, Helvetica, Arial, sans-serif; color: #111; font-size: 11pt; margin: 0; }
   h1 { font-size: 22pt; margin: 0 0 4pt; }
   h2 { display: flex; justify-content: space-between; font-size: 13pt; border-bottom: 1px solid #ccc; padding-bottom: 4pt; margin: 18pt 0 6pt; }

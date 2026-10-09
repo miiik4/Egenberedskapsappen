@@ -209,7 +209,7 @@ function Notice({
 }
 
 const styles = StyleSheet.create({
-  subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: -16, fontSize: 17, color: Colors.secondaryLabel },
+  subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: Spacing.underTitle, fontSize: 17, color: Colors.secondaryLabel },
   avatar: {
     width: 36,
     height: 36,

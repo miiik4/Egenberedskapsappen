@@ -7,7 +7,8 @@ import { Alert, Platform, Pressable, StyleSheet, View, type KeyboardTypeOptions 
 import { Icon } from '@/components/ui/icon';
 import { CompactDatePicker } from './compact-date-picker';
 import { Colors, Radius, Spacing } from '@/constants/theme';
-import { formatDate, todayIso } from '@/lib/format';
+import { formatDateWithYear, todayIso } from '@/lib/format';
+import { fromPickerDate, toPickerDate } from '@/lib/picker-date';
 import { Text, TextInput } from '@/components/ui/text';
 
 /** Label on the left, value on the right: the row layout iOS uses in Settings and Contacts. */
@@ -129,8 +130,10 @@ export function DateField({
     );
   }
 
-  const date = toLocalDate(value);
-  const pick = (picked?: Date) => picked && onChange(todayIso(picked));
+  // iOS's picker works in local time, Android's in UTC (lib/picker-date.ts).
+  const utc = Platform.OS === 'android';
+  const date = toPickerDate(value, utc);
+  const pick = (picked?: Date) => picked && onChange(fromPickerDate(picked, utc));
 
   return (
     <FieldRow label={label}>
@@ -140,7 +143,7 @@ export function DateField({
         ) : (
           <>
             <Pressable onPress={() => setAndroidOpen(true)} hitSlop={8} accessibilityRole="button">
-              <Text style={styles.link}>{formatDate(value)}</Text>
+              <Text style={styles.link}>{formatDateWithYear(value)}</Text>
             </Pressable>
             {androidOpen && (
               <DateTimePicker
@@ -168,11 +171,6 @@ export function DateField({
       </View>
     </FieldRow>
   );
-}
-
-function toLocalDate(date: IsoDate): Date {
-  const [y, m, d] = date.split('-').map(Number);
-  return new Date(y!, m! - 1, d!);
 }
 
 /** − n + for small whole numbers like the household size. */

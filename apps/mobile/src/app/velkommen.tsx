@@ -7,8 +7,8 @@ import {
 } from '@egenberedskap/core';
 import type { StockDraft } from '@egenberedskap/store';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { BackHandler, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { NumberField, parseNumber } from '@/components/form/fields';
@@ -18,6 +18,7 @@ import { PrimaryButton } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CheckCircle } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
+import { AndroidKeyboardAvoiding } from '@/components/ui/keyboard-avoiding';
 import { Row, Section } from '@/components/ui/list';
 import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
@@ -49,6 +50,16 @@ export default function Velkommen() {
   const [litres, setLitres] = useState('');
   const [meals, setMeals] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Android's back button or gesture goes back a step, as the chevron does, instead of leaving the app.
+  useEffect(() => {
+    if (step === 0) return;
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      setStep(step - 1);
+      return true;
+    });
+    return () => subscription.remove();
+  }, [step]);
 
   const today = todayIso();
   const perDay = computeCoverage(members, [], today);
@@ -117,68 +128,73 @@ export default function Velkommen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
-        {step === 0 && (
-          <>
-            <Intro title="Hvem bor hjemme?" lead="Vi bruker dette til å regne ut hvor mye dere trenger." />
-            <MembersSection
-              value={members}
-              onChange={setMembers}
-              footer="Bare antall per aldersgruppe. Ingen navn eller fødselsdatoer."
-            />
-            {EGENBEREDSKAP_PLUS_ENABLED && (
-              <Pressable onPress={() => router.push('/gjenopprett')} accessibilityRole="button" hitSlop={8}>
-                <Text style={styles.restore}>Ny telefon? Gjenopprett fra sikkerhetskopi</Text>
-              </Pressable>
-            )}
-          </>
-        )}
+      <AndroidKeyboardAvoiding>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets>
+          {step === 0 && (
+            <>
+              <Intro title="Hvem bor hjemme?" lead="Vi bruker dette til å regne ut hvor mye dere trenger." />
+              <MembersSection
+                value={members}
+                onChange={setMembers}
+                footer="Bare antall per aldersgruppe. Ingen navn eller fødselsdatoer."
+              />
+              {EGENBEREDSKAP_PLUS_ENABLED && (
+                <Pressable onPress={() => router.push('/gjenopprett')} accessibilityRole="button" hitSlop={8}>
+                  <Text style={styles.restore}>Ny telefon? Gjenopprett fra sikkerhetskopi</Text>
+                </Pressable>
+              )}
+            </>
+          )}
 
-        {step === 1 && (
-          <>
-            <Intro title="Hva har dere allerede?" lead="Huk av det dere har nå. Resten kan dere fylle inn senere." />
-            <Section separatorInset={56}>
-              {QUICK.flatMap((q) => {
-                const on = have.includes(q.type);
-                const row = (
-                  <Row key={q.type} title={q.name} subtitle={q.hint} leading={<CheckCircle on={on} />} onPress={() => toggle(q.type)} />
-                );
-                if (on && q.type === 'drinkingWater') {
-                  return [row, <NumberField key="litres" label="Omtrent" value={litres} onChange={setLitres} unit="liter" decimals />];
-                }
-                if (on && q.type === 'cannedMeals') {
-                  return [row, <NumberField key="meals" label="Omtrent" value={meals} onChange={setMeals} unit="måltider" />];
-                }
-                return [row];
-              })}
-            </Section>
-          </>
-        )}
+          {step === 1 && (
+            <>
+              <Intro title="Hva har dere allerede?" lead="Huk av det dere har nå. Resten kan dere fylle inn senere." />
+              <Section separatorInset={56}>
+                {QUICK.flatMap((q) => {
+                  const on = have.includes(q.type);
+                  const row = (
+                    <Row key={q.type} title={q.name} subtitle={q.hint} leading={<CheckCircle on={on} />} onPress={() => toggle(q.type)} />
+                  );
+                  if (on && q.type === 'drinkingWater') {
+                    return [row, <NumberField key="litres" label="Omtrent" value={litres} onChange={setLitres} unit="liter" decimals />];
+                  }
+                  if (on && q.type === 'cannedMeals') {
+                    return [row, <NumberField key="meals" label="Omtrent" value={meals} onChange={setMeals} unit="måltider" />];
+                  }
+                  return [row];
+                })}
+              </Section>
+            </>
+          )}
 
-        {step === 2 && (
-          <>
-            <View style={styles.result}>
-              <Text style={styles.lead}>Uten strøm og vann klarer dere dere i</Text>
-              <DaysHeadline days={coverage.days} size={64} />
-              <Text style={styles.limiter}>{limiterText(coverage)}</Text>
-            </View>
-            <View style={styles.cardGroup}>
-              <Card gap={14}>
-                <DayRows coverage={coverage} />
-              </Card>
-              <Text style={styles.footnote}>Det som mangler ligger klart som en handleliste i Lager.</Text>
-            </View>
-          </>
-        )}
-      </ScrollView>
+          {step === 2 && (
+            <>
+              <View style={styles.result}>
+                <Text style={styles.lead}>Uten strøm og vann klarer dere dere i</Text>
+                <DaysHeadline days={coverage.days} size={64} />
+                <Text style={styles.limiter}>{limiterText(coverage)}</Text>
+              </View>
+              <View style={styles.cardGroup}>
+                <Card gap={14}>
+                  <DayRows coverage={coverage} />
+                </Card>
+                <Text style={styles.footnote}>Det som mangler ligger klart som en handleliste i Lager.</Text>
+              </View>
+            </>
+          )}
+        </ScrollView>
 
-      <View style={styles.bottom}>
-        {step < STEPS - 1 ? (
-          <PrimaryButton label="Neste" onPress={() => setStep(step + 1)} />
-        ) : (
-          <PrimaryButton label="Gå til oversikten" onPress={() => finish(items)} disabled={saving} />
-        )}
-      </View>
+        <View style={styles.bottom}>
+          {step < STEPS - 1 ? (
+            <PrimaryButton label="Neste" onPress={() => setStep(step + 1)} />
+          ) : (
+            <PrimaryButton label="Gå til oversikten" onPress={() => finish(items)} disabled={saving} />
+          )}
+        </View>
+      </AndroidKeyboardAvoiding>
     </SafeAreaView>
   );
 }

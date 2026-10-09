@@ -1,7 +1,7 @@
 import { summarizeRooms } from '@egenberedskap/core';
 import { Image } from 'expo-image';
 import { router, Stack } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { INSURANCE_ALERT_TITLE, useHomeInsurance } from '@/components/preparedness/home-insurance';
 import { Card } from '@/components/ui/card';
@@ -10,7 +10,7 @@ import { Icon } from '@/components/ui/icon';
 import { AddRow, Row, Section } from '@/components/ui/list';
 import { ProgressBar } from '@/components/ui/progress';
 import { Screen } from '@/components/ui/screen';
-import { ToolbarIcons } from '@/components/toolbar-icons';
+import { AndroidToolbarIcons, ToolbarIcons } from '@/components/toolbar-icons';
 import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { Colors, Fonts } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
@@ -36,7 +36,10 @@ export default function Eiendeler() {
     <>
       <Stack.Screen options={{ title: 'Eiendeler' }} />
       <Stack.Toolbar placement="left">
-        <Stack.Toolbar.Menu>
+        {/* The property's name on iOS; a house icon on Android, which can't show a text-only menu. */}
+        <Stack.Toolbar.Menu
+          icon={AndroidToolbarIcons.home}
+          {...(Platform.OS === 'android' ? { accessibilityLabel: `Eiendom: ${property?.shortName ?? 'ingen valgt'}` } : {})}>
           <Stack.Toolbar.Label>{property?.shortName ?? 'Eiendom'}</Stack.Toolbar.Label>
           {properties.map((p) => (
             <Stack.Toolbar.MenuAction key={p.id} isOn={p.id === property?.id} onPress={() => selectProperty(p.id)}>

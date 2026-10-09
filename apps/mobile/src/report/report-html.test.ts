@@ -57,4 +57,11 @@ describe('reportHtml', () => {
     expect(full).toContain('Kvittering: TV');
     expect(full).toContain('PDF sendes for seg: Sofa');
   });
+
+  it('sets page margins in CSS only when asked (Android)', () => {
+    expect(reportHtml({ ...base, report: report(true), includeEstimates: true })).not.toContain('@page');
+    expect(reportHtml({ ...base, report: report(true), includeEstimates: true, pageMargins: true })).toContain(
+      '@page { margin: 40pt 36pt; }',
+    );
+  });
 });

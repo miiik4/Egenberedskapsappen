@@ -1,8 +1,10 @@
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@/components/ui/icon';
+import { AndroidKeyboardAvoiding } from '@/components/ui/keyboard-avoiding';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
 import { Text } from '@/components/ui/text';
 
@@ -22,31 +24,37 @@ export function FormSheet({
   onSave?: () => void;
   children: ReactNode;
 }) {
+  const insets = useSafeAreaInsets();
+  const android = Platform.OS === 'android';
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
-      automaticallyAdjustKeyboardInsets>
-      <View style={styles.bar}>
-        <RoundButton label="Lukk" icon={{ ios: 'xmark', android: 'close' }} onPress={() => router.back()} />
-        <Text style={styles.title} numberOfLines={1}>
-          {title}
-        </Text>
-        {onSave ? (
-          <RoundButton
-            label="Lagre"
-            icon={{ ios: 'checkmark', android: 'check' }}
-            onPress={onSave}
-            prominent
-            disabled={!canSave}
-          />
-        ) : (
-          <View style={styles.spacer} />
-        )}
-      </View>
-      {children}
-    </ScrollView>
+    <AndroidKeyboardAvoiding>
+      <ScrollView
+        style={styles.root}
+        // On iOS a page sheet starts below the status bar. On Android a modal is a full screen
+        // drawn edge to edge, so the bar and the end of the form keep clear of the system bars.
+        contentContainerStyle={[styles.content, android && { paddingBottom: insets.bottom + 48 }]}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets>
+        <View style={[styles.bar, android && { paddingTop: insets.top + 8 }]}>
+          <RoundButton label="Lukk" icon={{ ios: 'xmark', android: 'close' }} onPress={() => router.back()} />
+          <Text style={styles.title} numberOfLines={1}>
+            {title}
+          </Text>
+          {onSave ? (
+            <RoundButton
+              label="Lagre"
+              icon={{ ios: 'checkmark', android: 'check' }}
+              onPress={onSave}
+              prominent
+              disabled={!canSave}
+            />
+          ) : (
+            <View style={styles.spacer} />
+          )}
+        </View>
+        {children}
+      </ScrollView>
+    </AndroidKeyboardAvoiding>
   );
 }
 
@@ -93,7 +101,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: Spacing.screen,
-    paddingTop: Platform.OS === 'ios' ? 16 : 24,
+    paddingTop: 16,
   },
   title: { flex: 1, textAlign: 'center', fontFamily: Fonts.displaySemibold, fontSize: 17, color: Colors.label },
   spacer: { width: 44 },

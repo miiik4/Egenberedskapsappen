@@ -139,7 +139,7 @@ export default function Nodinfo() {
 }
 
 const styles = StyleSheet.create({
-  offline: { flexDirection: 'row', alignItems: 'center', gap: 6, marginHorizontal: Spacing.screen + 4, marginTop: -16 },
+  offline: { flexDirection: 'row', alignItems: 'center', gap: 6, marginHorizontal: Spacing.screen + 4, marginTop: Spacing.underTitle },
   offlineText: { fontSize: 17, color: Colors.secondaryLabel },
   numbers: { flexDirection: 'row', gap: 8, marginHorizontal: Spacing.screen },
   number: {

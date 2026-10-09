@@ -9,7 +9,9 @@
     "ios": {
       "icon": "./assets/app.icon",
       "infoPlist": {
-        "CFBundleDisplayName": "Beredskap"
+        "CFBundleDisplayName": "Beredskap",
+        "CFBundleDevelopmentRegion": "nb",
+        "CFBundleLocalizations": ["nb"]
       },
       "supportsTablet": false,
       "entitlements": {
@@ -22,7 +24,15 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "userInterfaceStyle": "light",
+      "predictiveBackGestureEnabled": false,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -35,7 +45,13 @@
         }
       ],
       "expo-sqlite",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#0B2B4A"
+        }
+      ],
       "expo-sharing",
       [
         "expo-image-picker",

@@ -1,7 +1,8 @@
 import { addDays, EXPIRY_REVIEW_AFTER_DAYS, expiresBeforeNextCheck, nextCheck, renewExpiring } from '@egenberedskap/core';
 import { router, type Href } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from '@/components/ui/icon';
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
@@ -24,6 +25,9 @@ export default function Beredskapssjekk() {
   const { household, stock, checkIntervalMonths } = useData();
   const { recordCheck, setExpiryReview, saveStockItem } = useActions();
   const { permission, requestPermission } = useNotifications();
+  const insets = useSafeAreaInsets();
+  // A page sheet on iOS; on Android a full screen drawn edge to edge, so keep clear of the system bars.
+  const android = Platform.OS === 'android';
   const today = todayIso();
   const expiring = stock.filter(
     (item) => item.expiresOn && expiresBeforeNextCheck(item.expiresOn, today, checkIntervalMonths),
@@ -96,8 +100,10 @@ export default function Beredskapssjekk() {
   };
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <View style={styles.topBar}>
+    <ScrollView
+      style={styles.root}
+      contentContainerStyle={[styles.content, android && { paddingBottom: insets.bottom + 40 }]}>
+      <View style={[styles.topBar, android && { paddingTop: insets.top + 8 }]}>
         <Pressable
           onPress={() => router.back()}
           accessibilityRole="button"

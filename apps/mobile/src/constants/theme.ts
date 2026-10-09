@@ -73,4 +73,9 @@ export const Radius = {
 export const Spacing = {
   screen: 16,
   rowInset: 18,
+  /**
+   * Pulls the line under a tab screen's title up under it. iOS's large title leaves room for
+   * that; Android has no large title, so there it would clip the top of the line.
+   */
+  underTitle: Platform.OS === 'ios' ? -16 : 0,
 } as const;
