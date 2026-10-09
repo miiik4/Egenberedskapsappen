@@ -40,15 +40,15 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Velg bilder for \u00e5 dokumentere innbo og dokumenter. Velger du KI-analyse, sendes bildene til analyse i EU og slettes etterp\u00e5.",
-          "cameraPermission": "Ta bilder og film for \u00e5 dokumentere innbo og dokumenter. Velger du KI-analyse, sendes bildene til analyse i EU og slettes etterp\u00e5.",
+          "photosPermission": "Velg bilder for \u00e5 dokumentere innbo og dokumenter. Bildene sendes ikke noe sted uten at du velger det.",
+          "cameraPermission": "Ta bilder og film for \u00e5 dokumentere innbo og dokumenter. Bildene sendes ikke noe sted uten at du velger det.",
           "microphonePermission": false
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Ta bilder og film for \u00e5 dokumentere innbo og dokumenter. Velger du KI-analyse, sendes bildene til analyse i EU og slettes etterp\u00e5.",
+          "cameraPermission": "Ta bilder og film for \u00e5 dokumentere innbo og dokumenter. Bildene sendes ikke noe sted uten at du velger det.",
           "microphonePermission": false,
           "recordAudioAndroid": false
         }

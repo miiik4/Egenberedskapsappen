@@ -1,8 +1,8 @@
 # Egenberedskapsappen
 
-A free app for household preparedness (egenberedskap) in Norway: how many days the household manages on its own, what's missing, and what's about to expire. Belongings documentation and a damage guide sit underneath as modules.
+A free app for household preparedness (egenberedskap) in Norway: how many days the household manages on its own, what's missing, and what's about to expire. Belongings documentation sits underneath as a module.
 
-Funded by partners, not by users and not by ads. Sponsored content is always labelled, never appears in emergency flows, and no personal data goes to sponsors.
+Free for every household, with no ads and no tracking. Egenberedskap+ (encrypted backup and AI analysis of rooms) is planned as a subscription, also offered through insurers; it is switched off in 1.0. If sponsored content ever comes, it is always labelled, never appears in emergency flows, and no personal data goes to sponsors.
 
 ## Layout
 
@@ -53,14 +53,14 @@ Try it on your own photos, without the app: `cd functions && npm run build && no
 
 ### Before launch: prod checklist
 
-The prod project (`egenberedskapsappen`) has its Firestore database (europe-north1), Blaze and the budget alert, but nothing else yet. In order:
+The prod project (`egenberedskapsappen`) is set up and deployed: Anonymous Auth, Storage, Vertex AI and the functions. What's left, and what's been checked, is in [LAUNCH.md](LAUNCH.md) (section 4). Two steps still to do, in this order:
 
-1. Firebase Auth: *Get started* in the console, turn on **Anonymous**.
-2. Storage: create the default bucket in **europe-north1**, and grant `roles/firebaserules.firestoreServiceAgent` to the Firebase Storage service agent (Storage rules read vaults from Firestore).
-3. Deploy: `npx firebase-tools deploy --only firestore,storage,functions --project prod`, then a container cleanup policy (`functions:artifacts:setpolicy`).
-4. Grant `roles/firebaseappcheck.tokenVerifier` to the functions' service account (needed to consume tokens).
-5. App Check: register **App Attest** (needs the Apple Team ID) and **Play Integrity** (needs the app in Play Console, linked to the project, with its SHA-256).
-6. Only after a release build has been seen passing App Check: **enforce** it for Firestore and Storage. Enforcing earlier locks everyone out.
+1. App Check: register **App Attest** (needs the Apple Team ID) and **Play Integrity** (needs the app in Play Console, linked to the project, with its SHA-256).
+2. Only after a release build has been seen passing App Check: **enforce** it for Firestore and Storage. Enforcing earlier locks everyone out.
+
+### Egenberedskap+ switch
+
+Backup, AI analysis of rooms and restore are off in 1.0: `EGENBEREDSKAP_PLUS_ENABLED` in `apps/mobile/src/constants/config.ts`. While it's off their screens are hidden and Firebase isn't loaded, unless the phone already has a backup linked. The native Firebase code is in every build, so turning it on is a JS-only change shipped with `eas update`. Update the store privacy answers (`docs/store/privacy-answers.md`) first.
 
 ## Builds
 
