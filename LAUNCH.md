@@ -59,7 +59,7 @@ How to use it:
       full report in `docs/security-review-2026-10.md`
 - [x] Over-the-air updates are code-signed (certificate in `apps/mobile/certs`, private key only on Mikkel's Mac) and
       published from the company account «holm-and-tall-as» (2026-10-09)
-- [ ] **(Mikkel)** Back up `~/.egenberedskapsappen/keys/private-key.pem` in your password manager
+- [x] Private key for signed updates backed up in Mikkel's password manager (2026-10-09)
 - [ ] Publish one signed update to a preview build and see it arrive, to prove the signing works end to end
 - [x] Website: clickjacking and CSP headers in `firebase.json` hosting (1ac953b, live on the test site)
 - [x] Reminders show item names on the lock screen (medicine names); use a neutral text (1ac953b)
