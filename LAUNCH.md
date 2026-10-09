@@ -127,7 +127,7 @@ How to use it:
 - [x] App language declared as Norwegian on iOS, so system parts (date picker) show Norwegian (5de5d53)
 - [ ] Walk through every flow in the simulator, including with no network (the QA agent couldn't: it needs simulator
       access)
-- [ ] **(Mikkel)** EAS updates and the project ID belong to the personal Expo account «mkl96», not the company
+- [x] EAS updates and the project ID moved from the personal Expo account «mkl96» to «holm-and-tall-as» (2026-10-09)
 
 ## 6. Stores
 
