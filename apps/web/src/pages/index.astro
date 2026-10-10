@@ -7,7 +7,7 @@ import forslag from '../assets/skjermbilder/forslag.webp';
 import hvem from '../assets/skjermbilder/kom-i-gang-hvem.webp';
 import harAllerede from '../assets/skjermbilder/kom-i-gang-lager.webp';
 import resultat from '../assets/skjermbilder/kom-i-gang-resultat.webp';
-import kvartalssjekk from '../assets/skjermbilder/kvartalssjekk.webp';
+import beredskapssjekk from '../assets/skjermbilder/beredskapssjekk.webp';
 import lager from '../assets/skjermbilder/lager.webp';
 import nodinfo from '../assets/skjermbilder/nodinfo.webp';
 import oversikt from '../assets/skjermbilder/oversikt.webp';
@@ -26,13 +26,13 @@ const STEPS = [
   },
   {
     image: harAllerede,
-    alt: 'Skjermen «Hva har dere allerede?» med avhuking for vann, hermetikk, varmekilde, lommelykt, radio og førstehjelpsskrin.',
+    alt: 'Skjermen «Hva har dere allerede?» med avhuking for vann, hermetikk, varmekilde, lommelykt, radio og førstehjelpsskrin, og omtrent hvor mye vann og mat.',
     title: 'Hva har dere allerede?',
     text: 'Huk av det dere har: vann, hermetikk, varmekilde, lommelykt, radio og førstehjelpsskrin. Resten kan dere fylle inn senere.',
   },
   {
     image: resultat,
-    alt: 'Resultatet: 4 av 7 døgn, med vann, mat og varme som hver sin linje.',
+    alt: 'Resultatet: 4 av 7 døgn, med vann, mat og varme som hver sin linje, når vannet bør byttes, og knappen «Slå på påminnelser».',
     title: 'Svaret med en gang',
     text: 'Hvor mange døgn dere klarer dere, og hva som holder tallet nede. Det som mangler ligger klart som en handleliste, og appen kan minne dere på når vannet bør byttes.',
   },
@@ -90,7 +90,7 @@ const FAQ = [
       src={oversikt}
       eager
       class="hero-phone"
-      alt="Oversikt i appen: «Uten strøm og vann klarer dere dere i 4 døgn», med kvartalssjekk og neste å gjøre under."
+      alt="Oversikt i appen: «Uten strøm og vann klarer husstanden seg i 4 døgn», med vann, mat og varme hver for seg, og «Kjøp mat for 3 døgn til» under."
     />
   </section>
 
@@ -151,11 +151,11 @@ const FAQ = [
 
     <section class="feature feature-flip wrap" aria-labelledby="f-sjekk">
       <div class="feature-text">
-        <p class="tab">Kvartalssjekk</p>
-        <h2 id="f-sjekk">Fire spørsmål hver tredje måned</h2>
+        <p class="tab">Beredskapssjekk</p>
+        <h2 id="f-sjekk">Fire raske spørsmål, så ofte dere vil</h2>
         <p>
-          Beredskap blir fort utdatert. Hver tredje måned minner appen dere på en rask gjennomgang: stemmer husstanden,
-          hva går snart ut, virker lommelykten og radioen, og stemmer nødkontaktene?
+          Beredskap blir fort utdatert. Hver måned, hver tredje måned eller hvert halvår minner appen dere på en rask
+          gjennomgang: stemmer husstanden, hva går snart ut, virker lommelykten og radioen, og stemmer nødkontaktene?
         </p>
         <ul class="points">
           <li>Tar omtrent fem minutter.</li>
@@ -164,8 +164,8 @@ const FAQ = [
         </ul>
       </div>
       <Phone
-        src={kvartalssjekk}
-        alt="Kvartalssjekk med fire spørsmål, der det andre handler om varer som går ut innen en måned."
+        src={beredskapssjekk}
+        alt="Beredskapssjekk med fire spørsmål. Det andre viser varene som går ut før neste sjekk, med en avhuking for hver."
       />
     </section>
 
@@ -208,7 +208,7 @@ const FAQ = [
       </div>
       <Phone
         src={underforsikret}
-        alt="Eiendeler med varselet «Innboet kan være underforsikret»: dokumentert 642 000 kr mot en forsikringssum på 600 000 kr."
+        alt="Eiendeler med varselet «Innboet kan være underforsikret»: dokumentert 620 590 kr mot en forsikringssum på 600 000 kr."
       />
     </section>
 

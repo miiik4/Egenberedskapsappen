@@ -211,6 +211,9 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       details
 - [ ] When the Kvartalssjekk section is replaced, also replace the hero alt text and `oversikt.webp`
 - [ ] Deploy to the prod hosting site with the real domain; indexing on only there
+- [x] Domain `egenberedskapappen.no` (without the s) in place (Mikkel, 2026-10-10)
+- [ ] **(Tarjei)** Buy `egenberedskapsappen.no` (with the s, as the app is named); suggested as the main domain, with
+      the other one redirecting to it
 
 ## After launch (1.1 and later, only when users ask)
 
