@@ -177,8 +177,8 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 ## 6. Stores
 
 - [x] Drafts of the listing text and the privacy-label answers: `docs/store/` (2026-10-08; check before use)
-- [x] D-U-N-S number for Holm & Tall AS (from Tarjei, 2026-10-10)
-- [ ] **(Mikkel)** Apple Developer account for Holm & Tall AS: enrolment sent 2026-10-10, waiting for Apple to verify
+- [x] D-U-N-S number for Holm & Tall AS (from Tarjei; used for the Apple enrolment)
+- [ ] **(Mikkel)** Apple Developer account for Holm & Tall AS: enrolment sent 2026-10-05, waiting for Apple to verify
       that Mikkel can sign for the company (Apple may contact Tarjei, whose address is the work email)
 - [ ] **(Mikkel)** Google Play Console account for Holm & Tall AS, as an organisation (uses the same D-U-N-S number)
 - [ ] App records for `no.htas.egenberedskap` in both stores, and `submit.production` filled in in
