@@ -1,8 +1,16 @@
 import { addDays, type IsoDate } from '@egenberedskap/core';
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Platform, Pressable, StyleSheet, View, type KeyboardTypeOptions } from 'react-native';
+import { useState, type Ref } from 'react';
+import {
+  Alert,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+  type KeyboardTypeOptions,
+  type TextInput as NativeTextInput,
+} from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
 import { CompactDatePicker } from './compact-date-picker';
@@ -74,14 +82,15 @@ export function NumberField({
   onChange,
   unit,
   decimals = false,
-  autoFocus,
+  ref,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   unit?: string;
   decimals?: boolean;
-  autoFocus?: boolean;
+  /** For focusing the field from outside, e.g. as it appears. */
+  ref?: Ref<NativeTextInput>;
 }) {
   return (
     <FieldRow label={label}>
@@ -93,7 +102,7 @@ export function NumberField({
           placeholderTextColor={Colors.tertiaryLabel}
           keyboardType={decimals ? 'decimal-pad' : 'number-pad'}
           accessibilityLabel={label}
-          autoFocus={autoFocus}
+          ref={ref}
           style={[styles.input, styles.numberInput]}
         />
         {unit && <Text style={styles.unit}>{unit}</Text>}

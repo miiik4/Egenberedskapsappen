@@ -13,8 +13,8 @@ import {
 } from '@egenberedskap/core';
 import type { StockDraft } from '@egenberedskap/store';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { BackHandler, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { BackHandler, Pressable, ScrollView, StyleSheet, View, type TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DateField, NumberField, parseNumber } from '@/components/form/fields';
@@ -94,9 +94,18 @@ export default function Velkommen() {
     today,
   );
 
+  // The amount field that just appeared takes the keyboard, even from the other one.
+  const litresInput = useRef<TextInput>(null);
+  const mealsInput = useRef<TextInput>(null);
+  const [justOn, setJustOn] = useState<StockType>();
+  useEffect(() => {
+    if (justOn === 'drinkingWater') litresInput.current?.focus();
+    if (justOn === 'cannedMeals') mealsInput.current?.focus();
+  }, [justOn]);
   const toggle = (type: StockType) => {
     const on = !have.includes(type);
     setHave(on ? [...have, type] : have.filter((t) => t !== type));
+    setJustOn(on ? type : undefined);
   };
   const hasWater = items.some((item) => item.type === 'drinkingWater');
 
@@ -176,13 +185,13 @@ export default function Velkommen() {
                   if (on && q.type === 'drinkingWater') {
                     return [
                       row,
-                      <NumberField key="litres" label="Omtrent" value={litres} onChange={setLitres} unit="liter" decimals autoFocus />,
+                      <NumberField key="litres" label="Omtrent" value={litres} onChange={setLitres} unit="liter" decimals ref={litresInput} />,
                     ];
                   }
                   if (on && q.type === 'cannedMeals') {
                     return [
                       row,
-                      <NumberField key="meals" label="Omtrent" value={meals} onChange={setMeals} unit="måltider" autoFocus />,
+                      <NumberField key="meals" label="Omtrent" value={meals} onChange={setMeals} unit="måltider" ref={mealsInput} />,
                     ];
                   }
                   return [row];

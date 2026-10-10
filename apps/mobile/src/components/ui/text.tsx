@@ -1,3 +1,4 @@
+import type { Ref } from 'react';
 import {
   StyleSheet,
   Text as NativeText,
@@ -34,6 +35,6 @@ export function Text({ style, ...props }: TextProps) {
   return <NativeText {...props} style={[style, brandFont(style)]} />;
 }
 
-export function TextInput({ style, ...props }: TextInputProps) {
+export function TextInput({ style, ...props }: TextInputProps & { ref?: Ref<NativeTextInput> }) {
   return <NativeTextInput {...props} style={[style, brandFont(style)]} />;
 }

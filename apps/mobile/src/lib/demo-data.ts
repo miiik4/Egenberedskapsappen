@@ -1,4 +1,4 @@
-import { addDays } from '@egenberedskap/core';
+import { addDays, type Belonging } from '@egenberedskap/core';
 import type { Store } from '@egenberedskap/store';
 import { File, Paths } from 'expo-file-system';
 
@@ -8,16 +8,33 @@ import { todayIso } from './format';
 
 /**
  * Development only: fills a fresh install with the household from the iOS design, with
- * dates relative to today, so every screen can be checked without typing it all in.
+ * dates relative to today, so every screen can be checked without typing it all in. Also what
+ * the website's screenshots are taken from: 4 days with food as the limit, water about to
+ * expire, and more documented in the home than the sum insured.
  */
 export async function seedDemoData(actions: Omit<Store, 'load' | 'migrate'>) {
   const inDays = (days: number) => addDays(todayIso(), days);
 
-  const home = await actions.completeOnboarding({
+  const starter = await actions.completeOnboarding({
     members: { adults: 2, seniors: 0, children: 1, infants: 0, dogs: 1, cats: 0 },
     items: [],
     homeName: 'Storgata 12',
   });
+  // A home of its own, since the starter rooms' ids aren't known here, so its rooms can be filled.
+  const home = await actions.saveProperty({ name: 'Storgata 12', shortName: 'Storgata 12' });
+  await actions.selectProperty(home);
+  await actions.deleteProperty(starter);
+  const room = (name: string) => actions.saveRoom({ propertyId: home, name });
+  const [stue, kjokken, soverom, barnerom, gang, kontor] = [
+    await room('Stue'),
+    await room('Kjøkken'),
+    await room('Soverom'),
+    await room('Barnerom'),
+    await room('Gang'),
+    await room('Kontor'),
+  ];
+  await room('Bad');
+  await room('Bod');
   const item = { quantity: 1, remind: true, location: '' };
   await actions.saveStockItem({
     ...item,
@@ -28,11 +45,11 @@ export async function seedDemoData(actions: Omit<Store, 'load' | 'migrate'>) {
     expiresOn: inDays(9),
     location: 'Bod',
   });
-  await actions.saveStockItem({ ...item, name: 'Lapskaus', type: 'cannedMeals', quantity: 3, meals: 3, expiresOn: inDays(21) });
-  await actions.saveStockItem({ ...item, name: 'Bønner i tomatsaus', type: 'cannedMeals', quantity: 4, meals: 2, expiresOn: '2028-03-01' });
-  await actions.saveStockItem({ ...item, name: 'Tomatsuppe', type: 'cannedMeals', quantity: 4, meals: 2, expiresOn: '2027-06-01' });
-  await actions.saveStockItem({ ...item, name: 'Makrell i tomat', type: 'cannedMeals', quantity: 2, meals: 1, expiresOn: '2028-05-01' });
-  await actions.saveStockItem({ ...item, name: 'Knekkebrød', type: 'crispbread', quantity: 2, meals: 4, expiresOn: inDays(13) });
+  await actions.saveStockItem({ ...item, name: 'Lapskaus', type: 'cannedMeals', quantity: 3, meals: 9, expiresOn: inDays(21) });
+  await actions.saveStockItem({ ...item, name: 'Bønner i tomatsaus', type: 'cannedMeals', quantity: 4, meals: 8, expiresOn: '2028-03-01' });
+  await actions.saveStockItem({ ...item, name: 'Tomatsuppe', type: 'cannedMeals', quantity: 4, meals: 8, expiresOn: '2027-06-01' });
+  await actions.saveStockItem({ ...item, name: 'Makrell i tomat', type: 'cannedMeals', quantity: 2, meals: 3, expiresOn: '2028-05-01' });
+  await actions.saveStockItem({ ...item, name: 'Knekkebrød', type: 'crispbread', quantity: 2, meals: 8, expiresOn: inDays(13) });
   await actions.saveStockItem({ ...item, name: 'Tørrfôr', type: 'petFood', remind: false });
   await actions.saveStockItem({ ...item, name: 'Vedovn og ved', type: 'heatSource' });
   await actions.saveStockItem({ ...item, name: 'Ullpledd', type: 'woolBlankets', quantity: 3 });
@@ -58,13 +75,41 @@ export async function seedDemoData(actions: Omit<Store, 'load' | 'migrate'>) {
     deductibleKr: 4_000,
     alertNearSum: true,
   });
-  // A room of its own, since the starter rooms' ids aren't known here.
-  const office = await actions.saveRoom({ propertyId: home, name: 'Kontor' });
-  const thing = { roomId: office, valueEstimated: false };
-  await actions.saveBelonging({ ...thing, name: 'Bærbar PC', category: 'Elektronikk', valueKr: 18_990 });
-  await actions.saveBelonging({ ...thing, name: 'Skjerm, 27"', category: 'Elektronikk', valueKr: 4_500, valueEstimated: true });
-  await actions.saveBelonging({ ...thing, name: 'Kontorstol', category: 'Møbler', valueKr: 6_200 });
-  await actions.saveBelonging({ ...thing, name: 'Gitar', category: 'Musikkinstrument' });
+  // 620 590 kr in all, over the 600 000 insured, so Eiendeler warns. Bad and Bod are left empty.
+  const things: [string, string, Belonging['category'], number | undefined][] = [
+    [stue, 'Sofa', 'Møbler', 34_990],
+    [stue, 'TV, 65"', 'Elektronikk', 21_990],
+    [stue, 'Stereoanlegg', 'Elektronikk', 18_500],
+    [stue, 'Spisebord og stoler', 'Møbler', 26_000],
+    [stue, 'Maleri', 'Kunst', 38_000],
+    [stue, 'Bokhylle og bøker', 'Møbler', 22_000],
+    [stue, 'Teppe', 'Møbler', 12_500],
+    [kjokken, 'Kjøleskap', 'Hvitevarer', 16_990],
+    [kjokken, 'Komfyr med induksjonstopp', 'Hvitevarer', 19_990],
+    [kjokken, 'Oppvaskmaskin', 'Hvitevarer', 9_990],
+    [kjokken, 'Kaffemaskin', 'Kjøkkenutstyr', 11_990],
+    [kjokken, 'Gryter, kniver og servise', 'Kjøkkenutstyr', 28_000],
+    [soverom, 'Seng', 'Møbler', 29_990],
+    [soverom, 'Klesskap', 'Møbler', 14_000],
+    [soverom, 'Klær', 'Klær', 85_000],
+    [soverom, 'Smykker', 'Smykker', 42_000],
+    [barnerom, 'Seng og madrass', 'Møbler', 9_990],
+    [barnerom, 'Leker og spill', 'Leker', 15_000],
+    [barnerom, 'Nettbrett', 'Elektronikk', 6_990],
+    [barnerom, 'Klær', 'Klær', 30_000],
+    [gang, 'El-sykkel', 'Sport og fritid', 34_990],
+    [gang, 'Ski og utstyr', 'Sport og fritid', 21_000],
+    [gang, 'Yttertøy', 'Klær', 18_000],
+    [gang, 'Verktøykasse', 'Verktøy', 14_000],
+    [gang, 'Vinterdekk', 'Annet', 9_000],
+    [kontor, 'Bærbar PC', 'Elektronikk', 18_990],
+    [kontor, 'Skjerm, 27"', 'Elektronikk', 4_500],
+    [kontor, 'Kontorstol', 'Møbler', 6_200],
+    [kontor, 'Gitar', 'Musikkinstrument', undefined],
+  ];
+  for (const [roomId, name, category, valueKr] of things) {
+    await actions.saveBelonging({ roomId, name, category, valueEstimated: false, ...(valueKr !== undefined && { valueKr }) });
+  }
 
   await actions.saveProperty({ name: 'Hafjell', shortName: 'Hytta' });
 
