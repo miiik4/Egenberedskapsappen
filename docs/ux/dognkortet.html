@@ -1,0 +1,254 @@
+<title>Døgnkortet på Oversikt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: the card at its real size (358 pt wide), now next to the proposal, then the proposal in its
+   two edge states. Numbered pins on the cards tie to the notes under each. The app's own palette
+   (constants/theme.ts); the navy card stays navy in both themes, as in the app. */
+:root {
+  --bg: #F4F7FA;
+  --card: #FFFFFF;
+  --card-border: #E1E9F1;
+  --label: #0B2B4A;
+  --label-2: #5B7285;
+  --label-3: #B4C3D2;
+  --sep: #E3EAF1;
+  --accent: #0E5FC0;
+  --accent-soft: #E6EFFA;
+  --hero: #0B2B4A;
+  --hero-text: #FFFFFF;
+  --hero-muted: #BBD6F2;
+  --hero-soft: #DCEBFA;
+  --hero-track: #23517C;
+  --hero-bar: #5FA3F0;
+  --hero-caption: #A9C5DD;
+  --hero-link: #8EC2FF;
+  --pin-new: #C2347A;
+  --pin-old: #7A8896;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Sans 3", -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #08131F; --card: #102236; --card-border: #1D3550; --label: #EAF2FA; --label-2: #9DB2C6;
+    --label-3: #4E6781; --sep: #1D3550; --accent: #4C9AF5; --accent-soft: #173A63; --hero: #123A62;
+    --pin-new: #F06BAA; --pin-old: #8A9BAD;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #08131F; --card: #102236; --card-border: #1D3550; --label: #EAF2FA; --label-2: #9DB2C6;
+  --label-3: #4E6781; --sep: #1D3550; --accent: #4C9AF5; --accent-soft: #173A63; --hero: #123A62;
+  --pin-new: #F06BAA; --pin-old: #8A9BAD;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--label); font-family: var(--body); font-size: 16px; line-height: 1.45; }
+.page { max-width: 1040px; margin: 0 auto; padding: 40px 20px 72px; display: flex; flex-direction: column; gap: 56px; }
+
+header.intro { display: flex; flex-direction: column; gap: 10px; max-width: 66ch; }
+.eyebrow { font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--label-2); }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 5vw, 42px); letter-spacing: -.02em; line-height: 1.05; margin: 0; text-wrap: balance; }
+.intro p { margin: 0; color: var(--label-2); font-size: 18px; }
+
+section { display: flex; flex-direction: column; gap: 20px; }
+h2 { font-family: var(--display); font-weight: 700; font-size: 22px; letter-spacing: -.01em; margin: 0; }
+section > p { margin: 0; color: var(--label-2); max-width: 70ch; }
+
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 36px 32px; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.tag { font-weight: 700; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+.tag.old { color: var(--pin-old); }
+.tag.new { color: var(--pin-new); }
+.screen { width: 100%; max-width: 390px; background: var(--bg); border: 1px solid var(--card-border); border-radius: 28px; padding: 18px 0 20px; display: flex; flex-direction: column; gap: 12px; }
+.screen-title { font-family: var(--display); font-weight: 700; font-size: 30px; letter-spacing: -.02em; padding: 0 20px; line-height: 1; }
+.screen-sub { font-size: 15px; color: var(--label-2); padding: 0 20px; margin-top: -4px; }
+.quiet { font-size: 14px; color: var(--label-2); padding: 0 20px; }
+.quiet b { color: var(--accent); font-weight: 600; }
+
+/* ---------- The card ---------- */
+.hero { margin: 0 16px; background: var(--hero); color: var(--hero-text); border-radius: 22px; padding: 18px 18px 14px; display: flex; flex-direction: column; gap: 12px; position: relative; }
+.lead { font-size: 15px; color: var(--hero-soft); }
+.num { display: flex; align-items: baseline; gap: 8px; margin-top: -4px; }
+.num b { font-family: var(--display); font-size: 58px; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.num span { font-family: var(--display); font-weight: 600; font-size: 20px; }
+.basis { font-size: 12.5px; color: var(--hero-caption); margin-top: -8px; position: relative; align-self: flex-start; }
+.scale { display: flex; flex-direction: column; gap: 6px; }
+.track { position: relative; height: 8px; border-radius: 4px; background: var(--hero-track); }
+.track.thin { height: 5px; border-radius: 3px; }
+.track i { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--hero-bar); }
+.track::after { content: ""; position: absolute; left: 70%; top: -4px; bottom: -4px; width: 2px; background: var(--hero-text); opacity: .9; }
+.track.thin::after { top: -3px; bottom: -3px; opacity: .55; }
+.cap { position: relative; height: 16px; font-size: 12px; color: var(--hero-caption); }
+.cap span { position: absolute; left: 70%; transform: translateX(-50%); white-space: nowrap; }
+.foot { border-top: 1px solid var(--hero-track); padding-top: 11px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14.5px; position: relative; }
+.foot .toggle { color: var(--hero-muted); font-weight: 600; white-space: nowrap; }
+
+.rows { display: flex; flex-direction: column; gap: 10px; position: relative; }
+.r { display: grid; grid-template-columns: 1fr auto 10px; gap: 4px 8px; align-items: center; font-size: 14px; }
+.r .n { font-weight: 600; }
+.r .v { color: var(--hero-muted); font-variant-numeric: tabular-nums; }
+.r .c { color: var(--hero-caption); font-size: 13px; }
+.r .track { grid-column: 1 / -1; }
+.r.limit .n, .r.limit .v { color: var(--hero-text); }
+.r.limit .track i { background: #F1B95B; }
+
+.cta { display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid var(--hero-track); padding: 12px 2px 2px; position: relative; }
+.cta .t { display: flex; flex-direction: column; min-width: 0; }
+.cta b { font-weight: 700; font-size: 15.5px; color: var(--hero-link); }
+.cta span { font-size: 12.5px; color: var(--hero-caption); }
+.cta .arrow { width: 30px; height: 30px; border-radius: 15px; background: var(--hero-track); color: var(--hero-text); display: grid; place-items: center; font-size: 14px; flex: none; }
+.cta.done b { color: var(--hero-text); }
+
+/* Pins */
+[data-pin] { position: relative; }
+[data-pin]::after {
+  content: attr(data-pin); position: absolute; top: -9px; right: -9px; z-index: 2;
+  width: 19px; height: 19px; border-radius: 10px; font: 700 11px/19px var(--body); text-align: center; color: #fff;
+  box-shadow: 0 0 0 2px var(--hero);
+}
+.old [data-pin]::after { background: var(--pin-old); }
+.new [data-pin]::after { background: var(--pin-new); }
+.ring { outline: 2px dashed var(--pin-new); outline-offset: 3px; border-radius: 8px; }
+.old .ring { outline-color: var(--pin-old); }
+
+.notes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; max-width: 390px; }
+.notes li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 15px; }
+.k { width: 22px; height: 22px; border-radius: 11px; color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; margin-top: 1px; }
+.old .k { background: var(--pin-old); }
+.new .k { background: var(--pin-new); }
+
+.states { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; align-items: start; }
+.state { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.state h3 { font-size: 15px; font-weight: 700; margin: 0; }
+.state p { margin: 0; font-size: 15px; color: var(--label-2); max-width: 390px; }
+
+footer { border-top: 1px solid var(--sep); padding-top: 20px; color: var(--label-2); font-size: 15px; max-width: 70ch; }
+
+@media (max-width: 420px) {
+  .page { padding: 28px 16px 56px; }
+  .screen { border-radius: 22px; }
+  .hero { margin: 0 12px; }
+}
+</style>
+
+<div class="page">
+  <header class="intro">
+    <span class="eyebrow">Egenberedskapsappen · Oversikt · forslag</span>
+    <h1>Døgnkortet som forklarer seg selv</h1>
+    <p>The card at its real size, with the same test household as in the simulator: 2 people and a dog, water for 7 days, food for 2 and heat in place. The proposal keeps the number and the scale, always shows the three bars, and turns the line about what's missing into a link.</p>
+  </header>
+
+  <section>
+    <div class="pair">
+      <div class="col old">
+        <span class="tag old">Nå</span>
+        <div class="screen">
+          <div class="screen-title">Oversikt</div>
+          <div class="screen-sub">Storgata 12 · 2 personer og 1 hund</div>
+          <div class="hero">
+            <div class="lead" data-pin="4">Uten strøm og vann klarer dere dere i</div>
+            <div class="num"><b>2</b><span>døgn</span></div>
+            <div class="scale">
+              <div class="track"><i style="width:20%"></i></div>
+              <div class="cap"><span>DSB anbefaler 7</span></div>
+            </div>
+            <div class="foot">
+              <span class="ring" data-pin="1">Det er maten som mangler mest.</span>
+              <span class="toggle ring" data-pin="2">Vis alle ⌄</span>
+            </div>
+          </div>
+          <div class="quiet">Neste beredskapssjekk 8. januar · <b>Ta den nå</b></div>
+        </div>
+        <ol class="notes">
+          <li><span class="k">1</span><span>The sentence that says what to fix can't be tapped on its own. Tapping the row only opens the list.</span></li>
+          <li><span class="k">2</span><span>«Vis alle» doesn't say what it shows, and it hides the breakdown that explains the 2.</span></li>
+          <li><span class="k">3</span><span>Nothing says the number comes from what's been entered, so it can read as a verdict on the home.</span></li>
+          <li><span class="k">4</span><span>«klarer dere dere» makes people read it twice.</span></li>
+        </ol>
+      </div>
+
+      <div class="col new">
+        <span class="tag new">Forslag</span>
+        <div class="screen">
+          <div class="screen-title">Oversikt</div>
+          <div class="screen-sub">Storgata 12 · 2 personer og 1 hund</div>
+          <div class="hero">
+            <div class="lead" data-pin="4">Uten strøm og vann klarer husstanden seg i</div>
+            <div class="num"><b>2</b><span>døgn</span></div>
+            <div class="basis" data-pin="3">Ut fra det dere har lagt inn</div>
+            <div class="rows" data-pin="2">
+              <div class="r"><span class="n">Vann</span><span class="v">7+ døgn</span><span class="c">›</span><div class="track thin"><i style="width:100%"></i></div></div>
+              <div class="r limit"><span class="n">Mat</span><span class="v">2 døgn</span><span class="c">›</span><div class="track thin"><i style="width:20%"></i></div></div>
+              <div class="r"><span class="n">Varme</span><span class="v">7+ døgn</span><span class="c">›</span><div class="track thin"><i style="width:100%"></i></div></div>
+              <div class="cap"><span>DSB anbefaler 7</span></div>
+            </div>
+            <div class="cta ring" data-pin="1">
+              <div class="t"><b>Kjøp mat for 5 døgn til</b><span>30 måltider · havregryn, tørket frukt og nøtter</span></div>
+              <span class="arrow">›</span>
+            </div>
+          </div>
+          <div class="quiet">Neste beredskapssjekk 8. januar · <b>Ta den nå</b></div>
+        </div>
+        <ol class="notes">
+          <li><span class="k">1</span><span>The limit becomes the action, worded like the task in «Neste å gjøre». It opens «Ny vare» filled in with 30 meals.</span></li>
+          <li><span class="k">2</span><span>The three bars are always there, and the one holding the number down is the only one in yellow. Each row opens its category. The single big bar goes: the shortest of the three is the number.</span></li>
+          <li><span class="k">3</span><span>One quiet line says where the number comes from.</span></li>
+          <li><span class="k">4</span><span>«klarer husstanden seg» reads in one go and matches «Husstand» elsewhere in the app.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The proposal at the two edges</h2>
+    <p>These states are where the card is most likely to feel off: a household that has entered nothing, and one that has reached the week.</p>
+    <div class="states">
+      <div class="state new">
+        <h3>Nothing entered yet</h3>
+        <div class="hero">
+          <div class="lead">Uten strøm og vann klarer husstanden seg i</div>
+          <div class="num"><b>0</b><span>døgn</span></div>
+          <div class="basis">Ut fra det dere har lagt inn</div>
+          <div class="rows">
+            <div class="r limit"><span class="n">Vann</span><span class="v">0 døgn</span><span class="c">›</span><div class="track thin"><i style="width:0%"></i></div></div>
+            <div class="r"><span class="n">Mat</span><span class="v">0 døgn</span><span class="c">›</span><div class="track thin"><i style="width:0%"></i></div></div>
+            <div class="r"><span class="n">Varme</span><span class="v">0 døgn</span><span class="c">›</span><div class="track thin"><i style="width:0%"></i></div></div>
+            <div class="cap"><span>DSB anbefaler 7</span></div>
+          </div>
+          <div class="cta">
+            <div class="t"><b>Start med vannet</b><span>42 liter, eller legg inn det dere har</span></div>
+            <span class="arrow">›</span>
+          </div>
+        </div>
+        <p>With everything at 0, the link names one first step, the same one that leads «Neste å gjøre». It doesn't list everything that's missing.</p>
+      </div>
+
+      <div class="state new">
+        <h3>The week is in place</h3>
+        <div class="hero">
+          <div class="lead">Uten strøm og vann klarer husstanden seg i</div>
+          <div class="num"><b>7+</b><span>døgn</span></div>
+          <div class="basis">Ut fra det dere har lagt inn</div>
+          <div class="rows">
+            <div class="r"><span class="n">Vann</span><span class="v">8 døgn</span><span class="c">›</span><div class="track thin"><i style="width:80%"></i></div></div>
+            <div class="r"><span class="n">Mat</span><span class="v">7 døgn</span><span class="c">›</span><div class="track thin"><i style="width:70%"></i></div></div>
+            <div class="r"><span class="n">Varme</span><span class="v">7+ døgn</span><span class="c">›</span><div class="track thin"><i style="width:100%"></i></div></div>
+            <div class="cap"><span>DSB anbefaler 7</span></div>
+          </div>
+          <div class="cta done">
+            <div class="t"><b>Dere følger DSBs anbefaling</b><span>Neste sjekk 8. januar holder tallet riktig</span></div>
+            <span class="arrow">›</span>
+          </div>
+        </div>
+        <p>When the week is reached, the link turns into the next thing that keeps it there: the check. The number never goes above «7+», so the card doesn't turn into a race past the target.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    These are sketches for discussion. The figures come from the test household, and the wording follows the copy already in the app. Nothing here is built yet.
+  </footer>
+</div>

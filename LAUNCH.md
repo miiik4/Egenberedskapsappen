@@ -152,6 +152,10 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       instead of «Dokumenter», and a line on why until the first thing is added
 - [ ] *(in code; not run)* Smaller: Rapport says why the button is off; «kan åpnes uten nett» in Nødinfo and on the
       website; «lageret» instead of «beredskapslageret»; website copy for the onboarding result, Lager and the check
+- [ ] *(in code; checked in the simulator with food as the limit)* The days card on Oversikt always shows water, food
+      and heat, the limit in yellow, «Ut fra det dere har lagt inn», and the limit as a link («Kjøp mat for 5 døgn
+      til»), as sketched in `docs/ux/dognkortet.html`. «klarer husstanden seg» in the app and the website's calculator.
+      The 0 and 7+ states not seen yet
 - [ ] Walk through all of the above on Android, and the onboarding on a fresh install
 
 ## 6. Stores

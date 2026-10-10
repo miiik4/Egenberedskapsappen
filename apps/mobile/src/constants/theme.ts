@@ -46,6 +46,10 @@ export const Colors = {
     track: '#23517C',
     bar: '#5FA3F0',
     caption: '#A9C5DD',
+    /** The link at the foot of the card: what to do next. */
+    link: '#8EC2FF',
+    /** The bar of the one holding the number down. */
+    limit: '#F1B95B',
   },
 } as const;
 

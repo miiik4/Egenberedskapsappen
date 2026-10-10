@@ -194,7 +194,7 @@ export default function Velkommen() {
           {step === 2 && (
             <>
               <View style={styles.result}>
-                <Text style={styles.lead}>Uten strøm og vann klarer dere dere i</Text>
+                <Text style={styles.lead}>Uten strøm og vann klarer husstanden seg i</Text>
                 <DaysHeadline days={coverage.days} size={64} />
                 <Text style={styles.limiter}>{limiterText(coverage)}</Text>
               </View>

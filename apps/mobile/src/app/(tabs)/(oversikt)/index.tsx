@@ -6,13 +6,15 @@ import {
   missingTypes,
   nextActions,
   nextCheck,
+  TARGET_DAYS,
+  type Coverage,
   type FollowUp,
   type NextAction,
 } from '@egenberedskap/core';
 import { router, Stack, type Href } from 'expo-router';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
-import { DaysHero } from '@/components/preparedness/days-hero';
+import { DaysHero, type HeroAction } from '@/components/preparedness/days-hero';
 import { DAY_ROWS } from '@/components/preparedness/day-rows';
 import { INSURANCE_ALERT_TITLE, useHomeInsurance } from '@/components/preparedness/home-insurance';
 import { CheckCircle, WarningDot } from '@/components/ui/check-circle';
@@ -25,7 +27,16 @@ import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { GUIDES } from '@/guides/guides';
 import { useNotifications } from '@/notifications/notifications-provider';
-import { describeAction, formatDate, formatIn, formatKr, householdLabel, todayIso } from '@/lib/format';
+import {
+  describeAction,
+  formatDate,
+  formatIn,
+  formatKr,
+  formatMeals,
+  formatNumber,
+  householdLabel,
+  todayIso,
+} from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 const TASKS_SHOWN = 3;
@@ -40,7 +51,8 @@ export default function Oversikt() {
   const today = todayIso();
   const coverage = computeCoverage(household, stock, today);
   const plan = { contacts: data.contacts.length, meetingPlace: data.meetingPlace !== null, followUps: data.followUps };
-  const actions = nextActions(household, stock, today, plan).slice(0, TASKS_SHOWN);
+  const all = nextActions(household, stock, today, plan);
+  const actions = all.slice(0, TASKS_SHOWN);
   // «Utstyr»: the categories that aren't counted in days.
   const gearMissing = missingTypes(household, stock, today).filter((t) => !DAY_ROWS.some((r) => r.kind === t.category)).length;
   const guide = GUIDES[featuredGuide(household, Number(today.slice(5, 7)))];
@@ -51,6 +63,8 @@ export default function Oversikt() {
   const { permission, requestPermission } = useNotifications();
 
   const toLager = (href: Href) => router.navigate(href, { withAnchor: true });
+  const nextCheckOn = formatDate(nextCheck(checkFrom, data.checkIntervalMonths));
+  const heroAction = limitAction(coverage, all, nextCheckOn);
 
   return (
     <>
@@ -78,6 +92,7 @@ export default function Oversikt() {
             coverage={coverage}
             // Each day row is also a category of the list: vann, mat, varme.
             onPressKind={(kind) => toLager({ pathname: '/lager/kategori/[id]', params: { id: kind } })}
+            action={heroAction}
           />
           {/* A quiet line while it's a while off, a card as it nears, yellow once it's due. Before
               the first check that's one interval after setup, like any other. */}
@@ -88,7 +103,7 @@ export default function Oversikt() {
               hitSlop={8}
               style={({ pressed }) => [styles.quiet, pressed && { opacity: 0.6 }]}>
               <Text style={styles.quietText}>
-                Neste beredskapssjekk {formatDate(nextCheck(checkFrom, data.checkIntervalMonths))} ·{' '}
+                Neste beredskapssjekk {nextCheckOn} ·{' '}
                 <Text style={styles.quietLink}>Ta den nå</Text>
               </Text>
             </Pressable>
@@ -154,6 +169,46 @@ export default function Oversikt() {
       </Screen>
     </>
   );
+}
+
+/**
+ * The foot of the days card: the task for whatever holds the number down, worded as in «Neste å
+ * gjøre». With nothing at all yet, the first step; once the week is there, the check that keeps it.
+ */
+function limitAction(coverage: Coverage, actions: NextAction[], nextCheckOn: string): HeroAction {
+  if (coverage.days >= TARGET_DAYS) {
+    return {
+      title: 'Dere følger DSBs anbefaling',
+      subtitle: `Neste sjekk ${nextCheckOn} holder tallet riktig`,
+      onPress: () => router.push('/beredskapssjekk'),
+    };
+  }
+  const action = actions.find((a) =>
+    coverage.limitedBy === 'water'
+      ? a.kind === 'buyWater'
+      : coverage.limitedBy === 'food'
+        ? a.kind === 'buyFood'
+        : a.kind === 'getType' && a.type.id === 'heatSource',
+  );
+  // Always there below the week; the fallback only keeps the card from going blank.
+  if (!action) return { title: 'Se hva som mangler', onPress: () => router.navigate('/lager', { withAnchor: true }) };
+  const href = taskHref(action);
+  const onPress = () => router.push(href);
+  if (action.kind === 'buyWater') {
+    return coverage.litres === 0
+      ? { title: 'Start med vannet', subtitle: `${formatNumber(action.litres)} liter, eller legg inn det dere har`, onPress }
+      : { title: `Kjøp ${formatNumber(action.litres)} liter vann til`, subtitle: 'Drikkevann på kanner', onPress };
+  }
+  if (action.kind === 'buyFood') {
+    // One example keeps it to a line; «Neste å gjøre» lists them all.
+    const [example] = action.suggestions;
+    return {
+      title: `Kjøp mat for ${action.days} døgn til`,
+      subtitle: example ? `${formatMeals(action.meals)}, f.eks. ${example.name.toLowerCase()}` : formatMeals(action.meals),
+      onPress,
+    };
+  }
+  return { ...describeAction(action), onPress };
 }
 
 /** Doing a task means recording it, so each one opens the sheet it's done in, prefilled. */
