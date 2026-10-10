@@ -12,7 +12,8 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "development"
+        "APP_VARIANT": "development",
+        "UPDATE_SIGNING": "off"
       },
       "channel": "development"
     },

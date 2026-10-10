@@ -60,6 +60,11 @@ without it, for example by someone who gets into the Expo account, is rejected b
 
 The key is never uploaded: `eas update` signs on the Mac and sends only the signature. Builds don't need the key.
 
+Dev clients leave the signature check out (`UPDATE_SIGNING=off`, in `app.config.ts`), or Metro would need the key to
+serve every reload. It's set by the `development` and `development-simulator` profiles and by `npm run ios` /
+`npm run android` in `apps/mobile`. A plain `npx expo run:ios` builds a client that checks, which Metro then can't
+serve. Preview, production and `eas update` never set it, so they always sign and check.
+
 ### Publishing an update
 
 Only Mikkel publishes updates. Always use the script, which passes the key:

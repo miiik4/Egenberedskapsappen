@@ -62,8 +62,8 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
+    "android": "UPDATE_SIGNING=off expo run:android",
+    "ios": "UPDATE_SIGNING=off expo run:ios",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

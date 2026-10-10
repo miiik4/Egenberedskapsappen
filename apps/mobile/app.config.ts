@@ -11,6 +11,14 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  */
 const production = process.env.APP_VARIANT === 'production';
 
+/**
+ * Dev clients run JS from Metro, and a build that checks update signatures makes Metro sign
+ * every manifest with the release key. `UPDATE_SIGNING=off` leaves the check out of a dev
+ * client: set by the `development` profiles in eas.json and by `npm run ios` / `android`. Never
+ * set for preview, production or `eas update`, which must keep it (docs/releasing.md).
+ */
+const unsignedDevClient = process.env.UPDATE_SIGNING === 'off';
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const id = production ? 'no.htas.egenberedskap' : 'no.htas.egenberedskap.dev';
   const firebase = production ? 'prod' : 'test';
@@ -38,5 +46,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       googleServicesFile: `./firebase/${firebase}/google-services.json`,
     },
     extra: { ...config.extra, variant: production ? 'production' : 'development' },
+    ...(unsignedDevClient && !production && { updates: withoutSigning(config.updates) }),
   };
 };
+
+function withoutSigning(updates: ExpoConfig['updates']): ExpoConfig['updates'] {
+  if (!updates) return updates;
+  const { codeSigningCertificate: _certificate, codeSigningMetadata: _metadata, ...rest } = updates;
+  return rest;
+}

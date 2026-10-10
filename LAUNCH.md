@@ -199,8 +199,8 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 
 ## 8. Website
 
-- [ ] Replace the «Kvartalssjekk» section in `apps/web/src/pages/index.astro` with «Beredskapssjekk» and its
-      choice of interval, once the app version that has it is out
+- [x] Replace the «Kvartalssjekk» section in `apps/web/src/pages/index.astro` with «Beredskapssjekk» and its
+      choice of interval (2026-10-10, ahead of the app on Mikkel's say; seen in the local preview, not deployed)
 - [ ] App Store and Google Play links
 - [x] Every claim checked against the app; false ones fixed (287df93)
 - [x] *(resolved: the innbo list, receipts and PDF are shown as free, df22ba5)* The Egenberedskap+ section sells the innbo list, receipts and PDF as paid, but the app lets
@@ -209,7 +209,9 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       promise, or say «ingen reklame eller sporing»
 - [x] «Lageret følger DSBs liste» → «bygger på DSBs liste», as the app says; «i Porsgrunn» depends on the company
       details
-- [ ] When the Kvartalssjekk section is replaced, also replace the hero alt text and `oversikt.webp`
+- [x] When the Kvartalssjekk section is replaced, also replace the hero alt text and `oversikt.webp` (2026-10-10:
+      the eight 1.0 screenshots are now from the app in the simulator, demo household from `lib/demo-data.ts`; the
+      three Egenberedskap+ ones are still design renders)
 - [ ] Deploy to the prod hosting site with the real domain; indexing on only there
 - [x] Domain `egenberedskapappen.no` (without the s) in place (Mikkel, 2026-10-10)
 - [ ] **(Tarjei)** Buy `egenberedskapsappen.no` (with the s, as the app is named); suggested as the main domain, with
