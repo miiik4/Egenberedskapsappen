@@ -1,9 +1,16 @@
-import { addDays, EXPIRY_REVIEW_AFTER_DAYS, expiresBeforeNextCheck, nextCheck, renewExpiring } from '@egenberedskap/core';
+import {
+  addDays,
+  EXPIRY_REVIEW_AFTER_DAYS,
+  expiringBeforeNextCheck,
+  nextCheck,
+  renewExpiring,
+} from '@egenberedskap/core';
 import { router, type Href } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { CheckCircle } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
 import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
@@ -15,24 +22,36 @@ type Step = {
   key: string;
   question: string;
   detail?: string;
-  /** The first answer is the "all good" one and gets the filled button. */
-  answers: [string, string];
-  /** Where to go after saving if the second answer was chosen, to put it right. */
+  /** What's recorded for each answer. The first is the "all good" one and gets the filled button. */
+  answers: string[];
+  /** What the buttons say, when it isn't the answer itself. */
+  labels?: string[];
+  /** The first answer can't be given yet, e.g. «Byttet» with nothing ticked off. */
+  firstDisabled?: boolean;
+  /** Where to go after saving, to put it right, if `fixOn` was the answer. */
   fix?: Href;
+  fixOn?: string;
 };
 
 export default function Beredskapssjekk() {
-  const { household, stock, checkIntervalMonths } = useData();
-  const { recordCheck, setExpiryReview, saveStockItem } = useActions();
+  const { household, stock, checkIntervalMonths, contacts } = useData();
+  const { recordCheck, setExpiryReview, saveStockItem, setFollowUp } = useActions();
   const { permission, requestPermission } = useNotifications();
   const insets = useSafeAreaInsets();
   // A page sheet on iOS; on Android a full screen drawn edge to edge, so keep clear of the system bars.
   const android = Platform.OS === 'android';
   const today = todayIso();
-  const expiring = stock.filter(
-    (item) => item.expiresOn && expiresBeforeNextCheck(item.expiresOn, today, checkIntervalMonths),
-  ).length;
+  const expiring = expiringBeforeNextCheck(stock, today, checkIntervalMonths);
   const untilNextCheck = formatMonths(checkIntervalMonths);
+  // What the user ticks off as replaced. Only those get new dates.
+  const [replaced, setReplaced] = useState<ReadonlySet<string>>(new Set());
+  const toggleReplaced = (id: string) =>
+    setReplaced((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   const steps: Step[] = [
     {
@@ -40,18 +59,29 @@ export default function Beredskapssjekk() {
       question: `Er dere fortsatt ${householdLabel(household)}?`,
       answers: ['Ja', 'Nei, endre'],
       fix: '/husstand',
+      fixOn: 'Nei, endre',
     },
-    {
-      key: 'expiry',
-      question: 'Gå gjennom utløpsdatoer',
-      detail:
-        expiring > 0
-          ? `${expiring} ${expiring === 1 ? 'vare går' : 'varer går'} ut innen ${untilNextCheck}`
-          : `Ingen varer går ut innen ${untilNextCheck}`,
-      answers: ['Byttet', 'Påminn meg'],
-    },
+    expiring.length > 0
+      ? {
+          key: 'expiry',
+          question: 'Bytt det som går ut',
+          detail: 'Huk av det dere har byttet',
+          answers: ['Byttet', 'Påminn meg'],
+          labels: [replaced.size > 0 ? `${replaced.size} byttet` : 'Byttet', 'Påminn meg'],
+          firstDisabled: replaced.size === 0,
+        }
+      : { key: 'expiry', question: 'Utløpsdatoer', detail: `Ingenting går ut innen ${untilNextCheck}`, answers: ['OK'] },
     { key: 'equipment', question: 'Test lommelykt og radio', answers: ['Virker', 'Må fikses'] },
-    { key: 'contacts', question: 'Stemmer nødkontaktene?', answers: ['Ja', 'Endre'], fix: '/nodinfo' },
+    contacts.length > 0
+      ? { key: 'contacts', question: 'Stemmer nødkontaktene?', answers: ['Ja', 'Endre'], fix: '/nodinfo', fixOn: 'Endre' }
+      : {
+          key: 'contacts',
+          question: 'Legg til nødkontakter',
+          detail: 'Dere har ingen ennå',
+          answers: ['Legg til', 'Senere'],
+          fix: '/kontakt',
+          fixOn: 'Legg til',
+        },
   ];
 
   const [answers, setAnswers] = useState<string[]>([]);
@@ -65,12 +95,23 @@ export default function Beredskapssjekk() {
     if (saving.current) return;
     saving.current = true;
     const answered = Object.fromEntries(steps.map((step, i) => [step.key, answers[i]!]));
-    // «Byttet»: what the check brought up was bought today. Dates first, so a failure leaves the check unrecorded.
+    // «Byttet»: what was ticked off was bought today. Dates first, so a failure leaves the check unrecorded.
     const { renewed, needDate } =
-      answered.expiry === 'Byttet' ? renewExpiring(stock, today, checkIntervalMonths) : { renewed: [], needDate: [] };
+      answered.expiry === 'Byttet'
+        ? renewExpiring(
+            expiring.filter((item) => replaced.has(item.id)),
+            today,
+          )
+        : { renewed: [], needDate: [] };
+    // Each thing to put right: the first opens now, the rest wait in «Neste å gjøre».
+    const [first, ...later] = steps.filter((step, i) => step.fix && answers[i] === step.fixOn);
     try {
       for (const item of renewed) await saveStockItem(item);
       await recordCheck(answered);
+      // A broken torch is fixed away from the phone, so it always waits on Oversikt.
+      await setFollowUp('equipment', answered.equipment === 'Må fikses');
+      // Without contacts, «Legg til en nødkontakt» on Oversikt already asks.
+      await setFollowUp('contacts', later.some((step) => step.fixOn === 'Endre'));
       if (answered.expiry === 'Påminn meg') {
         await setExpiryReview(addDays(today, EXPIRY_REVIEW_AFTER_DAYS));
         if (permission === 'undetermined') await requestPermission();
@@ -79,15 +120,13 @@ export default function Beredskapssjekk() {
       saving.current = false;
       throw error;
     }
-    // Open the first thing that needs putting right, if any.
-    const fix = steps.find((step, i) => step.fix && answers[i] === step.answers[1])?.fix;
     router.back();
-    if (fix) router.navigate(fix);
-    const [first] = needDate;
-    if (first) {
+    if (first?.fix) router.navigate(first.fix);
+    const [undated] = needDate;
+    if (undated) {
       // With no shelf life to go by, only the new pack knows the date.
       const href: Href =
-        needDate.length === 1 ? { pathname: '/lager/vare/[id]', params: { id: first.id } } : '/lager';
+        needDate.length === 1 ? { pathname: '/lager/vare/[id]', params: { id: undated.id } } : '/lager';
       Alert.alert(
         `${needDate.length} ${needDate.length === 1 ? 'vare trenger' : 'varer trenger'} ny dato`,
         'Sett utløpsdatoen fra den nye pakningen.',
@@ -147,22 +186,48 @@ export default function Beredskapssjekk() {
                   ]}>
                   {step.question}
                 </Text>
-                {state === 'done' && <Text style={styles.detail}>{answers[i]}</Text>}
+                {state === 'done' && (
+                  <Text style={styles.detail}>{step.labels?.[step.answers.indexOf(answers[i]!)] ?? answers[i]}</Text>
+                )}
                 {state === 'active' && step.detail && <Text style={styles.detail}>{step.detail}</Text>}
-                {state === 'active' && (
-                  <View style={styles.actions}>
-                    {step.answers.map((label, a) => (
+                {state === 'active' && step.key === 'expiry' && expiring.length > 0 && (
+                  <View style={styles.items}>
+                    {expiring.map((item) => (
                       <Pressable
-                        key={label}
-                        onPress={() => answer(label)}
-                        style={({ pressed }) => [
-                          styles.action,
-                          a === 0 ? styles.actionPrimary : styles.actionSecondary,
-                          pressed && { opacity: 0.8 },
-                        ]}>
-                        <Text style={[styles.actionText, a === 0 && { color: '#FFFFFF' }]}>{label}</Text>
+                        key={item.id}
+                        onPress={() => toggleReplaced(item.id)}
+                        accessibilityRole="checkbox"
+                        accessibilityState={{ checked: replaced.has(item.id) }}
+                        style={({ pressed }) => [styles.item, pressed && { opacity: 0.7 }]}>
+                        <CheckCircle on={replaced.has(item.id)} />
+                        <Text style={styles.itemName} numberOfLines={1}>
+                          {item.name}
+                        </Text>
+                        <Text style={styles.itemDate}>{formatDate(item.expiresOn!)}</Text>
                       </Pressable>
                     ))}
+                  </View>
+                )}
+                {state === 'active' && (
+                  <View style={styles.actions}>
+                    {step.answers.map((value, a) => {
+                      const disabled = a === 0 && step.firstDisabled;
+                      return (
+                        <Pressable
+                          key={value}
+                          onPress={() => answer(value)}
+                          disabled={disabled}
+                          accessibilityState={{ disabled }}
+                          style={({ pressed }) => [
+                            styles.action,
+                            a === 0 ? styles.actionPrimary : styles.actionSecondary,
+                            disabled && { opacity: 0.4 },
+                            pressed && { opacity: 0.8 },
+                          ]}>
+                          <Text style={[styles.actionText, a === 0 && { color: '#FFFFFF' }]}>{step.labels?.[a] ?? value}</Text>
+                        </Pressable>
+                      );
+                    })}
                   </View>
                 )}
               </View>
@@ -173,7 +238,7 @@ export default function Beredskapssjekk() {
 
       <Text style={styles.footnote}>
         Neste sjekk blir foreslått rundt {formatDate(nextCheck(today, checkIntervalMonths))}. Hvor ofte velger du under
-        Husstand.
+        Innstillinger.
       </Text>
 
       {complete && (
@@ -234,6 +299,10 @@ const styles = StyleSheet.create({
   questionActive: { fontWeight: '600' },
   detail: { fontSize: 15, color: Colors.secondaryLabel },
   actions: { flexDirection: 'row', gap: 8, marginTop: 10 },
+  items: { marginTop: 8, gap: 2 },
+  item: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
+  itemName: { flex: 1, fontSize: 16, color: Colors.label },
+  itemDate: { fontSize: 14, color: Colors.secondaryLabel },
   action: { flex: 1, alignItems: 'center', paddingVertical: 11, borderRadius: Radius.pill },
   actionPrimary: { backgroundColor: Colors.accent },
   actionSecondary: { backgroundColor: Colors.fill },

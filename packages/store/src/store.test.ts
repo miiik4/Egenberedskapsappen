@@ -95,6 +95,14 @@ describe('migrations', () => {
     expect(old.prepare("SELECT COUNT(*) AS n FROM settings WHERE key = 'syncCursor'").get()).toEqual({ n: 0 });
   });
 
+  it('starts the backup download over for the follow-ups, a new synced setting', async () => {
+    const old = new DatabaseSync(':memory:');
+    await migrate(nodeExecutor(old), 8);
+    old.exec(`INSERT INTO settings (key, value, updated_at) VALUES ('syncCursor', '2026-10-01T10:00:00Z', '2026-10-01T10:00:00Z')`);
+    await migrate(nodeExecutor(old));
+    expect(old.prepare("SELECT COUNT(*) AS n FROM settings WHERE key = 'syncCursor'").get()).toEqual({ n: 0 });
+  });
+
   it('upgrades a version 1 database without losing data', async () => {
     // A phone that installed the very first release: schema 1, with data written then.
     const old = new DatabaseSync(':memory:');
@@ -531,6 +539,19 @@ describe('insurance and beredskapssjekk', () => {
     today = '2027-01-03';
     await store.recordCheck({ household: 'Ja' });
     expect((await store.load()).lastCheck).toBe('2027-01-03');
+  });
+
+  it('keeps what the beredskapssjekk left to do until it is cleared', async () => {
+    expect((await store.load()).followUps).toEqual([]);
+    await store.setFollowUp('equipment', true);
+    await store.setFollowUp('contacts', true);
+    await store.setFollowUp('equipment', true);
+    expect((await store.load()).followUps).toEqual(['contacts', 'equipment']);
+    await store.setFollowUp('contacts', false);
+    expect((await store.load()).followUps).toEqual(['equipment']);
+    await store.setFollowUp('equipment', false);
+    expect((await store.load()).followUps).toEqual([]);
+    await expect(store.setFollowUp('radio' as never, true)).rejects.toThrow();
   });
 
   it('checks every quarter until the household picks another interval', async () => {

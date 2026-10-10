@@ -3,6 +3,7 @@ import {
   isBelongingCategory,
   isCheckInterval,
   isClaimKind,
+  isFollowUp,
   isDamage,
   isStockType,
   peopleIn,
@@ -11,6 +12,7 @@ import {
   type CheckIntervalMonths,
   type Claim,
   type ClaimItem,
+  type FollowUp,
   type Household,
   type Suggestion, type HouseholdMembers, type IsoDate, type StockItem } from '@egenberedskap/core';
 
@@ -87,6 +89,8 @@ export type AppData = {
   checkIntervalMonths: CheckIntervalMonths;
   /** «Påminn meg» from the beredskapssjekk: when to remind about expiry dates again. */
   expiryReviewOn: IsoDate | null;
+  /** What the beredskapssjekk left to do, shown in «Neste å gjøre» until done. */
+  followUps: FollowUp[];
   /** Ask for Face ID or the phone's code before showing documents. On unless turned off. */
   documentLock: boolean;
   /** Who the belongings are documented for, on the report: an insurer needs a person, not just a phone. */
@@ -257,6 +261,7 @@ export function createStore({ db, newId, now, today }: Deps) {
         ownerName,
         ownerBirthDate,
         checkInterval,
+        followUps,
       ] = await Promise.all(
         [
           'onboardedOn',
@@ -273,6 +278,7 @@ export function createStore({ db, newId, now, today }: Deps) {
           'ownerName',
           'ownerBirthDate',
           'checkIntervalMonths',
+          'followUps',
         ].map(
           getSetting,
         ),
@@ -467,6 +473,8 @@ export function createStore({ db, newId, now, today }: Deps) {
           ? (Number(checkInterval) as CheckIntervalMonths)
           : DEFAULT_CHECK_INTERVAL_MONTHS,
         expiryReviewOn: expiryReviewOn ?? null,
+        // One from a newer version is left out until this one learns it.
+        followUps: (followUps ?? '').split(',').filter(isFollowUp),
         documentLock: documentLock !== 'off',
         analysisConsent: analysisConsent === 'yes',
         owner: { name: ownerName ?? '', ...(ownerBirthDate && { birthDate: ownerBirthDate }) },
@@ -831,6 +839,14 @@ export function createStore({ db, newId, now, today }: Deps) {
         'INSERT INTO quarterly_checks (id, checked_on, answers, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
         [newId(), today(), JSON.stringify(answers), at, at],
       );
+    },
+
+    /** Adds or clears something the beredskapssjekk left to do. */
+    async setFollowUp(followUp: FollowUp, on: boolean) {
+      if (!isFollowUp(followUp)) throw new ValidationError('followUp', `Unknown follow-up: ${String(followUp)}`);
+      const current = ((await getSetting('followUps')) ?? '').split(',').filter((f) => f !== '' && f !== followUp);
+      const next = on ? [...current, followUp] : current;
+      await setSetting('followUps', next.length > 0 ? next.join(',') : null);
     },
 
     async setExpiryReview(on: IsoDate | null) {

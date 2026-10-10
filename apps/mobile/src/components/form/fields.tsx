@@ -74,12 +74,14 @@ export function NumberField({
   onChange,
   unit,
   decimals = false,
+  autoFocus,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   unit?: string;
   decimals?: boolean;
+  autoFocus?: boolean;
 }) {
   return (
     <FieldRow label={label}>
@@ -91,6 +93,7 @@ export function NumberField({
           placeholderTextColor={Colors.tertiaryLabel}
           keyboardType={decimals ? 'decimal-pad' : 'number-pad'}
           accessibilityLabel={label}
+          autoFocus={autoFocus}
           style={[styles.input, styles.numberInput]}
         />
         {unit && <Text style={styles.unit}>{unit}</Text>}

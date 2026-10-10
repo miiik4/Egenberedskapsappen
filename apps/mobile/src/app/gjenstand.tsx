@@ -23,11 +23,12 @@ import { Text } from '@/components/ui/text';
  */
 export default function Gjenstand() {
   const params = useLocalSearchParams<{ id?: string; roomId?: string }>();
-  const { belongings, rooms } = useData();
+  const { belongings, rooms, selectedPropertyId } = useData();
   const { save: saveBelonging, remove } = useBelongings();
   const existing = belongings.find((b) => b.id === params.id);
   const roomId = existing?.roomId ?? params.roomId;
-  const propertyId = rooms.find((r) => r.id === roomId)?.propertyId;
+  // From «+» on Eiendeler there's no room yet: one of the selected home's, picked below.
+  const propertyId = rooms.find((r) => r.id === roomId)?.propertyId ?? selectedPropertyId;
   const propertyRooms = rooms.filter((r) => r.propertyId === propertyId);
 
   const [name, setName] = useState(existing?.name ?? '');
@@ -101,7 +102,12 @@ export default function Gjenstand() {
           onChange={setCategory}
         />
         {propertyRooms.length > 0 && (
-          <MenuField label="Rom" value={room} options={propertyRooms.map((r) => ({ value: r.id, label: r.name }))} onChange={setRoom} />
+          <MenuField
+            label="Rom"
+            value={room}
+            options={[...(room === '' ? [{ value: '', label: 'Velg' }] : []), ...propertyRooms.map((r) => ({ value: r.id, label: r.name }))]}
+            onChange={setRoom}
+          />
         )}
         <NumberField label="Verdi" value={value} onChange={setValue} unit="kr" />
       </Section>

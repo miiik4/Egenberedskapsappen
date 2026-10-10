@@ -15,7 +15,7 @@ export function reminderMessage(reminder: Reminder): ReminderMessage {
       const [first, ...rest] = reminder.items;
       if (first && rest.length === 0) {
         return {
-          title: 'Noe i beredskapslageret går snart ut',
+          title: 'Noe på lageret går snart ut',
           body: `Én vare går ut ${when}. Bytt den ut, så teller den fortsatt.`,
           url: `/lager/vare/${encodeURIComponent(first.id)}`,
         };

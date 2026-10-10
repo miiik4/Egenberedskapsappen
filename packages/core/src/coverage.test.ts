@@ -80,13 +80,43 @@ describe('computeCoverage', () => {
 
 describe('checklist', () => {
   it('ticks a type off once it has an item that has not expired', () => {
-    const water = checklist(two, stock, '2026-10-03').find((c) => c.category === 'water')!;
-    expect(water.types.map((t) => [t.id, t.have, t.items.length])).toEqual([
-      ['drinkingWater', true, 2],
-      ['purificationTablets', false, 0],
+    const light = checklist(two, [item('t', { type: 'torch' })], today).find((c) => c.category === 'light')!;
+    expect(light.types.map((t) => [t.id, t.have, t.partial])).toEqual([
+      ['torch', true, false],
+      ['batteries', false, false],
+      ['candles', false, false],
+      ['powerBank', false, false],
     ]);
     const expired = [item('w', { type: 'purificationTablets', expiresOn: '2026-09-01' })];
-    expect(checklist(two, expired, today)[0]!.types[1]).toMatchObject({ have: false, items: expired });
+    expect(checklist(two, expired, today)[0]!.types[1]).toMatchObject({ have: false, partial: false, items: expired });
+  });
+
+  it('ticks water and food off only once they reach the week, as Oversikt counts them', () => {
+    const list = checklist(two, stock, today);
+    const water = list.find((c) => c.category === 'water')!;
+    expect(water.days).toBe(5);
+    expect(water.types[0]).toMatchObject({ id: 'drinkingWater', have: false, partial: true });
+    expect(list.find((c) => c.category === 'food')!.types[0]).toMatchObject({ id: 'cannedMeals', partial: true });
+
+    const enough = [...stock, item('w3', { type: 'drinkingWater', litres: 12 })];
+    expect(checklist(two, enough, today)[0]!.types[0]).toMatchObject({ have: true, partial: false });
+    // Nothing of a type is neither ticked nor partial, even when the category is short.
+    expect(list.find((c) => c.category === 'food')!.types.find((t) => t.id === 'oats')).toMatchObject({
+      have: false,
+      partial: false,
+    });
+  });
+
+  it('gives the days only for the categories counted in days', () => {
+    expect(checklist(two, stock, today).map((c) => [c.category, c.days])).toEqual([
+      ['water', 5],
+      ['food', 6],
+      ['heat', 10],
+      ['light', undefined],
+      ['communication', undefined],
+      ['firstAid', undefined],
+      ['hygiene', undefined],
+    ]);
   });
 
   it('lists baby food only with small children, and pet food only with pets', () => {
@@ -103,12 +133,14 @@ describe('checklist', () => {
     ]);
   });
 
-  it('lists what is missing in list order', () => {
-    expect(missingTypes(two, stock, today).map((t) => t.id).slice(0, 4)).toEqual([
+  it('lists what is missing in list order, water and food that are short included', () => {
+    expect(missingTypes(two, stock, today).map((t) => t.id).slice(0, 6)).toEqual([
+      'drinkingWater',
       'purificationTablets',
+      'cannedMeals',
+      'crispbread',
       'oats',
       'driedFruitNuts',
-      'cookingStove',
     ]);
   });
 });

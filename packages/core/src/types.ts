@@ -51,6 +51,9 @@ export type StockType =
   | 'nappies'
   | 'menstrualProducts';
 
+/** What a beredskapssjekk left to do: contacts to look over, a torch or radio to fix. */
+export type FollowUp = 'contacts' | 'equipment';
+
 export type StockItem = {
   id: string;
   name: string;

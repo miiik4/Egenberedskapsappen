@@ -280,6 +280,10 @@ const MIGRATIONS: string[] = [
   `
   DELETE FROM settings WHERE key = 'syncCursor';
   `,
+  // 9: what the beredskapssjekk left to do (followUps), a new synced setting. Start over, as in 8.
+  `
+  DELETE FROM settings WHERE key = 'syncCursor';
+  `,
 ];
 
 export const SCHEMA_VERSION = MIGRATIONS.length;

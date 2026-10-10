@@ -1,22 +1,37 @@
-import { checklist, itemsToReplace, CATEGORY_NAMES, daysBetween, type ChecklistType } from '@egenberedskap/core';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import {
+  checklist,
+  computeCoverage,
+  itemsToReplace,
+  CATEGORY_NAMES,
+  daysBetween,
+  isExpired,
+  nextActions,
+  TARGET_DAYS,
+  type ChecklistCategory,
+  type ChecklistType,
+  type Coverage,
+  type NextAction,
+} from '@egenberedskap/core';
+import { router, Stack, useLocalSearchParams, type Href } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
-import { CheckCircle, WarningDot } from '@/components/ui/check-circle';
+import { CheckCircle, PartialCircle, WarningDot } from '@/components/ui/check-circle';
 import { Row, Section } from '@/components/ui/list';
+import { Pill } from '@/components/ui/pill';
 import { Screen } from '@/components/ui/screen';
 import { Segmented } from '@/components/ui/segmented';
 import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
-import { capitalize, formatExpiry, todayIso } from '@/lib/format';
+import { capitalize, describeAction, formatExpiry, formatMeals, formatNumber, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 type Filter = 'alle' | 'mangler';
 
 /**
  * DSB's whole list as one checklist, split by category as in Reminders. A type is ticked off
- * by itself once it has something in it; «Mangler» leaves a shopping list.
+ * once it has something in it, and water and food once there's enough for the week, so the
+ * list says what Oversikt says. «Mangler» leaves a shopping list, with the amounts.
  */
 export default function Lager() {
   // In the URL, so «Se hele listen» on Oversikt can switch it even when Lager is already open.
@@ -26,6 +41,8 @@ export default function Lager() {
   const { household, stock } = useData();
   const today = todayIso();
   const list = checklist(household, stock, today);
+  const coverage = computeCoverage(household, stock, today);
+  const actions = nextActions(household, stock, today);
   const missing = list.reduce((n, c) => n + c.types.filter((t) => !t.have).length, 0);
 
   return (
@@ -36,9 +53,7 @@ export default function Lager() {
       </Stack.Toolbar>
 
       <Screen>
-        <Text style={styles.subtitle}>
-          {missing === 0 ? 'Alt fra DSBs liste er på plass' : `${missing} ting mangler fra DSBs liste`}
-        </Text>
+        <Text style={styles.subtitle}>{missing === 0 ? 'Alt på listen er på plass' : `${missing} ting mangler`}</Text>
         <Segmented
           options={[
             { value: 'alle', label: 'Alle' },
@@ -48,17 +63,25 @@ export default function Lager() {
           onChange={setFilter}
         />
 
-        {list.map(({ category, types }) => {
+        {list.map((entry) => {
+          const { category, types, days } = entry;
           const shown = filter === 'mangler' ? types.filter((t) => !t.have) : types;
-          if (shown.length === 0) return null;
+          const short = shortfall(entry, actions, coverage);
+          if (shown.length === 0 && !short) return null;
           return (
             <Section
               key={category}
               header={CATEGORY_NAMES[category]}
-              headerDetail={`${types.filter((t) => t.have).length} av ${types.length}`}
+              headerDetail={
+                days !== undefined
+                  ? `${Math.min(days, TARGET_DAYS)} av ${TARGET_DAYS} døgn`
+                  : `${types.filter((t) => t.have).length} av ${types.length}`
+              }
+              onHeaderPress={() => router.push({ pathname: '/lager/kategori/[id]', params: { id: category } })}
               separatorInset={56}>
+              {short}
               {shown.map((type) => (
-                <TypeRow key={type.id} type={type} today={today} />
+                <TypeRow key={type.id} type={type} today={today} share={(days ?? 0) / TARGET_DAYS} />
               ))}
             </Section>
           );
@@ -69,17 +92,55 @@ export default function Lager() {
   );
 }
 
-function TypeRow({ type, today }: { type: ChecklistType; today: string }) {
+/**
+ * What water or food lacks for the week, as the task on Oversikt says it: «Kjøp 30 liter vann».
+ * Opens «Ny vare» filled in with the amount.
+ */
+function shortfall({ category }: ChecklistCategory, actions: NextAction[], coverage: Coverage) {
+  const action = actions.find((a) => (category === 'water' ? a.kind === 'buyWater' : category === 'food' && a.kind === 'buyFood'));
+  if (!action || (action.kind !== 'buyWater' && action.kind !== 'buyFood')) return null;
+  const { title } = describeAction(action);
+  const subtitle =
+    action.kind === 'buyWater'
+      ? `Dere har ${formatNumber(coverage.litres)} av ${formatNumber(TARGET_DAYS * coverage.litresPerDay)} liter`
+      : `Dere har ${formatNumber(coverage.meals)} av ${formatMeals(TARGET_DAYS * coverage.mealsPerDay)}`;
+  const href: Href =
+    action.kind === 'buyWater'
+      ? { pathname: '/vare', params: { type: 'drinkingWater', litres: String(action.litres) } }
+      : { pathname: '/vare', params: { type: action.suggestions[0]?.id ?? 'cannedMeals', meals: String(action.meals) } };
+  return (
+    <Row
+      key="shortfall"
+      title={title}
+      subtitle={subtitle}
+      bold
+      leading={<CheckCircle on={false} />}
+      trailing={action.dayChange > 0 ? <Pill label={`+${action.dayChange} døgn`} tone="accent" /> : undefined}
+      onPress={() => router.push(href)}
+    />
+  );
+}
+
+function TypeRow({ type, today, share }: { type: ChecklistType; today: string; share: number }) {
   const expiring = itemsToReplace(type.items, today)[0];
+  // What still counts: expired items are in the list only so they can be replaced.
+  const own = type.items.filter((item) => !isExpired(item, today)).reduce(
+    (sum, item) => sum + (type.measure === 'litres' ? (item.litres ?? 0) : (item.meals ?? 0)),
+    0,
+  );
   const subtitle = expiring?.expiresOn
     ? capitalize(formatExpiry(daysBetween(today, expiring.expiresOn)))
-    : type.hint || undefined;
+    : type.partial
+      ? type.measure === 'litres'
+        ? `${formatNumber(own)} liter`
+        : formatMeals(own)
+      : type.hint || undefined;
 
   return (
     <Row
       title={type.name}
       subtitle={subtitle}
-      leading={<CheckCircle on={type.have} />}
+      leading={type.partial ? <PartialCircle share={share} /> : <CheckCircle on={type.have} />}
       trailing={expiring ? <WarningDot /> : undefined}
       onPress={() =>
         type.items.length > 0

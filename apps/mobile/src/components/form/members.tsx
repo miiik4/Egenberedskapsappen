@@ -17,7 +17,7 @@ const GROUPS: { key: keyof HouseholdMembers; label: string; sub?: string }[] = [
 
 const MAX = 20;
 
-/** «Hvem bor her»: a count per age group, with iOS steppers. Used in «Kom i gang» and Husstand. */
+/** «Hvem bor her»: a count per age group, with iOS steppers. Used in «Kom i gang» and Innstillinger. */
 export function MembersSection({
   value,
   onChange,

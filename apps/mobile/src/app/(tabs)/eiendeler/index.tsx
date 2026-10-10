@@ -12,20 +12,24 @@ import { ProgressBar } from '@/components/ui/progress';
 import { Screen } from '@/components/ui/screen';
 import { AndroidToolbarIcons, ToolbarIcons } from '@/components/toolbar-icons';
 import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
-import { Colors, Fonts } from '@/constants/theme';
+import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { storedFile } from '@/documents/files';
 import { countLabel, formatKr } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 /**
- * With Egenberedskap+ on, «+» and «Dokumenter» start «Dokumenter med KI». Without it, «+» adds a
- * room and «Dokumenter» opens a new thing in that room, both entered by hand.
+ * With Egenberedskap+ on, «+» and «Dokumenter» start «Dokumenter med KI». Without it, «+» and
+ * «Legg til ting» open a new thing, entered by hand: in that room, or with a room to pick.
+ * Adding a room is the rare one, at the bottom of the list.
  */
 const document = (roomId?: string) => {
   if (EGENBEREDSKAP_PLUS_ENABLED) router.push(roomId ? { pathname: '/film', params: { roomId } } : '/film');
-  else router.push(roomId ? { pathname: '/gjenstand', params: { roomId } } : '/rom');
+  else router.push(roomId ? { pathname: '/gjenstand', params: { roomId } } : '/gjenstand');
 };
+
+/** «Dokumenter» is the passports in Nødinfo; here it's what the button does. */
+const ADD_LABEL = EGENBEREDSKAP_PLUS_ENABLED ? 'Dokumenter' : 'Legg til ting';
 
 export default function Eiendeler() {
   const { properties, selectedPropertyId } = useData();
@@ -63,7 +67,7 @@ export default function Eiendeler() {
           icon={ToolbarIcons.plus}
           variant="prominent"
           tintColor={Colors.accent}
-          accessibilityLabel={EGENBEREDSKAP_PLUS_ENABLED ? 'Dokumenter et rom med KI' : 'Legg til rom'}
+          accessibilityLabel={EGENBEREDSKAP_PLUS_ENABLED ? 'Dokumenter et rom med KI' : 'Legg til ting'}
           onPress={() => document()}
         />
       </Stack.Toolbar>
@@ -106,6 +110,17 @@ function Innbo() {
 
       {EGENBEREDSKAP_PLUS_ENABLED && <PendingAnalyses />}
 
+      {/* Why bother, until there's something here. */}
+      {documented === 0 && (
+        <View style={styles.why}>
+          <Text style={styles.whyTitle}>Hvorfor legge inn innboet?</Text>
+          <Text style={styles.whyBody}>
+            Etter en brann eller et innbrudd må dere vise forsikringsselskapet hva dere eide. Et bilde og en verdi per
+            ting er en god start.
+          </Text>
+        </View>
+      )}
+
       <Card>
         <View style={styles.sumHead}>
           <Text style={styles.sum}>{formatKr(documentedKr)}</Text>
@@ -132,7 +147,7 @@ function Innbo() {
             <Row
               key={room.id}
               title={room.name}
-              subtitle={summary ? `${countLabel(summary.count)} · ${formatKr(summary.valueKr)}` : 'Ikke dokumentert'}
+              subtitle={summary ? `${countLabel(summary.count)} · ${formatKr(summary.valueKr)}` : 'Ingenting ennå'}
               leading={
                 cover ? (
                   <Image source={{ uri: storedFile(cover.fileName).uri }} style={styles.thumb} contentFit="cover" />
@@ -146,8 +161,8 @@ function Innbo() {
                     onPress={() => document(room.id)}
                     hitSlop={8}
                     accessibilityRole="button"
-                    accessibilityLabel={`Dokumenter ${room.name}`}>
-                    <Text style={styles.link}>Dokumenter</Text>
+                    accessibilityLabel={`${ADD_LABEL} i ${room.name}`}>
+                    <Text style={styles.link}>{ADD_LABEL}</Text>
                   </Pressable>
                 )
               }
@@ -224,5 +239,15 @@ const styles = StyleSheet.create({
   sumOf: { fontSize: 15, color: Colors.secondaryLabel },
   sumNote: { fontSize: 15, color: Colors.secondaryLabel },
   link: { fontSize: 17, color: Colors.accent },
+  why: {
+    marginHorizontal: Spacing.screen,
+    padding: 16,
+    gap: 4,
+    borderRadius: Radius.card,
+    borderCurve: 'continuous',
+    backgroundColor: Colors.accentSoft,
+  },
+  whyTitle: { fontSize: 16, fontWeight: '600', color: Colors.label },
+  whyBody: { fontSize: 15, lineHeight: 21, color: Colors.label },
   thumb: { width: 44, height: 44, borderRadius: 10, borderCurve: 'continuous', backgroundColor: Colors.fill },
 });

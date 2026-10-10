@@ -102,8 +102,13 @@ export default function Rapport() {
 
       {/* Edge to edge on Android, the button keeps clear of the navigation bar. */}
       <View style={[styles.bottom, Platform.OS === 'android' && { paddingBottom: insets.bottom + 12 }]}>
+        {/* Says why the button is off, when it is. */}
         <Text style={styles.summary}>
-          {countLabel(report.count)} · {formatKr(report.totalKr)}
+          {documented.length === 0
+            ? 'Legg til ting i et rom først'
+            : roomIds.length === 0
+              ? 'Velg minst ett rom'
+              : `${countLabel(report.count)} · ${formatKr(report.totalKr)}`}
         </Text>
         <PrimaryButton label={making ? 'Lager rapporten …' : 'Lag PDF og del'} onPress={make} disabled={report.count === 0 || making} />
       </View>

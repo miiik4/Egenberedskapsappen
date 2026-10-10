@@ -67,6 +67,33 @@ describe('nextActions', () => {
     expect(nextActions({ ...two, infants: 1 }, fed, today).map(label)).toContain('get babyFood');
   });
 
+  it('puts the plan for a crisis right after the biggest gap', () => {
+    const plan = { contacts: 0, meetingPlace: false, followUps: [] };
+    expect(nextActions(two, items, today, plan).slice(0, 4).map(label)).toEqual([
+      'buyWater',
+      'addContact',
+      'addMeetingPlace',
+      'buyFood',
+    ]);
+    // With nothing short, they lead.
+    expect(nextActions(two, [], today, { ...plan, meetingPlace: true }).map(label).slice(0, 2)).toEqual([
+      'buyWater',
+      'addContact',
+    ]);
+    expect(nextActions(two, items, today, { ...plan, contacts: 2, meetingPlace: true }).map(label)).not.toContain('addContact');
+  });
+
+  it('keeps what the beredskapssjekk left to fix until it is done', () => {
+    const plan = { contacts: 1, meetingPlace: true, followUps: ['equipment', 'contacts'] as const };
+    const labels = nextActions(two, items, today, { ...plan, followUps: [...plan.followUps] }).map((a) =>
+      a.kind === 'followUp' ? `followUp ${a.followUp}` : label(a),
+    );
+    expect(labels.slice(0, 4)).toEqual(['buyWater', 'buyFood', 'followUp equipment', 'followUp contacts']);
+    // No contacts to look over: «Legg til en nødkontakt» says it instead.
+    const none = nextActions(two, items, today, { contacts: 0, meetingPlace: true, followUps: ['contacts'] });
+    expect(none.map(label)).not.toContain('followUp');
+  });
+
   it('has nothing to suggest for a fully stocked household', () => {
     const full = [
       item('w', { type: 'drinkingWater', litres: 42 }),

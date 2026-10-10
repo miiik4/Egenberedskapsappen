@@ -1,8 +1,14 @@
 import {
+  addMonths,
+  CHECK_INTERVALS_MONTHS,
   computeCoverage,
+  DEFAULT_CHECK_INTERVAL_MONTHS,
   stockType,
+  STORED_WATER_SHELF_LIFE_MONTHS,
   WATER_LITRES_PER_PERSON_PER_DAY,
+  type CheckIntervalMonths,
   type HouseholdMembers,
+  type IsoDate,
   type StockType,
 } from '@egenberedskap/core';
 import type { StockDraft } from '@egenberedskap/store';
@@ -11,7 +17,8 @@ import { useEffect, useState } from 'react';
 import { BackHandler, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { NumberField, parseNumber } from '@/components/form/fields';
+import { DateField, NumberField, parseNumber } from '@/components/form/fields';
+import { MenuField } from '@/components/form/menu-field';
 import { MembersSection } from '@/components/form/members';
 import { DaysHeadline, DayRows, limiterText } from '@/components/preparedness/day-rows';
 import { PrimaryButton } from '@/components/ui/button';
@@ -23,7 +30,8 @@ import { Row, Section } from '@/components/ui/list';
 import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
 import { useActions } from '@/data/data-provider';
-import { todayIso } from '@/lib/format';
+import { useNotifications } from '@/notifications/notifications-provider';
+import { CHECK_INTERVAL_NAMES, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 /** Six things from DSB's list: enough for a first number without it taking long. */
@@ -40,16 +48,21 @@ const STEPS = 3;
 
 /**
  * «Kom i gang»: who lives at home, what they already have, and the number that gives. The
- * number comes straight away, in the same style as Oversikt.
+ * number comes straight away, in the same style as Oversikt, and with it what keeps it right:
+ * when to swap the water, how often to check, and the reminders for both.
  */
 export default function Velkommen() {
-  const { completeOnboarding } = useActions();
+  const { completeOnboarding, setCheckInterval } = useActions();
+  const { permission, requestPermission } = useNotifications();
   const [step, setStep] = useState(0);
   const [members, setMembers] = useState<HouseholdMembers>({ adults: 2, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 });
   const [have, setHave] = useState<StockType[]>([]);
   const [litres, setLitres] = useState('');
   const [meals, setMeals] = useState('');
   const [saving, setSaving] = useState(false);
+  const today = todayIso();
+  const [waterSwapOn, setWaterSwapOn] = useState<IsoDate | undefined>(() => addMonths(today, STORED_WATER_SHELF_LIFE_MONTHS));
+  const [checkEvery, setCheckEvery] = useState<CheckIntervalMonths>(DEFAULT_CHECK_INTERVAL_MONTHS);
 
   // Android's back button or gesture goes back a step, as the chevron does, instead of leaving the app.
   useEffect(() => {
@@ -61,14 +74,13 @@ export default function Velkommen() {
     return () => subscription.remove();
   }, [step]);
 
-  const today = todayIso();
-  const perDay = computeCoverage(members, [], today);
   const items: StockDraft[] = QUICK.filter((q) => have.includes(q.type)).flatMap((q): StockDraft[] => {
     const base = { name: q.name, type: q.type, quantity: 1, remind: true, location: '' };
     const { measure } = stockType(q.type);
     if (measure === 'litres') {
       const l = parseNumber(litres);
-      return l ? [{ ...base, litres: l }] : [];
+      // Dated from the start, so the first reminder to swap it can come.
+      return l ? [{ ...base, litres: l, boughtOn: today, ...(waterSwapOn && { expiresOn: waterSwapOn }) }] : [];
     }
     if (measure === 'meals') {
       const m = parseNumber(meals);
@@ -85,14 +97,15 @@ export default function Velkommen() {
   const toggle = (type: StockType) => {
     const on = !have.includes(type);
     setHave(on ? [...have, type] : have.filter((t) => t !== type));
-    // Start from one day's worth, so the number moves; they can say more.
-    if (on && type === 'drinkingWater' && !litres) setLitres(String(Math.ceil(perDay.litresPerDay)));
-    if (on && type === 'cannedMeals' && !meals) setMeals(String(perDay.mealsPerDay));
   };
+  const hasWater = items.some((item) => item.type === 'drinkingWater');
 
-  const finish = async (withItems: StockDraft[]) => {
+  const finish = async (withItems: StockDraft[], askForReminders = false) => {
     setSaving(true);
     try {
+      // Before onboarding ends, which leaves this screen.
+      if (askForReminders) await requestPermission();
+      if (checkEvery !== DEFAULT_CHECK_INTERVAL_MONTHS) await setCheckInterval(checkEvery);
       await completeOnboarding({ members, items: withItems });
     } finally {
       setSaving(false);
@@ -120,7 +133,8 @@ export default function Velkommen() {
           ))}
         </View>
         <View style={[styles.barSide, styles.barRight]}>
-          {step < STEPS - 1 && (
+          {/* Not on the first step: the household is what every number is worked out from. */}
+          {step === 1 && (
             <Pressable onPress={() => finish([])} disabled={saving} accessibilityRole="button" hitSlop={8}>
               <Text style={styles.skip}>Hopp over</Text>
             </Pressable>
@@ -158,11 +172,18 @@ export default function Velkommen() {
                   const row = (
                     <Row key={q.type} title={q.name} subtitle={q.hint} leading={<CheckCircle on={on} />} onPress={() => toggle(q.type)} />
                   );
+                  // Empty and ready to type in, so the number is theirs and not a guess of ours.
                   if (on && q.type === 'drinkingWater') {
-                    return [row, <NumberField key="litres" label="Omtrent" value={litres} onChange={setLitres} unit="liter" decimals />];
+                    return [
+                      row,
+                      <NumberField key="litres" label="Omtrent" value={litres} onChange={setLitres} unit="liter" decimals autoFocus />,
+                    ];
                   }
                   if (on && q.type === 'cannedMeals') {
-                    return [row, <NumberField key="meals" label="Omtrent" value={meals} onChange={setMeals} unit="måltider" />];
+                    return [
+                      row,
+                      <NumberField key="meals" label="Omtrent" value={meals} onChange={setMeals} unit="måltider" autoFocus />,
+                    ];
                   }
                   return [row];
                 })}
@@ -183,6 +204,21 @@ export default function Velkommen() {
                 </Card>
                 <Text style={styles.footnote}>Det som mangler ligger klart som en handleliste i Lager.</Text>
               </View>
+              <Section
+                header="Hold tallet riktig"
+                footer={
+                  permission === 'undetermined'
+                    ? `Vi sier fra ${hasWater ? 'før vannet bør byttes, og ' : ''}når det er tid for beredskapssjekk.`
+                    : 'Dette kan dere endre senere under Innstillinger.'
+                }>
+                {hasWater && <DateField label="Bytt vannet" value={waterSwapOn} onChange={setWaterSwapOn} />}
+                <MenuField
+                  label="Beredskapssjekk"
+                  value={String(checkEvery)}
+                  options={CHECK_INTERVALS_MONTHS.map((months) => ({ value: String(months), label: CHECK_INTERVAL_NAMES[months] }))}
+                  onChange={(value) => setCheckEvery(Number(value) as CheckIntervalMonths)}
+                />
+              </Section>
             </>
           )}
         </ScrollView>
@@ -190,6 +226,13 @@ export default function Velkommen() {
         <View style={styles.bottom}>
           {step < STEPS - 1 ? (
             <PrimaryButton label="Neste" onPress={() => setStep(step + 1)} />
+          ) : permission === 'undetermined' ? (
+            <>
+              <PrimaryButton label="Slå på påminnelser" onPress={() => finish(items, true)} disabled={saving} />
+              <Pressable onPress={() => finish(items)} disabled={saving} accessibilityRole="button" hitSlop={8} style={styles.notNow}>
+                <Text style={styles.notNowText}>Ikke nå</Text>
+              </Pressable>
+            </>
           ) : (
             <PrimaryButton label="Gå til oversikten" onPress={() => finish(items)} disabled={saving} />
           )}
@@ -229,4 +272,6 @@ const styles = StyleSheet.create({
   cardGroup: { gap: 8 },
   footnote: { marginHorizontal: Spacing.screen + Spacing.rowInset, fontSize: 13, lineHeight: 18, color: Colors.secondaryLabel },
   bottom: { paddingHorizontal: 4, paddingTop: 12, paddingBottom: 12 },
+  notNow: { alignItems: 'center', paddingTop: 14, paddingBottom: 2 },
+  notNowText: { fontSize: 17, color: Colors.accent },
 });

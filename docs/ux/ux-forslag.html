@@ -1,0 +1,590 @@
+<title>Egenberedskap UX Frames</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a short intro, then one section per change: the problem in a sentence, the current screen and
+   the proposal side by side as phone frames, numbered pins tied to notes underneath. The page and the
+   phones use the app's own palette (constants/theme.ts), light and dark. */
+:root {
+  --bg: #F4F7FA;
+  --card: #FFFFFF;
+  --card-border: #E1E9F1;
+  --fill: #E6EDF4;
+  --label: #0B2B4A;
+  --label-2: #5B7285;
+  --label-3: #B4C3D2;
+  --sep: #E3EAF1;
+  --accent: #0E5FC0;
+  --accent-soft: #E6EFFA;
+  --success: #248A3D;
+  --warning: #D08A1C;
+  --warning-text: #8A5300;
+  --notice: #FFF6E5;
+  --notice-border: #F3DDB0;
+  --hero: #0B2B4A;
+  --hero-muted: #BBD6F2;
+  --hero-track: #23517C;
+  --hero-bar: #5FA3F0;
+  --bezel: #1A2633;
+  --pin-new: #C2347A;
+  --pin-old: #7A8896;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Sans 3", -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #08131F; --card: #102236; --card-border: #1D3550; --fill: #1B324B;
+    --label: #EAF2FA; --label-2: #9DB2C6; --label-3: #4E6781; --sep: #1D3550;
+    --accent: #4C9AF5; --accent-soft: #173A63; --success: #3DD068;
+    --warning-text: #F1B95B; --notice: #2A2111; --notice-border: #4A3A1A;
+    --hero: #123A62; --bezel: #000000; --pin-new: #F06BAA; --pin-old: #8A9BAD;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #08131F; --card: #102236; --card-border: #1D3550; --fill: #1B324B;
+  --label: #EAF2FA; --label-2: #9DB2C6; --label-3: #4E6781; --sep: #1D3550;
+  --accent: #4C9AF5; --accent-soft: #173A63; --success: #3DD068;
+  --warning-text: #F1B95B; --notice: #2A2111; --notice-border: #4A3A1A;
+  --hero: #123A62; --bezel: #000000; --pin-new: #F06BAA; --pin-old: #8A9BAD;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--label); font-family: var(--body); font-size: 16px; line-height: 1.45; }
+.page { max-width: 1060px; margin: 0 auto; padding: 40px 20px 80px; display: flex; flex-direction: column; gap: 64px; }
+
+header.intro { display: flex; flex-direction: column; gap: 12px; max-width: 68ch; }
+.eyebrow { font-family: var(--body); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--label-2); }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.02em; line-height: 1.05; margin: 0; text-wrap: balance; }
+.intro p { margin: 0; color: var(--label-2); font-size: 18px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 14px; color: var(--label-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; }
+.toc a { font-size: 14px; font-weight: 600; color: var(--accent); background: var(--accent-soft); text-decoration: none; padding: 6px 12px; border-radius: 999px; }
+.toc a:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+section.change { display: flex; flex-direction: column; gap: 24px; scroll-margin-top: 24px; }
+.change-head { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; align-items: baseline; max-width: 76ch; }
+.rank { font-family: var(--display); font-size: 40px; line-height: 1; color: var(--label-3); grid-row: span 2; font-variant-numeric: tabular-nums; }
+h2 { font-family: var(--display); font-weight: 700; font-size: 24px; letter-spacing: -.01em; margin: 0; text-wrap: balance; }
+.change-head p { margin: 0; color: var(--label-2); min-width: 0; }
+
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px; }
+.side { display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 0; }
+.side-label { font-weight: 700; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; }
+.side-label.old { color: var(--pin-old); }
+.side-label.new { color: var(--pin-new); }
+.context { font-size: 13px; color: var(--label-2); background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 6px 10px; max-width: 300px; text-align: center; }
+.notes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; }
+.notes li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; font-size: 15px; min-width: 0; }
+.notes .k { width: 22px; height: 22px; border-radius: 11px; color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center; margin-top: 1px; font-variant-numeric: tabular-nums; }
+.old .k, .k.old { background: var(--pin-old); }
+.new .k, .k.new { background: var(--pin-new); }
+
+/* ---------- The phone ---------- */
+.phone {
+  width: 300px; max-width: 100%; height: 620px; border-radius: 44px; border: 9px solid var(--bezel);
+  background: var(--bg); overflow: hidden; display: flex; flex-direction: column; position: relative;
+  box-shadow: 0 20px 40px -24px rgba(11, 43, 74, .45);
+}
+.status { height: 34px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 6px 22px 0; font-size: 12px; font-weight: 700; color: var(--label); }
+.status i { font-style: normal; letter-spacing: 1px; }
+.screen { flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 14px; padding: 4px 0 12px; }
+.navbar { display: flex; justify-content: space-between; align-items: center; padding: 0 14px; height: 32px; }
+.navbtn { width: 30px; height: 30px; border-radius: 15px; background: var(--card); border: 1px solid var(--card-border); display: grid; place-items: center; font-size: 15px; color: var(--accent); font-weight: 700; position: relative; }
+.navbtn.soft { background: var(--accent-soft); border-color: transparent; }
+.navtext { font-size: 14px; font-weight: 600; color: var(--accent); position: relative; }
+.big { font-family: var(--display); font-weight: 700; font-size: 28px; letter-spacing: -.02em; padding: 0 16px; line-height: 1.05; }
+.subtitle { font-size: 14px; color: var(--label-2); padding: 0 16px; margin-top: -10px; }
+.hdr { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--label-2); padding: 0 26px 5px; position: relative; }
+.hdr b { font-weight: 600; }
+.hdr.link b { color: var(--accent); text-transform: none; letter-spacing: 0; font-size: 12px; }
+.foot { font-size: 11.5px; color: var(--label-2); padding: 5px 26px 0; line-height: 1.35; }
+.group { margin: 0 12px; background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; }
+.row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; min-height: 44px; position: relative; }
+.row + .row { border-top: 1px solid var(--sep); }
+.row .t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.row .t b { font-weight: 600; font-size: 14px; line-height: 1.25; }
+.row .t span { font-size: 12px; color: var(--label-2); line-height: 1.3; }
+.row .t.bold b { font-weight: 700; }
+.row .d { font-size: 13px; color: var(--label-2); white-space: nowrap; }
+.row .chev { color: var(--label-3); font-size: 16px; }
+.row.add b { color: var(--accent); font-weight: 600; font-size: 14px; }
+.row .link { color: var(--accent); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.cc { width: 20px; height: 20px; border-radius: 10px; border: 1.5px solid var(--label-3); flex: none; display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 700; }
+.cc.on { background: var(--accent); border-color: var(--accent); }
+.cc.part { border: none; background: conic-gradient(var(--accent) 0 var(--p), var(--fill) var(--p) 100%); position: relative; }
+.cc.part::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--card); }
+.pill { font-size: 11.5px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.pill.warn { background: var(--notice); color: var(--warning-text); }
+.dot { width: 8px; height: 8px; border-radius: 4px; background: var(--warning); flex: none; }
+.seg { display: flex; margin: 0 12px; background: var(--fill); border-radius: 9px; padding: 2px; font-size: 13px; font-weight: 600; }
+.seg span { flex: 1; text-align: center; padding: 4px; border-radius: 7px; color: var(--label); }
+.seg span.on { background: var(--card); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.thumb { width: 38px; height: 38px; border-radius: 8px; background: var(--fill); flex: none; }
+
+.hero { margin: 0 12px; background: var(--hero); color: #fff; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.hero small { font-size: 12.5px; color: var(--hero-muted); }
+.hero .n { font-family: var(--display); font-size: 40px; line-height: 1; display: flex; align-items: baseline; gap: 6px; }
+.hero .n em { font-style: normal; font-family: var(--body); font-size: 15px; color: var(--hero-muted); font-weight: 600; }
+.bar { height: 7px; border-radius: 4px; background: var(--hero-track); position: relative; }
+.bar i { position: absolute; inset: 0 auto 0 0; border-radius: 4px; background: var(--hero-bar); }
+.bar::after { content: ""; position: absolute; left: 70%; top: -4px; height: 15px; width: 2px; background: #fff; }
+.hero .lim { font-size: 12.5px; color: var(--hero-muted); border-top: 1px solid var(--hero-track); padding-top: 8px; display: flex; justify-content: space-between; }
+
+.notice { margin: 0 12px; background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; position: relative; }
+.notice .t { flex: 1; display: flex; flex-direction: column; }
+.notice b { font-size: 14px; font-weight: 600; }
+.notice span { font-size: 12px; color: var(--label-2); }
+.quiet { margin: -4px 26px 0; font-size: 12px; color: var(--label-2); position: relative; }
+.quiet b { color: var(--accent); font-weight: 600; }
+
+.card { margin: 0 12px; background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; position: relative; }
+.card .sum { font-family: var(--display); font-size: 26px; line-height: 1; }
+.card .note { font-size: 12px; color: var(--label-2); }
+.prog { height: 6px; border-radius: 3px; background: var(--fill); }
+.why { margin: 0 12px; background: var(--accent-soft); border-radius: 14px; padding: 10px 12px; font-size: 13px; line-height: 1.35; color: var(--label); position: relative; }
+.why b { display: block; font-size: 13.5px; }
+
+.tabbar { flex: none; height: 58px; border-top: 1px solid var(--sep); background: var(--card); display: grid; grid-template-columns: repeat(4, 1fr); font-size: 10px; font-weight: 600; color: var(--label-2); padding-bottom: 8px; }
+.tabbar span { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.tabbar span::before { content: ""; width: 20px; height: 16px; border-radius: 5px; background: var(--label-3); opacity: .6; }
+.tabbar span.on { color: var(--accent); }
+.tabbar span.on::before { background: var(--accent); opacity: 1; }
+
+/* Sheets (onboarding, beredskapssjekk) */
+.sheet .screen { padding-top: 8px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 0 14px; }
+.x { width: 30px; height: 30px; border-radius: 15px; background: var(--fill); display: grid; place-items: center; font-size: 13px; }
+.dots { display: flex; gap: 5px; }
+.dots i { width: 7px; height: 7px; border-radius: 4px; background: var(--accent); }
+.dots i.cur { width: 18px; }
+.lead { font-size: 14px; color: var(--label-2); padding: 0 16px; line-height: 1.35; }
+.headline { padding: 0 16px; display: flex; align-items: baseline; gap: 6px; }
+.headline b { font-family: var(--display); font-size: 54px; line-height: 1; }
+.headline span { font-family: var(--display); font-size: 19px; color: var(--label-2); }
+.daysrows { display: flex; flex-direction: column; gap: 9px; }
+.dr { display: flex; flex-direction: column; gap: 4px; }
+.dr div { display: flex; justify-content: space-between; font-size: 13px; }
+.dr div b { font-weight: 600; }
+.dr .prog i { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+.spacer { flex: 1; }
+.btn { margin: 0 12px; height: 44px; border-radius: 999px; background: var(--accent); color: #fff; font-weight: 700; font-size: 15px; display: grid; place-items: center; flex: none; position: relative; }
+.btn.soft { background: var(--accent-soft); color: var(--accent); }
+.btn.text { background: none; color: var(--accent); height: 30px; font-weight: 600; font-size: 14px; }
+.small { font-size: 11.5px; color: var(--label-2); padding: 0 26px; line-height: 1.35; }
+.toggle { width: 36px; height: 22px; border-radius: 11px; background: var(--success); position: relative; flex: none; }
+.toggle::after { content: ""; position: absolute; right: 2px; top: 2px; width: 18px; height: 18px; border-radius: 9px; background: #fff; }
+
+.steps { margin: 0 12px; background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; }
+.step { display: grid; grid-template-columns: 22px 1fr; gap: 10px; padding: 11px 12px; position: relative; }
+.step + .step { border-top: 1px solid var(--sep); }
+.badge { width: 22px; height: 22px; border-radius: 11px; border: 1.5px solid var(--label-3); display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--label-2); }
+.badge.done { background: var(--success); border-color: var(--success); color: #fff; }
+.badge.act { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step .q { font-size: 14px; font-weight: 600; line-height: 1.25; }
+.step .q.pend { color: var(--label-2); font-weight: 500; }
+.step .a { font-size: 12px; color: var(--label-2); }
+.acts { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.acts span { font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: var(--fill); color: var(--label); }
+.acts span.p { background: var(--accent); color: #fff; }
+.items { margin-top: 7px; display: flex; flex-direction: column; gap: 5px; position: relative; }
+.items div { display: flex; align-items: center; gap: 7px; font-size: 12.5px; }
+.items div em { font-style: normal; color: var(--label-2); margin-left: auto; font-size: 11.5px; }
+.items .cc { width: 16px; height: 16px; font-size: 9px; }
+
+/* Pins: a numbered marker on a frame, matched to the notes below it. */
+[data-pin] { position: relative; }
+[data-pin]::after {
+  content: attr(data-pin); position: absolute; top: -8px; right: -6px; z-index: 2;
+  width: 18px; height: 18px; border-radius: 9px; font: 700 10.5px/18px var(--body); text-align: center; color: #fff;
+  box-shadow: 0 0 0 2px var(--bg);
+}
+.new [data-pin]::after { background: var(--pin-new); }
+.old [data-pin]::after { background: var(--pin-old); }
+.new .ring { outline: 2px dashed var(--pin-new); outline-offset: 2px; border-radius: 10px; }
+.old .ring { outline: 2px dashed var(--pin-old); outline-offset: 2px; border-radius: 10px; }
+.row.ring, .step.ring { outline-offset: -3px; }
+
+.closing { max-width: 68ch; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--sep); padding-top: 24px; }
+.closing h2 { font-size: 20px; }
+.closing ul { margin: 0; padding-left: 20px; color: var(--label-2); display: flex; flex-direction: column; gap: 6px; }
+
+@media (max-width: 420px) {
+  .page { padding: 28px 16px 60px; gap: 48px; }
+  .rank { font-size: 30px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+</style>
+
+<div class="page">
+  <header class="intro">
+    <span class="eyebrow">Egenberedskapsappen · UX-gjennomgang · 10. oktober 2026</span>
+    <h1>Five changes that keep the red thread intact</h1>
+    <p>Each section shows how a screen works now next to a proposal. The frames are sketches built from the app's own palette and copy, with an example household of two adults. They're for discussion, not pixel specs.</p>
+    <div class="legend">
+      <span><span class="k old" style="width:18px;height:18px;border-radius:9px;display:inline-grid;place-items:center;color:#fff;font-size:10px;font-weight:700">1</span> Problem in the current app</span>
+      <span><span class="k new" style="width:18px;height:18px;border-radius:9px;display:inline-grid;place-items:center;color:#fff;font-size:10px;font-weight:700">1</span> What the proposal changes</span>
+    </div>
+    <nav class="toc" aria-label="Changes">
+      <a href="#lager">1 · Lager ✓</a>
+      <a href="#onboarding">2 · Påminnelser</a>
+      <a href="#oversikt">3 · Neste å gjøre</a>
+      <a href="#sjekk">4 · Beredskapssjekk</a>
+      <a href="#eiendeler">5 · Eiendeler</a>
+    </nav>
+  </header>
+
+  <!-- 1 ─────────────────────────────────────────── -->
+  <section class="change" id="lager">
+    <div class="change-head">
+      <span class="rank">1</span>
+      <h2>Lager's ✓ follows the day count</h2>
+      <p>Today one item is enough to tick a type off. With 12 litres of water, Lager says Drikkevann is in place while Oversikt asks for 30 more litres. «Se hele listen» then opens a Mangler list that doesn't include water.</p>
+    </div>
+    <div class="pair">
+      <div class="side old">
+        <span class="side-label old">Nå</span>
+        <span class="context">Oversikt says: «Kjøp 30 liter vann · +5 døgn»</span>
+        <div class="phone" aria-label="Lager now">
+          <div class="status"><span>09:41</span><i>▮▮▮</i></div>
+          <div class="screen">
+            <div class="navbar"><span></span><span class="navbtn">+</span></div>
+            <div class="big">Lager</div>
+            <div class="subtitle">17 ting mangler fra DSBs liste</div>
+            <div class="seg"><span class="on">Alle</span><span>Mangler</span></div>
+            <div>
+              <div class="hdr"><b>Vann</b><b>1 av 2</b></div>
+              <div class="group">
+                <div class="row ring" data-pin="1"><span class="cc on">✓</span><div class="t"><b>Drikkevann på kanner</b><span>Minst 3 liter per person per døgn</span></div></div>
+                <div class="row"><span class="cc"></span><div class="t"><b>Vannrensetabletter</b></div></div>
+              </div>
+            </div>
+            <div>
+              <div class="hdr ring" data-pin="2"><b>Mat</b><b>1 av 4</b></div>
+              <div class="group">
+                <div class="row"><span class="cc on">✓</span><div class="t"><b>Hermetikk og ferdigretter</b></div></div>
+                <div class="row"><span class="cc"></span><div class="t"><b>Knekkebrød og kjeks</b><span>Lang holdbarhet</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar"><span>Oversikt</span><span class="on">Lager</span><span>Nødinfo</span><span>Eiendeler</span></div>
+        </div>
+        <ol class="notes old">
+          <li><span class="k">1</span><span>Water is ticked with 12 of 42 litres, so the list contradicts the number on Oversikt.</span></li>
+          <li><span class="k">2</span><span>Section headers count types, not days. The category page with the explanation can only be reached from the hero on Oversikt.</span></li>
+        </ol>
+      </div>
+      <div class="side new">
+        <span class="side-label new">Forslag</span>
+        <span class="context">Same data: 12 litres, 2 adults</span>
+        <div class="phone" aria-label="Lager proposal">
+          <div class="status"><span>09:41</span><i>▮▮▮</i></div>
+          <div class="screen">
+            <div class="navbar"><span></span><span class="navbtn">+</span></div>
+            <div class="big">Lager</div>
+            <div class="subtitle">18 ting mangler fra DSBs liste</div>
+            <div class="seg"><span class="on">Alle</span><span>Mangler</span></div>
+            <div>
+              <div class="hdr link ring" data-pin="2"><b style="color:var(--label-2);text-transform:uppercase;font-size:11px;letter-spacing:.04em">Vann</b><b>2 av 7 døgn ›</b></div>
+              <div class="group">
+                <div class="row ring" data-pin="1"><span class="cc part" style="--p:29%"></span><div class="t"><b>Drikkevann på kanner</b><span>12 av 42 liter</span></div><span class="pill" data-pin="3">Kjøp 30 l</span></div>
+                <div class="row"><span class="cc"></span><div class="t"><b>Vannrensetabletter</b></div></div>
+              </div>
+            </div>
+            <div>
+              <div class="hdr link"><b style="color:var(--label-2);text-transform:uppercase;font-size:11px;letter-spacing:.04em">Mat</b><b>4 av 7 døgn ›</b></div>
+              <div class="group">
+                <div class="row"><span class="cc part" style="--p:57%"></span><div class="t"><b>Hermetikk og ferdigretter</b><span>24 av 42 måltider</span></div><span class="pill">Kjøp 18</span></div>
+                <div class="row"><span class="cc"></span><div class="t"><b>Knekkebrød og kjeks</b><span>Lang holdbarhet</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar"><span>Oversikt</span><span class="on">Lager</span><span>Nødinfo</span><span>Eiendeler</span></div>
+        </div>
+        <ol class="notes new">
+          <li><span class="k">1</span><span>Water, food and heat get a part-filled ring and the amount. The ✓ only comes at 7 days, and until then they also show under Mangler.</span></li>
+          <li><span class="k">2</span><span>The header shows days and opens the category page with its explanation.</span></li>
+          <li><span class="k">3</span><span>The missing amount makes Mangler a real shopping list. Tapping it opens Ny vare, filled in, as the task on Oversikt does.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 ─────────────────────────────────────────── -->
+  <section class="change" id="onboarding">
+    <div class="change-head">
+      <span class="rank">2</span>
+      <h2>Onboarding ends by turning on reminders</h2>
+      <p>Reminders and the regular check are what keep the number right. But the items from onboarding have no expiry date, and onboarding never asks for permission to send notifications. The loop that should bring people back is cut off from day one.</p>
+    </div>
+    <div class="pair">
+      <div class="side old">
+        <span class="side-label old">Nå</span>
+        <div class="phone sheet" aria-label="Onboarding result now">
+          <div class="status"><span>09:41</span><i>▮▮▮</i></div>
+          <div class="screen">
+            <div class="topbar"><span class="x">‹</span><span class="dots"><i></i><i></i><i class="cur"></i></span><span style="width:30px"></span></div>
+            <div class="lead">Uten strøm og vann klarer dere dere i</div>
+            <div class="headline"><b>2</b><span>av 7 døgn</span></div>
+            <div class="lead" style="color:var(--label)">Det er vannet som mangler mest.</div>
+            <div class="card">
+              <div class="daysrows">
+                <div class="dr"><div><b>Vann</b><span>2 døgn</span></div><div class="prog"><i style="width:29%"></i></div></div>
+                <div class="dr"><div><b>Mat</b><span>4 døgn</span></div><div class="prog"><i style="width:57%"></i></div></div>
+                <div class="dr"><div><b>Varme</b><span>7+ døgn</span></div><div class="prog"><i style="width:100%"></i></div></div>
+              </div>
+            </div>
+            <div class="small">Det som mangler ligger klart som en handleliste i Lager.</div>
+            <div class="spacer"></div>
+            <div class="btn ring" data-pin="1">Gå til oversikten</div>
+          </div>
+        </div>
+        <ol class="notes old">
+          <li><span class="k">1</span><span>The water is saved with «Påminnelse» on but no expiry date, so the 12-month swap reminder never fires. There's no request for notification permission.</span></li>
+        </ol>
+      </div>
+      <div class="side new">
+        <span class="side-label new">Forslag</span>
+        <div class="phone sheet" aria-label="Onboarding result proposal">
+          <div class="status"><span>09:41</span><i>▮▮▮</i></div>
+          <div class="screen">
+            <div class="topbar"><span class="x">‹</span><span class="dots"><i></i><i></i><i class="cur"></i></span><span style="width:30px"></span></div>
+            <div class="lead">Uten strøm og vann klarer dere dere i</div>
+            <div class="headline"><b>2</b><span>av 7 døgn</span></div>
+            <div class="lead" style="color:var(--label)">Det er vannet som mangler mest.</div>
+            <div class="card">
+              <div class="daysrows">
+                <div class="dr"><div><b>Vann</b><span>2 døgn</span></div><div class="prog"><i style="width:29%"></i></div></div>
+                <div class="dr"><div><b>Mat</b><span>4 døgn</span></div><div class="prog"><i style="width:57%"></i></div></div>
+              </div>
+            </div>
+            <div>
+              <div class="hdr"><b>Hold tallet riktig</b></div>
+              <div class="group ring" data-pin="1">
+                <div class="row"><div class="t"><b>Bytt vannet</b><span>Vi foreslår 10. oktober 2027</span></div><span class="d" style="color:var(--accent)">Endre</span></div>
+                <div class="row"><div class="t"><b>Beredskapssjekk</b><span>Hver tredje måned</span></div><span class="d">›</span></div>
+              </div>
+            </div>
+            <div class="spacer"></div>
+            <div class="btn" data-pin="2">Slå på påminnelser</div>
+            <div class="btn text">Ikke nå</div>
+          </div>
+        </div>
+        <ol class="notes new">
+          <li><span class="k">1</span><span>Onboarding water gets a date 12 months ahead (DSB's interval in <code>guidance.ts</code>). The check interval is shown and can be changed here, not only under Husstand.</span></li>
+          <li><span class="k">2</span><span>The permission request comes right after the number, when the reason is easiest to see. «Ikke nå» still finishes onboarding.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 ─────────────────────────────────────────── -->
+  <section class="change" id="oversikt">
+    <div class="change-head">
+      <span class="rank">3</span>
+      <h2>Oversikt covers the whole plan, not just the stock</h2>
+      <p>«Neste å gjøre» only knows about stock and insurance. An emergency contact or a meeting place takes a minute to add and may matter more in a crisis than a radio, but nothing ever asks for them. The settings sit behind a people icon called «Husstand».</p>
+    </div>
+    <div class="pair">
+      <div class="side old">
+        <span class="side-label old">Nå</span>
+        <div class="phone" aria-label="Oversikt now">
+          <div class="status"><span>09:41</span><i>▮▮▮</i></div>
+          <div class="screen">
+            <div class="navbar"><span></span><span class="navbtn soft ring" data-pin="3">👥</span></div>
+            <div class="big">Oversikt</div>
+            <div class="subtitle">2 voksne</div>
+            <div class="hero">
+              <small>Uten strøm og vann klarer dere dere i</small>
+              <div class="n">2<em>døgn</em></div>
+              <div class="bar"><i style="width:20%"></i></div>
+              <div class="lim"><span>Det er vannet som mangler mest.</span><span>Vis alle ⌄</span></div>
+            </div>
+            <div class="notice ring" data-pin="2"><div class="t"><b>Beredskapssjekk om 3 måneder</b><span>Ikke sjekket ennå</span></div><span style="color:var(--label-3)">›</span></div>
+            <div>
+              <div class="hdr"><b>Neste å gjøre</b></div>
+              <div class="group ring" data-pin="1">
+                <div class="row"><span class="cc"></span><div class="t bold"><b>Kjøp 30 liter vann</b><span>Drikkevann på kanner</span></div><span class="pill">+5 døgn</span></div>
+                <div class="row"><span class="cc"></span><div class="t bold"><b>Kjøp mat for 3 døgn</b><span>Hermetikk, knekkebrød …</span></div><span class="pill">+3 døgn</span></div>
+                <div class="row"><span class="cc"></span><div class="t bold"><b>Kjøp vannrensetabletter</b><span>Vann</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar"><span class="on">Oversikt</span><span>Lager</span><span>Nødinfo</span><span>Eiendeler</span></div>
+        </div>
+        <ol class="notes old">
+          <li><span class="k">1</span><span>Only stock tasks. Nødinfo is never mentioned after onboarding.</span></li>
+          <li><span class="k">2</span><span>A check that's 3 months away takes the second-best spot on the screen.</span></li>
+          <li><span class="k">3</span><span>Reminders, document lock, feedback and «Slett alle data» are hidden behind «Husstand».</span></li>
+        </ol>
+      </div>
+      <div class="side new">
+        <span class="side-label new">Forslag</span>
+        <div class="phone" aria-label="Oversikt proposal">
+          <div class="status"><span>09:41</span><i>▮▮▮</i></div>
+          <div class="screen">
+            <div class="navbar"><span></span><span class="navbtn soft ring" data-pin="3">⚙</span></div>
+            <div class="big">Oversikt</div>
+            <div class="subtitle">2 voksne</div>
+            <div class="hero">
+              <small>Uten strøm og vann klarer dere dere i</small>
+              <div class="n">2<em>døgn</em></div>
+              <div class="bar"><i style="width:20%"></i></div>
+              <div class="lim"><span>Det er vannet som mangler mest.</span><span>Vis alle ⌄</span></div>
+            </div>
+            <div class="quiet" data-pin="2">Neste beredskapssjekk 10. januar · <b>Ta den nå</b></div>
+            <div>
+              <div class="hdr"><b>Neste å gjøre</b></div>
+              <div class="group">
+                <div class="row"><span class="cc"></span><div class="t bold"><b>Kjøp 30 liter vann</b><span>Drikkevann på kanner</span></div><span class="pill">+5 døgn</span></div>
+                <div class="row ring" data-pin="1"><span class="cc"></span><div class="t bold"><b>Legg til en nødkontakt</b><span>Nødinfo · ringes rett fra appen</span></div></div>
+                <div class="row"><span class="cc"></span><div class="t bold"><b>Avtal et møtested</b><span>Nødinfo · hvis dere ikke får kontakt</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar"><span class="on">Oversikt</span><span>Lager</span><span>Nødinfo</span><span>Eiendeler</span></div>
+        </div>
+        <ol class="notes new">
+          <li><span class="k">1</span><span>The missing contact and meeting place become tasks, after the most important stock task. Each opens its own sheet.</span></li>
+          <li><span class="k">2</span><span>The check is a quiet line until about two weeks before it's due, then it turns into the yellow banner as now.</span></li>
+          <li><span class="k">3</span><span>A gear icon labelled «Innstillinger», with the household as its first section. That also removes the duplicate «Hvem bor her» row.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 ─────────────────────────────────────────── -->
+  <section class="change" id="sjekk">
+    <div class="change-head">
+      <span class="rank">4</span>
+      <h2>The check shows what it's asking about</h2>
+      <p>«Gå gjennom utløpsdatoer» gives a count but not the items, so the user has to leave the sheet to find out what to swap. «Byttet» then moves every date at once. «Må fikses» on the torch and radio leads nowhere.</p>
+    </div>
+    <div class="pair">
+      <div class="side old">
+        <span class="side-label old">Nå</span>
+        <div class="phone sheet" aria-label="Beredskapssjekk now">
+          <div class="status"><span>09:41</span><i>▮▮▮</i></div>
+          <div class="screen">
+            <div class="topbar"><span class="x">✕</span><span style="font-size:12px;color:var(--label-2)">Ca. 5 minutter</span><span style="width:30px"></span></div>
+            <div class="big" style="font-size:26px">Beredskapssjekk</div>
+            <div class="lead">Beredskap blir fort utdatert. Fire raske spørsmål holder tallet riktig.</div>
+            <div class="steps">
+              <div class="step"><span class="badge done">✓</span><div><div class="q">Er dere fortsatt 2 voksne?</div><div class="a">Ja</div></div></div>
+              <div class="step ring" data-pin="1"><span class="badge act">2</span><div><div class="q">Gå gjennom utløpsdatoer</div><div class="a">3 varer går ut innen 3 måneder</div><div class="acts"><span class="p">Byttet</span><span>Påminn meg</span></div></div></div>
+              <div class="step ring" data-pin="2"><span class="badge">3</span><div><div class="q pend">Test lommelykt og radio</div></div></div>
+              <div class="step"><span class="badge">4</span><div><div class="q pend">Stemmer nødkontaktene?</div></div></div>
+            </div>
+          </div>
+        </div>
+        <ol class="notes old">
+          <li><span class="k">1</span><span>Which 3 items? «Byttet» renews all of them, whether or not they were actually swapped.</span></li>
+          <li><span class="k">2</span><span>«Må fikses» is saved and nothing happens. Step 4 asks the same question with zero contacts.</span></li>
+        </ol>
+      </div>
+      <div class="side new">
+        <span class="side-label new">Forslag</span>
+        <div class="phone sheet" aria-label="Beredskapssjekk proposal">
+          <div class="status"><span>09:41</span><i>▮▮▮</i></div>
+          <div class="screen">
+            <div class="topbar"><span class="x">✕</span><span style="font-size:12px;color:var(--label-2)">Ca. 5 minutter</span><span style="width:30px"></span></div>
+            <div class="big" style="font-size:26px">Beredskapssjekk</div>
+            <div class="steps">
+              <div class="step"><span class="badge done">✓</span><div><div class="q">Er dere fortsatt 2 voksne?</div><div class="a">Ja</div></div></div>
+              <div class="step ring" data-pin="1"><span class="badge act">2</span><div><div class="q">Bytt det som går ut</div><div class="a">Huk av det dere har byttet</div>
+                <div class="items">
+                  <div><span class="cc on">✓</span>Drikkevann på kanner<em>12. nov.</em></div>
+                  <div><span class="cc on">✓</span>Hermetikk<em>3. des.</em></div>
+                  <div><span class="cc"></span>Batterier<em>20. des.</em></div>
+                </div>
+                <div class="acts"><span class="p">Lagre 2 byttet</span><span>Påminn meg</span></div></div></div>
+              <div class="step ring" data-pin="2"><span class="badge">3</span><div><div class="q pend">Test lommelykt og radio</div><div class="a">«Må fikses» legger det i Neste å gjøre</div></div></div>
+              <div class="step" data-pin="3"><span class="badge">4</span><div><div class="q pend">Legg til nødkontakter</div><div class="a">Dere har ingen ennå</div></div></div>
+            </div>
+          </div>
+        </div>
+        <ol class="notes new">
+          <li><span class="k">1</span><span>The items are listed with their dates, and only the ticked ones get new dates. With nothing expiring, the step shows «Ingenting går ut» and a single «OK», or is skipped.</span></li>
+          <li><span class="k">2</span><span>«Må fikses» adds «Bytt batterier eller skaff ny lykt» to Neste å gjøre.</span></li>
+          <li><span class="k">3</span><span>With no contacts, the question becomes an invitation. After saving, every fix is queued, not just the first.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 ─────────────────────────────────────────── -->
+  <section class="change" id="eiendeler">
+    <div class="change-head">
+      <span class="rank">5</span>
+      <h2>Eiendeler explains itself and adds things, not rooms</h2>
+      <p>In 1.0, «+» adds a room even though six exist already, and each room row has a link called «Dokumenter», the same word as the passports under Nødinfo. A first visit opens on «0 kr dokumentert» with no reason given.</p>
+    </div>
+    <div class="pair">
+      <div class="side old">
+        <span class="side-label old">Nå</span>
+        <div class="phone" aria-label="Eiendeler now">
+          <div class="status"><span>09:41</span><i>▮▮▮</i></div>
+          <div class="screen">
+            <div class="navbar"><span class="navtext">Hjem ⌄</span><span class="navbtn ring" data-pin="1" style="background:var(--accent);color:#fff;border-color:var(--accent)">+</span></div>
+            <div class="big">Eiendeler</div>
+            <div class="card ring" data-pin="3"><div class="sum">0 kr</div><div class="prog"></div><div class="note">dokumentert. 0 av 6 rom er dokumentert.</div></div>
+            <div>
+              <div class="hdr"><b>Rom</b></div>
+              <div class="group">
+                <div class="row"><span class="thumb"></span><div class="t"><b>Stue</b><span>Ikke dokumentert</span></div><span class="link ring" data-pin="2">Dokumenter</span></div>
+                <div class="row"><span class="thumb"></span><div class="t"><b>Kjøkken</b><span>Ikke dokumentert</span></div><span class="link">Dokumenter</span></div>
+                <div class="row"><span class="thumb"></span><div class="t"><b>Soverom</b><span>Ikke dokumentert</span></div><span class="link">Dokumenter</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar"><span>Oversikt</span><span>Lager</span><span>Nødinfo</span><span class="on">Eiendeler</span></div>
+        </div>
+        <ol class="notes old">
+          <li><span class="k">1</span><span>The main button adds a room, which is the rare action.</span></li>
+          <li><span class="k">2</span><span>«Dokumenter» is a verb here and a noun in Nødinfo, for two unrelated things.</span></li>
+          <li><span class="k">3</span><span>Why bother? The reason is in a footer below the room list.</span></li>
+        </ol>
+      </div>
+      <div class="side new">
+        <span class="side-label new">Forslag</span>
+        <div class="phone" aria-label="Eiendeler proposal">
+          <div class="status"><span>09:41</span><i>▮▮▮</i></div>
+          <div class="screen">
+            <div class="navbar"><span class="navtext">Hjem ⌄</span><span class="navbtn" data-pin="1" style="background:var(--accent);color:#fff;border-color:var(--accent)">+</span></div>
+            <div class="big">Eiendeler</div>
+            <div class="why ring" data-pin="3"><b>Etter brann eller innbrudd</b>må dere vise forsikringen hva dere eide. Et bilde og en verdi per ting holder.</div>
+            <div class="card"><div class="sum">0 kr</div><div class="prog"></div><div class="note">dokumentert i 0 av 6 rom</div></div>
+            <div>
+              <div class="hdr"><b>Rom</b></div>
+              <div class="group">
+                <div class="row"><span class="thumb"></span><div class="t"><b>Stue</b><span>Ingenting ennå</span></div><span class="link ring" data-pin="2">Legg til ting</span></div>
+                <div class="row"><span class="thumb"></span><div class="t"><b>Kjøkken</b><span>Ingenting ennå</span></div><span class="link">Legg til ting</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar"><span>Oversikt</span><span>Lager</span><span>Nødinfo</span><span class="on">Eiendeler</span></div>
+        </div>
+        <ol class="notes new">
+          <li><span class="k">1</span><span>«+» opens Ny gjenstand with a room menu. «Legg til rom» stays at the bottom of the list.</span></li>
+          <li><span class="k">2</span><span>«Legg til ting» says what happens. «Dokumenter» is kept for papers in Nødinfo.</span></li>
+          <li><span class="k">3</span><span>One line on why, until the first thing is added. Then it goes away.</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="closing">
+    <h2>Smaller points, not drawn</h2>
+    <ul>
+      <li>«Hopp over» on the first onboarding step should skip only steps 2 and 3. The household drives every number.</li>
+      <li>Leave the onboarding water field empty and focused instead of filling in one day's worth.</li>
+      <li>Rapport: say why «Lag PDF og del» is greyed out when no rooms have things in them.</li>
+      <li>Nødinfo: «virker uten nett» is true for the data, but calls still need mobile coverage.</li>
+      <li>Pick one name each for Lager, beredskapslageret, DSBs liste and Utstyr.</li>
+    </ul>
+  </footer>
+</div>

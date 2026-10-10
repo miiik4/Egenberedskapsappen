@@ -19,7 +19,7 @@ describe('reminderMessage', () => {
     expect(
       reminderMessage({ kind: 'expiring', on: '2026-10-18', expiresOn: '2026-11-01', items: [item('a b', 'Insulin')] }),
     ).toEqual({
-      title: 'Noe i beredskapslageret går snart ut',
+      title: 'Noe på lageret går snart ut',
       body: 'Én vare går ut 1. november. Bytt den ut, så teller den fortsatt.',
       url: '/lager/vare/a%20b',
     });

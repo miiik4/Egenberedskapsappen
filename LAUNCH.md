@@ -130,6 +130,30 @@ How to use it:
       access)
 - [x] EAS updates and the project ID moved from the personal Expo account «mkl96» to «holm-and-tall-as» (2026-10-09)
 
+## 5b. UX review (decided 2026-10-10)
+
+From the review of the user journeys; sketches in `docs/ux/ux-forslag.html`. All in code, JS only (no `version` bump).
+Checked in the iOS simulator on the test household: Oversikt, Lager, the check's expiry list, Eiendeler and «+».
+
+- [ ] *(in code; Lager checked in the simulator)* Lager ticks water and food off only at 7 days, shows a part-filled
+      ring and the amount, a «Kjøp 30 liter vann» row in the section, and days in the section header, which opens the
+      category page
+- [ ] *(in code; not run)* «Kom i gang» ends with «Hold tallet riktig»: a date to swap the onboarding water (12 months
+      ahead), the check interval, and «Slå på påminnelser» / «Ikke nå». «Hopp over» is gone from the first step, and
+      the amounts start empty instead of one day's worth
+- [ ] *(in code; Oversikt checked in the simulator, the new tasks not seen yet)* «Neste å gjøre» asks for an
+      emergency contact and a meeting place after the biggest gap, and keeps what the check left to fix
+      (`followUps`, a new synced setting, migration 9). The check is one quiet line until 14 days before it's due.
+      A gear opens «Innstillinger» (was «Husstand»)
+- [ ] *(in code; the list checked in the simulator, saving not run)* Beredskapssjekk lists what expires and renews
+      only what's ticked off; «OK» when nothing expires; «Må fikses» waits on Oversikt; «Legg til nødkontakter» when
+      there are none; every fix is kept, not just the first
+- [ ] *(in code; checked in the simulator)* Eiendeler: «+» opens Ny gjenstand with a room to pick, «Legg til ting»
+      instead of «Dokumenter», and a line on why until the first thing is added
+- [ ] *(in code; not run)* Smaller: Rapport says why the button is off; «kan åpnes uten nett» in Nødinfo and on the
+      website; «lageret» instead of «beredskapslageret»; website copy for the onboarding result, Lager and the check
+- [ ] Walk through all of the above on Android, and the onboarding on a fresh install
+
 ## 6. Stores
 
 - [x] Drafts of the listing text and the privacy-label answers: `docs/store/` (2026-10-08; check before use)

@@ -10,6 +10,7 @@ import { Text } from '@/components/ui/text';
 export function Section({
   header,
   headerDetail,
+  onHeaderPress,
   footer,
   separatorInset = Spacing.rowInset,
   children,
@@ -17,6 +18,8 @@ export function Section({
   header?: string;
   /** Right-aligned next to the header, not uppercased: «1 av 2». */
   headerDetail?: string;
+  /** Makes the detail a link with a chevron, e.g. «2 av 7 døgn ›» to the category page. */
+  onHeaderPress?: () => void;
   footer?: string;
   /** Where separators start, so they line up with the row text rather than its icon. */
   separatorInset?: number;
@@ -25,11 +28,26 @@ export function Section({
   const rows = Children.toArray(children).filter(Boolean);
   return (
     <View style={styles.section}>
-      {header && (
-        <View style={styles.headerRow}>
+      {header && onHeaderPress ? (
+        <Pressable
+          onPress={onHeaderPress}
+          accessibilityRole="button"
+          accessibilityLabel={headerDetail ? `${header}, ${headerDetail}` : header}
+          hitSlop={6}
+          style={({ pressed }) => [styles.headerRow, pressed && { opacity: 0.6 }]}>
           <Text style={styles.header}>{header.toUpperCase()}</Text>
-          {headerDetail && <Text style={styles.header}>{headerDetail}</Text>}
-        </View>
+          <View style={styles.headerLink}>
+            {headerDetail && <Text style={[styles.header, styles.headerLinkText]}>{headerDetail}</Text>}
+            <Icon name={{ ios: 'chevron.right', android: 'chevron_right' }} size={11} color={Colors.accent} />
+          </View>
+        </Pressable>
+      ) : (
+        header && (
+          <View style={styles.headerRow}>
+            <Text style={styles.header}>{header.toUpperCase()}</Text>
+            {headerDetail && <Text style={styles.header}>{headerDetail}</Text>}
+          </View>
+        )
       )}
       <View style={styles.card}>
         {rows.map((row, i) => (
@@ -120,6 +138,8 @@ const styles = StyleSheet.create({
   section: { marginHorizontal: Spacing.screen, gap: 7 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: Spacing.rowInset },
   header: { fontSize: 13, fontWeight: '600', color: Colors.secondaryLabel, letterSpacing: 0.8 },
+  headerLink: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  headerLinkText: { color: Colors.accent, letterSpacing: 0 },
   footer: { marginHorizontal: Spacing.rowInset, fontSize: 13, color: Colors.secondaryLabel, lineHeight: 18 },
   card: {
     backgroundColor: Colors.card,

@@ -52,7 +52,7 @@ export default function Nodinfo() {
       <Screen>
         <View style={styles.offline}>
           <Icon name={{ ios: 'iphone', android: 'smartphone' }} size={15} color={Colors.secondaryLabel} />
-          <Text style={styles.offlineText}>Lagret på telefonen, virker uten nett</Text>
+          <Text style={styles.offlineText}>Lagret på telefonen, kan åpnes uten nett</Text>
         </View>
 
         <View style={styles.numbers}>

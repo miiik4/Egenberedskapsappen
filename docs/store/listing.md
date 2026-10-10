@@ -83,6 +83,6 @@ PERSONVERN
 • Alt dere legger inn lagres bare på telefonen. På iPhone kan ingenting leses mens telefonen er låst.
 • Om husstanden lagres bare antall per aldersgruppe, ikke navn eller fødselsdatoer.
 
-Savner dere noe? Trykk «Gi tilbakemelding» under Husstand og skriv til oss.
+Savner dere noe? Trykk «Gi tilbakemelding» under Innstillinger og skriv til oss.
 
 Appen er ikke laget av eller tilknyttet DSB eller andre myndigheter. Les myndighetenes råd på sikkerhverdag.no.

@@ -2,11 +2,19 @@ import {
   CATEGORY_NAMES,
   peopleIn,
   TARGET_DAYS,
+  type CheckIntervalMonths,
   type ChecklistType,
   type HouseholdMembers,
   type IsoDate,
   type NextAction,
 } from '@egenberedskap/core';
+
+/** How often the beredskapssjekk comes round, as the menu in Innstillinger and «Kom i gang» says it. */
+export const CHECK_INTERVAL_NAMES: Record<CheckIntervalMonths, string> = {
+  1: 'Hver måned',
+  3: 'Hver tredje måned',
+  6: 'Hvert halvår',
+};
 
 const MONTHS = [
   'januar', 'februar', 'mars', 'april', 'mai', 'juni',
@@ -138,6 +146,14 @@ export function describeAction(action: NextAction): { title: string; subtitle: s
       return { title: `Bytt ${action.item.name.toLowerCase()}`, subtitle: `Går ut ${formatDate(action.expiresOn)}` };
     case 'getType':
       return { title: action.type.task, subtitle: action.type.hint || CATEGORY_NAMES[action.type.category] };
+    case 'addContact':
+      return { title: 'Legg til en nødkontakt', subtitle: 'Nødinfo · kan ringes rett fra appen' };
+    case 'addMeetingPlace':
+      return { title: 'Avtal et møtested', subtitle: 'Nødinfo · hvis dere ikke får kontakt' };
+    case 'followUp':
+      return action.followUp === 'equipment'
+        ? { title: 'Fiks lommelykt og radio', subtitle: 'Fra beredskapssjekken' }
+        : { title: 'Se over nødkontaktene', subtitle: 'Fra beredskapssjekken' };
   }
 }
 

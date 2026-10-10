@@ -1,13 +1,16 @@
 import {
+  CHECK_HEADS_UP_DAYS,
   computeCoverage,
   daysUntilCheck,
   featuredGuide,
   missingTypes,
   nextActions,
+  nextCheck,
+  type FollowUp,
   type NextAction,
 } from '@egenberedskap/core';
 import { router, Stack, type Href } from 'expo-router';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { DaysHero } from '@/components/preparedness/days-hero';
 import { DAY_ROWS } from '@/components/preparedness/day-rows';
@@ -19,7 +22,7 @@ import { Row, Section } from '@/components/ui/list';
 import { Pill } from '@/components/ui/pill';
 import { Screen } from '@/components/ui/screen';
 import { Colors, Spacing } from '@/constants/theme';
-import { useData } from '@/data/data-provider';
+import { useActions, useData } from '@/data/data-provider';
 import { GUIDES } from '@/guides/guides';
 import { useNotifications } from '@/notifications/notifications-provider';
 import { describeAction, formatDate, formatIn, formatKr, householdLabel, todayIso } from '@/lib/format';
@@ -36,12 +39,14 @@ export default function Oversikt() {
   const { household, stock } = data;
   const today = todayIso();
   const coverage = computeCoverage(household, stock, today);
-  const actions = nextActions(household, stock, today).slice(0, TASKS_SHOWN);
+  const plan = { contacts: data.contacts.length, meetingPlace: data.meetingPlace !== null, followUps: data.followUps };
+  const actions = nextActions(household, stock, today, plan).slice(0, TASKS_SHOWN);
   // «Utstyr»: the categories that aren't counted in days.
   const gearMissing = missingTypes(household, stock, today).filter((t) => !DAY_ROWS.some((r) => r.kind === t.category)).length;
   const guide = GUIDES[featuredGuide(household, Number(today.slice(5, 7)))];
   // The first check falls due one interval after the household was set up.
-  const checkIn = daysUntilCheck(data.lastCheck ?? data.onboardedOn ?? today, data.checkIntervalMonths, today);
+  const checkFrom = data.lastCheck ?? data.onboardedOn ?? today;
+  const checkIn = daysUntilCheck(checkFrom, data.checkIntervalMonths, today);
   const { property, policy, alert } = useHomeInsurance();
   const { permission, requestPermission } = useNotifications();
 
@@ -55,9 +60,9 @@ export default function Oversikt() {
           <Pressable
             onPress={() => router.push('/husstand')}
             accessibilityRole="button"
-            accessibilityLabel="Husstand"
+            accessibilityLabel="Innstillinger"
             style={styles.avatar}>
-            <Icon name={{ ios: 'person.2.fill', android: 'group' }} size={15} color={Colors.accent} />
+            <Icon name={{ ios: 'gearshape.fill', android: 'settings' }} size={16} color={Colors.accent} />
           </Pressable>
         </Stack.Toolbar.View>
       </Stack.Toolbar>
@@ -74,13 +79,27 @@ export default function Oversikt() {
             // Each day row is also a category of the list: vann, mat, varme.
             onPressKind={(kind) => toLager({ pathname: '/lager/kategori/[id]', params: { id: kind } })}
           />
-          <Notice
-            title={checkIn > 0 ? `Beredskapssjekk ${formatIn(checkIn)}` : 'Tid for beredskapssjekk'}
-            subtitle={data.lastCheck ? `Sist sjekket ${formatDate(data.lastCheck)}` : 'Ikke sjekket ennå'}
-            // Yellow only once it's due. Before the first check that's one interval after setup, like any other.
-            attention={checkIn <= 0}
-            onPress={() => router.push('/beredskapssjekk')}
-          />
+          {/* A quiet line while it's a while off, a card as it nears, yellow once it's due. Before
+              the first check that's one interval after setup, like any other. */}
+          {checkIn > CHECK_HEADS_UP_DAYS ? (
+            <Pressable
+              onPress={() => router.push('/beredskapssjekk')}
+              accessibilityRole="button"
+              hitSlop={8}
+              style={({ pressed }) => [styles.quiet, pressed && { opacity: 0.6 }]}>
+              <Text style={styles.quietText}>
+                Neste beredskapssjekk {formatDate(nextCheck(checkFrom, data.checkIntervalMonths))} ·{' '}
+                <Text style={styles.quietLink}>Ta den nå</Text>
+              </Text>
+            </Pressable>
+          ) : (
+            <Notice
+              title={checkIn > 0 ? `Beredskapssjekk ${formatIn(checkIn)}` : 'Tid for beredskapssjekk'}
+              subtitle={data.lastCheck ? `Sist sjekket ${formatDate(data.lastCheck)}` : 'Ikke sjekket ennå'}
+              attention={checkIn <= 0}
+              onPress={() => router.push('/beredskapssjekk')}
+            />
+          )}
         </View>
 
         <Section>
@@ -124,23 +143,30 @@ export default function Oversikt() {
           </>
         )}
 
-        <Section header="Husstand">
+        <Section header="Forsikring">
           <Row
             title="Innboforsikring"
             detail={policy?.sumKr !== undefined ? formatKr(policy.sumKr) : 'Legg til'}
             chevron
             onPress={() => router.push('/forsikring')}
           />
-          <Row title="Hvem bor her" detail={householdLabel(household)} chevron onPress={() => router.push('/husstand')} />
         </Section>
       </Screen>
     </>
   );
 }
 
-/** Doing a task means recording it, so each one opens the item sheet, prefilled. */
+/** Doing a task means recording it, so each one opens the sheet it's done in, prefilled. */
 function taskHref(action: NextAction): Href {
   switch (action.kind) {
+    case 'addContact':
+      return '/kontakt';
+    case 'addMeetingPlace':
+      return '/motested';
+    case 'followUp':
+      return action.followUp === 'equipment'
+        ? { pathname: '/lager/kategori/[id]', params: { id: 'light' } }
+        : '/nodinfo';
     case 'buyWater':
       return { pathname: '/vare', params: { type: 'drinkingWater', litres: String(action.litres) } };
     case 'buyFood':
@@ -153,8 +179,14 @@ function taskHref(action: NextAction): Href {
 }
 
 function Task({ action }: { action: NextAction }) {
+  const { setFollowUp } = useActions();
   const { title, subtitle } = describeAction(action);
   const href = taskHref(action);
+  const open = () => {
+    if (action.kind === 'followUp') return openFollowUp(action.followUp, href, setFollowUp);
+    if (action.kind === 'replace') router.navigate(href, { withAnchor: true });
+    else router.push(href);
+  };
   // What doing it does to the number, when it does anything: «+3 døgn», «−1 døgn».
   const change = action.dayChange !== 0 && (
     <Pill
@@ -169,9 +201,26 @@ function Task({ action }: { action: NextAction }) {
       bold
       trailing={change || undefined}
       leading={<CheckCircle on={false} />}
-      onPress={() => (action.kind === 'replace' ? router.navigate(href, { withAnchor: true }) : router.push(href))}
+      onPress={open}
     />
   );
+}
+
+/**
+ * What the check left to do happens away from the phone, so the task asks whether it's done.
+ * Looking over the contacts is done by opening them.
+ */
+function openFollowUp(followUp: FollowUp, href: Href, setFollowUp: (followUp: FollowUp, on: boolean) => Promise<void>) {
+  if (followUp === 'contacts') {
+    setFollowUp('contacts', false);
+    router.navigate(href, { withAnchor: true });
+    return;
+  }
+  Alert.alert('Virker lommelykten og radioen?', 'Bytt batterier, eller kjøp nytt det som ikke virker.', [
+    { text: 'Ikke ennå', style: 'cancel' },
+    { text: 'Se lys og strøm', onPress: () => router.navigate(href, { withAnchor: true }) },
+    { text: 'Ja, de virker', onPress: () => setFollowUp('equipment', false) },
+  ]);
 }
 
 /**
@@ -219,6 +268,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accentSoft,
   },
   top: { gap: 12 },
+  quiet: { marginHorizontal: Spacing.screen + 4 },
+  quietText: { fontSize: 15, color: Colors.secondaryLabel },
+  quietLink: { color: Colors.accent, fontWeight: '600' },
   notice: {
     flexDirection: 'row',
     alignItems: 'center',

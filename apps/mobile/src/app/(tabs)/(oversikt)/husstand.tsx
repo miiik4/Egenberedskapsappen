@@ -16,12 +16,12 @@ import { deleteEverything } from '@/data/delete-everything';
 import { useBackup } from '@/backup/backup-provider';
 import { useDocumentLock } from '@/documents/lock';
 import { useNotifications } from '@/notifications/notifications-provider';
-import { householdLabel } from '@/lib/format';
+import { CHECK_INTERVAL_NAMES, householdLabel } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 /**
- * Who lives here, as counts per age group with steppers, and the settings for the household.
- * Opened from the button at the top of Oversikt. Changes save as they're made.
+ * «Innstillinger»: who lives here first, as counts per age group with steppers, then the
+ * settings. Opened from the gear at the top of Oversikt. Changes save as they're made.
  */
 export default function Husstand() {
   const { household, documentLock, properties, selectedPropertyId, checkIntervalMonths, backup } = useData();
@@ -69,7 +69,7 @@ export default function Husstand() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Husstand' }} />
+      <Stack.Screen options={{ title: 'Innstillinger' }} />
       <Screen>
         <Text style={styles.subtitle}>
           {property ? `${property.name} · ` : ''}
@@ -152,11 +152,6 @@ async function giveFeedback() {
   }
 }
 
-const CHECK_INTERVAL_NAMES: Record<CheckIntervalMonths, string> = {
-  1: 'Hver måned',
-  3: 'Hver tredje måned',
-  6: 'Hvert halvår',
-};
 
 const styles = StyleSheet.create({
   subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: Spacing.underTitle, fontSize: 17, color: Colors.secondaryLabel },

@@ -113,21 +113,43 @@ export function dayImpactOfLosing(
 export type ChecklistType = StockTypeInfo & {
   /** This type's items, expired ones included so they can be replaced. */
   items: StockItem[];
-  /** Ticked off: something of this type that hasn't expired. */
+  /**
+   * Ticked off. Something of this type that hasn't expired; for water and food, also enough of
+   * the category for TARGET_DAYS, so the list never says «på plass» while Oversikt asks for more.
+   */
   have: boolean;
+  /** Water or food the household has some of, but not enough for TARGET_DAYS. */
+  partial: boolean;
 };
 
-export type ChecklistCategory = { category: StockCategory; types: ChecklistType[] };
+export type ChecklistCategory = {
+  category: StockCategory;
+  types: ChecklistType[];
+  /** Water, food and heat count in days: how far this category goes. */
+  days?: number;
+};
 
-/** DSB's list for this household, each type ticked off as soon as it has an item. */
+/** DSB's list for this household, each type ticked off once it has an item, or enough of one. */
 export function checklist(members: HouseholdMembers, items: StockItem[], today: IsoDate): ChecklistCategory[] {
-  return CATEGORIES.map((category) => ({
-    category,
-    types: typesFor(members, category).map((type) => {
-      const own = items.filter((item) => item.type === type.id);
-      return { ...type, items: own, have: own.some((item) => !isExpired(item, today)) };
-    }),
-  }));
+  const coverage = computeCoverage(members, items, today);
+  const daysOf: Partial<Record<StockCategory, number>> = {
+    water: coverage.waterDays,
+    food: coverage.foodDays,
+    heat: coverage.heatDays,
+  };
+  return CATEGORIES.map((category) => {
+    const days = daysOf[category];
+    return {
+      category,
+      ...(days !== undefined && { days }),
+      types: typesFor(members, category).map((type) => {
+        const own = items.filter((item) => item.type === type.id);
+        const some = own.some((item) => !isExpired(item, today));
+        const short = type.measure !== undefined && (days ?? 0) < TARGET_DAYS;
+        return { ...type, items: own, have: some && !short, partial: some && short };
+      }),
+    };
+  });
 }
 
 export function missingTypes(members: HouseholdMembers, items: StockItem[], today: IsoDate): StockTypeInfo[] {

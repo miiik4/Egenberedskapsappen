@@ -54,6 +54,12 @@ export const DEFAULT_CHECK_INTERVAL_MONTHS: CheckIntervalMonths = 3;
 // The beredskapssjekk goes through what expires before the next one is due, so the interval
 // is also how far ahead it looks (`expiresBeforeNextCheck`).
 
+/**
+ * Until this close to the beredskapssjekk, Oversikt mentions it in one quiet line; from here
+ * it's a card, and yellow once it's due.
+ */
+export const CHECK_HEADS_UP_DAYS = 14;
+
 /** «Påminn meg» on the expiry dates in the beredskapssjekk comes back this many days later. */
 export const EXPIRY_REVIEW_AFTER_DAYS = 7;
 
