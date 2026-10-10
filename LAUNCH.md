@@ -22,6 +22,22 @@ How to use it:
 - **A way to hear users without tracking:** a «Gi tilbakemelding» row that opens an email, and counts the server
   already sees (codes redeemed, active backups, analyses per month).
 
+## Release date: Monday 26 October 2026 (decided 2026-10-10)
+
+1.0 goes live in both stores the day Egenberedskapsuka starts (week 44, DSB's digital kick-off at 11:00). Working
+back from that:
+
+| By | What |
+| --- | --- |
+| Mon 12 Oct | D-U-N-S applied for; Apple Developer and Google Play enrolment started as **organisation** accounts (an organisation Play account skips the 14-day closed test that new personal accounts need) |
+| Fri 16 Oct | Company details, DSB sign-off and domain in place; Android preview build tested on a phone |
+| **Mon 19 Oct** | **Go/no-go.** Production builds submitted to both stores (Google's first review of a new account can take up to a week) |
+| Wed 21 Oct | Last day to answer review questions or resubmit |
+| Mon 26 Oct, before 11:00 | Release: App Store «Manually release this version», Play «Managed publishing»; website live on the real domain with store links |
+
+If the builds aren't submitted by 19 October, privacy and QA items are not cut to make it. Mikkel decides the new
+date then (the strategy review suggests mid-November, with the winter outage season as the hook).
+
 ## 1. Content and facts
 
 - [ ] **(Mikkel)** Confirm the company details in `apps/web/src/company.ts` (org.nr., address, email, phone come
