@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><g transform="scale(1)"><rect width="64" height="64" rx="14" fill="#0B2B4A"/>
+    <defs><clipPath id="kanne"><path d="M18 22 Q18 17 23 17 H41 Q46 17 46 22 V48 Q46 53 41 53 H23 Q18 53 18 48 Z"/></clipPath></defs>
+    <path d="M24 17 V12.5 Q24 11 25.5 11 H31.5 Q33 11 33 12.5 V17" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+    <rect x="36" y="11" width="7" height="6" rx="1.5" fill="#FFFFFF"/>
+    <path d="M18 22 Q18 17 23 17 H41 Q46 17 46 22 V48 Q46 53 41 53 H23 Q18 53 18 48 Z" fill="#FFFFFF"/>
+    <rect x="0" y="33" width="64" height="30" fill="#5FA3F0" clip-path="url(#kanne)"/></g></svg>

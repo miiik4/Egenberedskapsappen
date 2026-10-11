@@ -184,6 +184,81 @@ const markSkjoldHalv = (s, { plate = C.navy, shield = C.white, fill = C.bar } = 
     <rect x="0" y="34" width="64" height="30" fill="${fill}" clip-path="url(#halv)"/>
   </g>`;
 
+// More drafts: what the app holds (checklist, stockpile, water, equipment), alone and combined with home and shield.
+const PALE = '#C9DDF2';
+const plate = (body, fill = C.navy) => (s) =>
+  `<g transform="scale(${s / 64})"><rect width="64" height="64" rx="14" fill="${fill}"/>${body}</g>`;
+const tick = (x, y, size, stroke) =>
+  `<path d="M${x} ${y} l${size * 0.35} ${size * 0.35} l${size * 0.65} ${-size * 0.7}" fill="none" stroke="${stroke}" stroke-width="${size * 0.28}" stroke-linecap="round" stroke-linejoin="round"/>`;
+/** A checklist row at y: box (ticked or not) and a line of text. */
+const row = (x, y, done, lineWidth, { box = 7 } = {}) =>
+  (done
+    ? `<rect x="${x}" y="${y}" width="${box}" height="${box}" rx="2" fill="${C.accent}"/>${tick(x + box * 0.22, y + box * 0.52, box * 0.58, C.white)}`
+    : `<rect x="${x + 0.9}" y="${y + 0.9}" width="${box - 1.8}" height="${box - 1.8}" rx="1.6" fill="none" stroke="${PALE}" stroke-width="1.8"/>`) +
+  `<rect x="${x + box + 3.5}" y="${y + box / 2 - 1.8}" width="${lineWidth}" height="3.6" rx="1.8" fill="${done ? PALE : '#E3ECF6'}"/>`;
+const HOUSE = 'M32 12.5 L51 28 Q52 29 52 30.5 V48 Q52 51 49 51 H15 Q12 51 12 48 V30.5 Q12 29 13 28 Z';
+
+const moreMarks = {
+  // A clipboard with two of three ticked: the stockpile list and the Beredskapssjekk.
+  sjekkliste: plate(`
+    <rect x="15" y="12" width="34" height="42" rx="6" fill="${C.white}"/>
+    <rect x="25" y="9" width="14" height="7" rx="3.5" fill="${C.bar}"/>
+    ${row(20, 21, true, 17)}${row(20, 31, true, 13)}${row(20, 41, false, 15)}`),
+  // A shelf at home: water, tins and a torch, the categories of the Lager tab.
+  hylle: plate(`
+    <rect x="11" y="31" width="42" height="3.5" rx="1.75" fill="${C.white}"/>
+    <rect x="11" y="49" width="42" height="3.5" rx="1.75" fill="${C.white}"/>
+    <path d="M15 31 V19 Q15 16 18 16 H22 L25 13 H27 V31 Z" fill="${C.bar}"/>
+    <rect x="30" y="21" width="8" height="10" rx="1.5" fill="${C.white}"/>
+    <rect x="40" y="21" width="8" height="10" rx="1.5" fill="${C.white}"/>
+    <rect x="30" y="20" width="8" height="2.2" rx="1.1" fill="${PALE}"/>
+    <rect x="40" y="20" width="8" height="2.2" rx="1.1" fill="${PALE}"/>
+    <rect x="15" y="39" width="15" height="10" rx="2" fill="${C.white}"/>
+    <rect x="20" y="42" width="5" height="2.2" rx="1.1" fill="${C.navy}"/>
+    <rect x="34" y="41" width="15" height="5" rx="2.5" fill="${C.white}"/>
+    <path d="M49 41 L53 38.5 V48.5 L49 46 Z" fill="${C.white}"/>`),
+  // A storage box with the days bar on its front.
+  kasse: plate(`
+    <rect x="11" y="18" width="42" height="9" rx="3" fill="${C.white}"/>
+    <path d="M14 29 H50 V46 Q50 50 46 50 H18 Q14 50 14 46 Z" fill="${C.white}"/>
+    <rect x="27" y="21" width="10" height="3" rx="1.5" fill="${C.navy}"/>
+    <rect x="20" y="36" width="24" height="6" rx="3" fill="${PALE}"/>
+    <rect x="20" y="36" width="13.7" height="6" rx="3" fill="${C.accent}"/>`),
+  // A water can, a little over half full: water is the first thing the app counts.
+  kanne: plate(`
+    <defs><clipPath id="kanne"><path d="M18 22 Q18 17 23 17 H41 Q46 17 46 22 V48 Q46 53 41 53 H23 Q18 53 18 48 Z"/></clipPath></defs>
+    <path d="M24 17 V12.5 Q24 11 25.5 11 H31.5 Q33 11 33 12.5 V17" fill="none" stroke="${C.white}" stroke-width="3"/>
+    <rect x="36" y="11" width="7" height="6" rx="1.5" fill="${C.white}"/>
+    <path d="M18 22 Q18 17 23 17 H41 Q46 17 46 22 V48 Q46 53 41 53 H23 Q18 53 18 48 Z" fill="${C.white}"/>
+    <rect x="0" y="33" width="64" height="30" fill="${C.bar}" clip-path="url(#kanne)"/>`),
+  // A torch and its beam: equipment, and light when the power is gone.
+  lykt: plate(`
+    <path d="M30 25 L53 15 V49 L30 39 Z" fill="${C.bar}" opacity="0.45"/>
+    <path d="M30 25 L53 15 V27 L30 30 Z" fill="${C.bar}" opacity="0.35"/>
+    <rect x="11" y="27" width="14" height="10" rx="3" fill="${C.white}"/>
+    <path d="M24 25 H29 Q31 25 31 27 V37 Q31 39 29 39 H24 Z" fill="${C.white}"/>
+    <rect x="15" y="30" width="5" height="4" rx="1.5" fill="${C.accent}"/>`),
+  // Combinations.
+  'hus-sjekk': plate(`
+    <path d="${HOUSE}" fill="${C.white}" stroke="${C.white}" stroke-width="3" stroke-linejoin="round"/>
+    ${tick(23.5, 39, 17, C.accent)}`),
+  'hus-hylle': plate(`
+    <path d="${HOUSE}" fill="${C.white}" stroke="${C.white}" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="17" y="37" width="30" height="2.6" rx="1.3" fill="${C.navy}"/>
+    <path d="M20 37 V30 Q20 28 22 28 H23.5 L25.5 26 H27 V37 Z" fill="${C.accent}"/>
+    <rect x="29.5" y="31" width="6" height="6" rx="1.2" fill="${C.bar}"/>
+    <rect x="37.5" y="31" width="6" height="6" rx="1.2" fill="${C.bar}"/>
+    <rect x="20" y="42.5" width="24" height="3.4" rx="1.7" fill="${PALE}"/>`),
+  'skjold-sjekkliste': plate(`
+    <path d="${SHIELD}" fill="${C.white}"/>
+    ${row(20.5, 23, true, 16, { box: 6.5 })}${row(20.5, 32.5, true, 12, { box: 6.5 })}${row(23, 42, false, 8, { box: 6.5 })}`),
+  'kasse-skjold': plate(`
+    <path d="${SHIELD}" fill="${C.white}"/>
+    <rect x="21" y="23" width="22" height="5" rx="1.8" fill="${C.navy}"/>
+    <path d="M22.5 29.5 H41.5 V38.5 Q41.5 41 39 41 H25 Q22.5 41 22.5 38.5 Z" fill="${C.navy}"/>
+    <rect x="29" y="33" width="6" height="2.6" rx="1.3" fill="${C.bar}"/>`),
+};
+
 /** Mark beside the word, as `horizontal`, for any mark. `split` sets «appen» in the accent colour. */
 const lockup = (markFn, { text = C.navy, accent = C.accent, background, split = false, pad = 24 } = {}) => {
   const s = 96;
@@ -223,9 +298,37 @@ const alternatives = {
   'skjold-halv-dark.svg': lockup((s) => markSkjoldHalv(s, { plate: '#123A62' }), { text: C.white, background: C.navy }),
   'skjold-halv-icon.svg': svgDoc(64, 64, markSkjoldHalv(64)),
 };
+for (const [name, markFn] of Object.entries(moreMarks)) {
+  alternatives[`${name}-light.svg`] = lockup(markFn);
+  alternatives[`${name}-icon.svg`] = svgDoc(64, 64, markFn(64));
+}
 for (const [name, svg] of Object.entries(alternatives)) {
   writeFileSync(join(altDir, name), svg);
   await sharp(Buffer.from(svg), { density: 72 * 4 }).png().toFile(join(altDir, name.replace('.svg', '.png')));
+}
+
+/** Every mark on one sheet: large, at home-screen size, and with a label, for comparing. */
+const sheetMarks = {
+  'Dagens': mark, hus: markHus, ring: markRing, skjold: markSkjold, 'skjold-hus': markSkjoldHus,
+  'skjold-halv': markSkjoldHalv, ...moreMarks,
+};
+{
+  const cols = 5;
+  const cellW = 260;
+  const cellH = 250;
+  const entries = Object.entries(sheetMarks);
+  const cells = entries.map(([label, fn], i) => {
+    const x = (i % cols) * cellW + 20;
+    const y = Math.floor(i / cols) * cellH + 20;
+    return `<g transform="translate(${x} ${y})">${fn(150)}</g><g transform="translate(${x + 165} ${y + 95})">${fn(55)}</g>` +
+      `<text x="${x}" y="${y + 185}" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="${C.navy}">${label}</text>`;
+  });
+  const width = cols * cellW + 20;
+  const height = Math.ceil(entries.length / cols) * cellH + 10;
+  // Inline clip paths repeat their ids at two sizes; the first of each wins, which is the same shape.
+  await sharp(Buffer.from(svgDoc(width, height, cells.join(''), '#FFFFFF')), { density: 144 })
+    .png()
+    .toFile(join(altDir, 'alle-merker.png'));
 }
 
 const logoDir = join(here, 'logo');

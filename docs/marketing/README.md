@@ -26,6 +26,13 @@ Archivo, 700 weight, 112 % width. The letters are outlines, so the SVGs look rig
 - `skjold-halv`: a shield half filled with blue, which also reads as a water level. Simplest, but closest to a
   generic security app. `skjold-sammenligning.png` shows the three shields.
 
+- What the app holds: `sjekkliste` (clipboard, two of three ticked), `hylle` (a shelf of water, tins and a torch),
+  `kasse` (storage box with the days bar), `kanne` (water can, half full), `lykt` (torch and beam).
+- Combinations: `hus-sjekk`, `hus-hylle` (a stocked shelf at home), `skjold-sjekkliste`, `kasse-skjold`.
+
+`alle-merker.png` shows every mark side by side, large and at home-screen size. These are sketches to pick a
+direction from; the chosen one gets a proper pass (optical balance, monochrome and Android themed versions).
+
 Shields are kept plain on purpose: no orange and blue triangle (civil defence), no red cross (a protected emblem),
 nothing like a coat of arms or DSB's logo.
 
