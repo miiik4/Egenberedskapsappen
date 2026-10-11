@@ -363,13 +363,16 @@ h1 {
 }
 .lead { font-size: calc(var(--u) * 3.5); line-height: 1.3; color: ${p.lead}; max-width: 30em; text-wrap: pretty; }
 .points { font-size: calc(var(--u) * 2.9); font-weight: 700; color: ${p.points}; }
-.visual { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.visual { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; container-type: size; }
 .phone {
-  /* content-box, so the screen inside the border keeps the screenshot's own shape and nothing is cropped. */
-  --bezel: calc(var(--u) * 1.3);
-  box-sizing: content-box; height: calc(100% - 2 * var(--bezel)); max-height: calc(var(--u) * 140);
+  /* Bezel and corners follow the phone's own height (--h), not the poster, so a small phone keeps an iPhone's
+     proportions: the screen's corners come to about 12 % of its width and never cut into the status bar.
+     content-box, so the screen inside the bezel keeps the screenshot's own shape and nothing is cropped. */
+  --h: min(100cqh, calc(var(--u) * 140));
+  --bezel: calc(var(--h) * 0.012);
+  box-sizing: content-box; height: calc(var(--h) - 2 * var(--bezel));
   aspect-ratio: 960 / 2078;
-  background: #f4f7fa; border: var(--bezel) solid #0d1620; border-radius: calc(var(--u) * 7.5);
+  background: #f4f7fa; border: var(--bezel) solid #0d1620; border-radius: calc(var(--h) * 0.068);
   box-shadow: 0 0 0 1px #2b3a48, 0 calc(var(--u) * 4) calc(var(--u) * 8) calc(var(--u) * -3) rgb(11 43 74 / 0.45);
   overflow: hidden;
 }
