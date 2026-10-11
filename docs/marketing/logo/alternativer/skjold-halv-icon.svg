@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <g transform="scale(1)">
-    <rect width="64" height="64" rx="14" fill="#0B2B4A"/>
-    <defs><clipPath id="halv"><path d="M32 9.5 L49.5 15.5 Q52 16.4 52 19 V31 C52 42.5 43.5 50 32 54.5 C20.5 50 12 42.5 12 31 V19 Q12 16.4 14.5 15.5 Z"/></clipPath></defs>
-    <path d="M32 9.5 L49.5 15.5 Q52 16.4 52 19 V31 C52 42.5 43.5 50 32 54.5 C20.5 50 12 42.5 12 31 V19 Q12 16.4 14.5 15.5 Z" fill="#FFFFFF"/>
-    <rect x="0" y="34" width="64" height="30" fill="#5FA3F0" clip-path="url(#halv)"/>
-  </g></svg>

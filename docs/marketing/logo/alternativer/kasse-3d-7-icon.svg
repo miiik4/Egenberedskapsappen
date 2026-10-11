@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><g transform="scale(1)"><rect width="64" height="64" rx="14" fill="#0B2B4A"/>
-    <path d="M32 11 L53 21.5 L32 32 L11 21.5 Z" fill="#FFFFFF"/>
-    <path d="M11 21.5 L32 32 V54 L11 43.5 Z" fill="#EAF2FB"/>
-    <path d="M32 32 L53 21.5 V43.5 L32 54 Z" fill="#B5CDE6"/>
-    <path d="M11 25.5 L32 36 L53 25.5" fill="none" stroke="#9BB9D8" stroke-width="1.4"/>
-    <g transform="matrix(1 0.5 0 1 0 0)">
-    <rect x="15.5" y="21" width="13" height="13" rx="1.8" fill="#0B2B4A"/>
-    <g fill="#FFFFFF" transform="translate(18.436 31.6)"><path transform="translate(0.00 0) scale(0.011 -0.011)" d="M160 0Q160 82 182.5 159Q205 236 243 306.5Q281 377 328.5 440Q376 503 427 556L33 556L33 687L620 687L620 607Q579 563 537 513Q495 463 457.5 408Q420 353 391 295Q362 237 345 176Q328 115 328 53L328 0Z"/></g></g></g></svg>
