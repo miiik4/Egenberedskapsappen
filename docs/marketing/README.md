@@ -39,6 +39,11 @@ Archivo, 700 weight, 112 % width. The letters are outlines, so the SVGs look rig
   `papp` (cardboard, water and a tin showing), `stabel` (two stacked), `kasse-sjekk`, `ribber` (crate with corner
   ribs), `linje` (line drawing with 7), `apen` (lid open, supplies inside).
 
+- **`kasse-ny`**, the 3D box refined: seen from the front at an angle so the 7 stands upright, an overhanging lid
+  with a handle slot (a storage box, not a parcel), three clear face tones, and filling the square. Logos in
+  `kasse-ny-*`, compared with `3d-7` and today's mark in `kasse-ny.png`. Trial posters with it in
+  `posters/med-kasse/`, including `lansering`, where the box is the picture.
+
 `alle-merker.png` shows every mark side by side, large and at home-screen size. These are sketches to pick a
 direction from; the chosen one gets a proper pass (optical balance, monochrome and Android themed versions).
 

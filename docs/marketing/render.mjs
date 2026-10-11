@@ -393,6 +393,30 @@ const boxMarks = {
     <rect x="20" y="38.5" width="13.7" height="5" rx="2.5" fill="${C.accent}"/>`),
 };
 
+/**
+ * The 3D box, refined (2026-10-11): seen from the front at an angle, so the 7 stands upright on a flat face; a lid
+ * that overhangs, with a handle slot on its side, so it reads as a storage box rather than a parcel; three clearly
+ * different face tones; and big enough to fill the square like the current mark.
+ */
+const markKasse = (s, { plate: plateFill = C.navy, label = C.navy } = {}) => {
+  const front = C.white;
+  const top = '#CFE0F2';
+  const side = '#8DB2D8';
+  const sideDark = '#6F9BC9';
+  return plate(`
+    <path d="M8 21.5 L18 13.5 H56 L46 21.5 Z" fill="${top}"/>
+    <rect x="8" y="21.5" width="38" height="8" rx="1.6" fill="${front}"/>
+    <path d="M46 21.5 L56 13.5 V21.5 L46 29.5 Z" fill="${sideDark}"/>
+    <path d="M44 29.5 L54 21.5 V44.5 L44 52.5 Z" fill="${side}"/>
+    <path d="M10 29.5 H44 V50.5 Q44 52.5 42 52.5 H12 Q10 52.5 10 50.5 Z" fill="${front}"/>
+    <rect x="10" y="29.5" width="34" height="1.4" fill="${top}"/>
+    <path d="M46.6 33.4 L51.4 29.6 V32.4 L46.6 36.2 Z" fill="${label}"/>
+    <rect x="15" y="34" width="15" height="15" rx="2.2" fill="${label}"/>
+    ${digit('7', 15.5, 22.5, 46.6, C.white)}
+    <rect x="33.5" y="37.5" width="7" height="2.6" rx="1.3" fill="${PALE}"/>
+    <rect x="33.5" y="42.5" width="5" height="2.6" rx="1.3" fill="${PALE}"/>`, plateFill)(s);
+};
+
 /** Mark beside the word, as `horizontal`, for any mark. `split` sets «appen» in the accent colour. */
 const lockup = (markFn, { text = C.navy, accent = C.accent, background, split = false, pad = 24 } = {}) => {
   const s = 96;
@@ -495,12 +519,18 @@ await sheet(referenceMarks, 'referanser.png');
     'kasse-3d-7-dark.svg': lockup(boxDark, { text: C.white, background: C.navy }),
     'kasse-3d-7-stacked-light.svg': stackedWith(box),
     'kasse-3d-7-stacked-dark.svg': stackedWith(boxDark, { text: C.white, background: C.navy }),
+    'kasse-ny-light.svg': lockup(markKasse),
+    'kasse-ny-dark.svg': lockup((s) => markKasse(s, { plate: '#123A62' }), { text: C.white, background: C.navy }),
+    'kasse-ny-stacked-light.svg': stackedWith(markKasse),
+    'kasse-ny-stacked-dark.svg': stackedWith((s) => markKasse(s, { plate: '#123A62' }), { text: C.white, background: C.navy }),
+    'kasse-ny-icon.svg': svgDoc(64, 64, markKasse(64)),
   };
   for (const [name, svg] of Object.entries(versions)) {
     writeFileSync(join(altDir, name), svg);
     await sharp(Buffer.from(svg), { density: 72 * 4 }).png().toFile(join(altDir, name.replace('.svg', '.png')));
   }
 }
+await sheet({ '3d-7 (forrige)': boxMarks['3d-7'], 'kasse (ny)': markKasse, Dagens: mark }, 'kasse-ny.png');
 await sheet({ 'kasse-7 (forrige)': referenceMarks['kasse-7'], ...boxMarks }, 'kasser.png');
 
 const logoDir = join(here, 'logo');
@@ -529,7 +559,16 @@ const fontFace = `
 @font-face { font-family: 'Source Sans 3'; font-weight: 200 900;
   src: url('${pathToFileURL(join(fonts, 'source-sans-3', 'files', 'source-sans-3-latin-wght-normal.woff2'))}') format('woff2'); }`;
 
-const inlineLogo = (theme) => horizontal(themes[theme], { pad: 0 }).replace('<svg ', '<svg class="logo" ');
+/** The footer logo. `posterMark` swaps in a draft mark for trial posters; null is the current logo. */
+let posterMark = null;
+const inlineLogo = (theme) =>
+  (posterMark
+    ? lockup(theme === 'dark' ? (s) => posterMark(s, { plate: '#123A62' }) : posterMark, {
+        text: theme === 'dark' ? C.white : C.navy,
+        pad: 0,
+      })
+    : horizontal(themes[theme], { pad: 0 })
+  ).replace('<svg ', '<svg class="logo" ');
 const shot = (name) => pathToFileURL(join(shots, `${name}.webp`)).href;
 
 /** The days card from Oversikt, drawn in HTML so it stays sharp at A3. Figures are the website's demo household. */
@@ -652,6 +691,8 @@ h1 {
   overflow: hidden;
 }
 .phone img { display: block; width: 100%; height: 100%; }
+.hero-mark { align-items: center; }
+.big-mark { height: min(100%, calc(var(--u) * 62)); width: auto; filter: drop-shadow(0 calc(var(--u) * 2) calc(var(--u) * 4) rgb(0 0 0 / 0.25)); }
 .card {
   width: 100%; max-width: calc(var(--c) * 72);
   background: #123A62; border-radius: calc(var(--c) * 4.4);
@@ -695,18 +736,42 @@ const work = join(tmpdir(), 'egenberedskap-posters');
 mkdirSync(work, { recursive: true });
 const run = (args) => execFileSync(chrome, ['--headless=new', '--hide-scrollbars', '--allow-file-access-from-files', ...args], { stdio: 'pipe' });
 
-for (const [name, poster] of Object.entries(posters)) {
+const renderPoster = (name, poster, dir) => {
+  mkdirSync(dir, { recursive: true });
   for (const [format, { w, h, pdf }] of Object.entries(formats)) {
     const html = join(work, `${name}-${format}.html`);
     writeFileSync(html, page(poster, w, h));
     const url = pathToFileURL(html).href;
     if (pdf) {
-      run(['--no-pdf-header-footer', `--print-to-pdf=${join(posterDir, `${name}-a3.pdf`)}`, url]);
+      run(['--no-pdf-header-footer', `--print-to-pdf=${join(dir, `${name}-a3.pdf`)}`, url]);
     }
     // Twice the pixels for the A3 preview; social formats are posted at their own size.
     const scale = pdf ? 2 : 1;
-    run([`--window-size=${w},${h}`, `--force-device-scale-factor=${scale}`, '--virtual-time-budget=3000', `--screenshot=${join(posterDir, `${name}-${format}.png`)}`, url]);
+    run([`--window-size=${w},${h}`, `--force-device-scale-factor=${scale}`, '--virtual-time-budget=3000', `--screenshot=${join(dir, `${name}-${format}.png`)}`, url]);
   }
-}
+};
+for (const [name, poster] of Object.entries(posters)) renderPoster(name, poster, posterDir);
+
+// Trial: the posters with the box as the logo, in posters/med-kasse/ (2026-10-11).
+posterMark = markKasse;
+for (const [name, poster] of Object.entries(posters)) renderPoster(name, poster, join(posterDir, 'med-kasse'));
+// A launch poster with the box as the picture. No figures in the words: they live in guidance.ts.
+renderPoster(
+  'lansering',
+  {
+    theme: 'dark',
+    body: `
+<main class="split">
+  <div class="visual hero-mark">${svgDoc(64, 64, markKasse(64, { plate: '#123A62' })).replace('<svg ', '<svg class="big-mark" ')}</div>
+  <div class="copy">
+    <h1>Er husstanden klar hvis strømmen går?</h1>
+    <p class="lead">Egenberedskapsappen regner ut hvor mange døgn dere klarer dere selv, viser hva som mangler, og sier fra før noe går ut på dato.</p>
+    <p class="points">Gratis · Uten konto · Virker uten nett</p>
+  </div>
+</main>`,
+  },
+  join(posterDir, 'med-kasse'),
+);
+posterMark = null;
 rmSync(work, { recursive: true, force: true });
 console.log('Wrote', logoDir, 'and', posterDir);
