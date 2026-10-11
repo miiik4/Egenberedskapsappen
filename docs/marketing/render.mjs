@@ -472,6 +472,35 @@ await sheet(
   'alle-merker.png',
 );
 await sheet(referenceMarks, 'referanser.png');
+// The 3D box with the wordmark, in the same layouts as the current logo, to compare (2026-10-11).
+{
+  const box = boxMarks['3d-7'];
+  const boxDark = plate(isoBox(`
+    <rect x="15.5" y="21" width="13" height="13" rx="1.8" fill="${C.navy}"/>
+    ${digit('7', 11, 22, 31.6, C.white)}`), '#123A62');
+  const stackedWith = (markFn, { text = C.navy, background, pad = 40 } = {}) => {
+    const size = 200;
+    const w = word('Egenberedskapsappen', 52);
+    const width = Math.ceil(Math.max(size, w.width) + pad * 2);
+    const baseline = pad + size + 36 + 52 * 0.72;
+    return svgDoc(
+      width,
+      Math.ceil(baseline + pad),
+      `<g transform="translate(${(width - size) / 2} ${pad})">${markFn(size)}</g>` +
+        `<g fill="${text}" transform="translate(${(width - w.width) / 2} ${baseline})">${w.paths}</g>`,
+      background,
+    );
+  };
+  const versions = {
+    'kasse-3d-7-dark.svg': lockup(boxDark, { text: C.white, background: C.navy }),
+    'kasse-3d-7-stacked-light.svg': stackedWith(box),
+    'kasse-3d-7-stacked-dark.svg': stackedWith(boxDark, { text: C.white, background: C.navy }),
+  };
+  for (const [name, svg] of Object.entries(versions)) {
+    writeFileSync(join(altDir, name), svg);
+    await sharp(Buffer.from(svg), { density: 72 * 4 }).png().toFile(join(altDir, name.replace('.svg', '.png')));
+  }
+}
 await sheet({ 'kasse-7 (forrige)': referenceMarks['kasse-7'], ...boxMarks }, 'kasser.png');
 
 const logoDir = join(here, 'logo');
