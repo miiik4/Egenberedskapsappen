@@ -35,6 +35,10 @@ Archivo, 700 weight, 112 % width. The letters are outlines, so the SVGs look rig
   recommends), `kasse-pluss`. The plus is blue or white, never red: a red cross is a protected emblem. The box is our
   own drawing, not Røde Kors's box or label.
 
+- The box, as the chosen direction (`kasser.png`, files named `kasse-*`): `3d-7` and `3d-dager` (from the corner),
+  `papp` (cardboard, water and a tin showing), `stabel` (two stacked), `kasse-sjekk`, `ribber` (crate with corner
+  ribs), `linje` (line drawing with 7), `apen` (lid open, supplies inside).
+
 `alle-merker.png` shows every mark side by side, large and at home-screen size. These are sketches to pick a
 direction from; the chosen one gets a proper pass (optical balance, monochrome and Android themed versions).
 

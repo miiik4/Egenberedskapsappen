@@ -320,6 +320,79 @@ const referenceMarks = {
     ${plus(32, 39.75, 11, C.white)}`)),
 };
 
+// Box variants (2026-10-11): Mikkel picked the box as the direction, but not kasse-7 as drawn.
+/** A number set in the wordmark's font, centred on cx with its baseline at y. */
+const digit = (text, size, cx, y, fill) => {
+  const w = word(text, size);
+  return `<g fill="${fill}" transform="translate(${cx - w.width / 2} ${y})">${w.paths}</g>`;
+};
+/** A box seen from the corner. `left` draws on the left face in flat coordinates (x 12–32, y 16–38). */
+const isoBox = (left = '', { top = C.white, leftFace = '#EAF2FB', rightFace = '#B5CDE6', band = '#9BB9D8' } = {}) => `
+    <path d="M32 11 L53 21.5 L32 32 L11 21.5 Z" fill="${top}"/>
+    <path d="M11 21.5 L32 32 V54 L11 43.5 Z" fill="${leftFace}"/>
+    <path d="M32 32 L53 21.5 V43.5 L32 54 Z" fill="${rightFace}"/>
+    <path d="M11 25.5 L32 36 L53 25.5" fill="none" stroke="${band}" stroke-width="1.4"/>
+    <g transform="matrix(1 0.5 0 1 0 0)">${left}</g>`;
+
+const boxMarks = {
+  // From the corner, like a real crate, with 7 on the label.
+  '3d-7': plate(isoBox(`
+    <rect x="15.5" y="21" width="13" height="13" rx="1.8" fill="${C.navy}"/>
+    ${digit('7', 11, 22, 31.6, C.white)}`)),
+  // From the corner, with the days bar along the side.
+  '3d-dager': plate(isoBox(`
+    <rect x="15" y="25" width="14" height="4.5" rx="2.25" fill="${PALE}"/>
+    <rect x="15" y="25" width="8" height="4.5" rx="2.25" fill="${C.accent}"/>`)),
+  // A cardboard box with water and a tin showing: supplies, ready.
+  papp: plate(`
+    <rect x="21" y="14" width="9" height="20" rx="2.2" fill="${C.bar}"/>
+    <rect x="23.2" y="10.5" width="4.6" height="4.5" rx="1.2" fill="${C.bar}"/>
+    <rect x="33" y="20" width="10" height="13" rx="1.8" fill="${C.white}"/>
+    <rect x="33" y="19" width="10" height="2.4" rx="1.2" fill="${PALE}"/>
+    <path d="M14 30 L6.5 22.5 H21 L26 30 Z" fill="${PALE}"/>
+    <path d="M50 30 L57.5 22.5 H43 L38 30 Z" fill="${PALE}"/>
+    <rect x="13" y="30" width="38" height="23" rx="2.5" fill="${C.white}"/>
+    <rect x="19" y="39" width="26" height="5" rx="2.5" fill="${PALE}"/>
+    <rect x="19" y="39" width="14.9" height="5" rx="2.5" fill="${C.accent}"/>`),
+  // Two boxes stacked: a stockpile, built up over time.
+  stabel: plate(`
+    <rect x="19" y="12" width="26" height="5.5" rx="2" fill="${C.white}"/>
+    <rect x="21" y="18.5" width="22" height="12.5" rx="2" fill="${C.white}"/>
+    <rect x="28" y="22.5" width="8" height="2.6" rx="1.3" fill="${PALE}"/>
+    <rect x="10" y="33" width="44" height="6.5" rx="2.2" fill="${C.white}"/>
+    <rect x="12" y="40.5" width="40" height="12.5" rx="2.2" fill="${C.white}"/>
+    <rect x="19" y="44.5" width="26" height="4.6" rx="2.3" fill="${PALE}"/>
+    <rect x="19" y="44.5" width="14.9" height="4.6" rx="2.3" fill="${C.accent}"/>`),
+  // The tapered box with a tick on its label: packed and checked.
+  'kasse-sjekk': plate(crate(`
+    <rect x="23" y="31" width="18" height="17.5" rx="2.5" fill="${C.accent}"/>
+    ${tick(26.8, 40, 10.5, C.white)}`)),
+  // A straight crate with corner ribs and the days bar as its label.
+  ribber: plate(`
+    <rect x="8.5" y="15.5" width="47" height="7.5" rx="2.5" fill="${C.white}"/>
+    <rect x="11" y="24.5" width="42" height="28" rx="3" fill="${C.white}"/>
+    <rect x="27" y="18" width="10" height="2.6" rx="1.3" fill="${C.navy}"/>
+    <rect x="14.5" y="27.5" width="3" height="22" rx="1.5" fill="${PALE}"/>
+    <rect x="46.5" y="27.5" width="3" height="22" rx="1.5" fill="${PALE}"/>
+    <rect x="21.5" y="36" width="21" height="5" rx="2.5" fill="${PALE}"/>
+    <rect x="21.5" y="36" width="12" height="5" rx="2.5" fill="${C.accent}"/>`),
+  // Drawn in lines, with 7 in the bar colour: lighter, and works in one colour.
+  linje: plate(`
+    <rect x="10.5" y="17" width="43" height="7" rx="2.5" fill="none" stroke="${C.white}" stroke-width="3"/>
+    <path d="M13.5 27.5 H50.5 L48.4 48 Q48.1 50.5 45.6 50.5 H18.4 Q15.9 50.5 15.6 48 Z" fill="none" stroke="${C.white}" stroke-width="3" stroke-linejoin="round"/>
+    ${digit('7', 17, 32, 46, C.bar)}`),
+  // The lid lifted, water and a tin inside.
+  apen: plate(`
+    <rect x="27" y="23" width="9" height="13" rx="2.2" fill="${C.bar}"/>
+    <rect x="29.2" y="19.5" width="4.6" height="4.5" rx="1.2" fill="${C.bar}"/>
+    <rect x="38.5" y="26" width="10" height="9" rx="1.8" fill="${C.white}"/>
+    <!-- The lid hinged on the left edge, swung up out of the way. -->
+    <g transform="rotate(-32 12 30)"><rect x="10" y="23.5" width="36" height="6.5" rx="2.5" fill="${C.white}"/></g>
+    <path d="M11.5 30.5 H52.5 L50 49 Q49.7 52 46.7 52 H17.3 Q14.3 52 14 49 Z" fill="${C.white}"/>
+    <rect x="20" y="38.5" width="24" height="5" rx="2.5" fill="${PALE}"/>
+    <rect x="20" y="38.5" width="13.7" height="5" rx="2.5" fill="${C.accent}"/>`),
+};
+
 /** Mark beside the word, as `horizontal`, for any mark. `split` sets «appen» in the accent colour. */
 const lockup = (markFn, { text = C.navy, accent = C.accent, background, split = false, pad = 24 } = {}) => {
   const s = 96;
@@ -359,7 +432,11 @@ const alternatives = {
   'skjold-halv-dark.svg': lockup((s) => markSkjoldHalv(s, { plate: '#123A62' }), { text: C.white, background: C.navy }),
   'skjold-halv-icon.svg': svgDoc(64, 64, markSkjoldHalv(64)),
 };
-for (const [name, markFn] of Object.entries({ ...moreMarks, ...referenceMarks })) {
+for (const [name, markFn] of Object.entries({
+  ...moreMarks,
+  ...referenceMarks,
+  ...Object.fromEntries(Object.entries(boxMarks).map(([k, v]) => [`kasse-${k}`, v])),
+})) {
   alternatives[`${name}-light.svg`] = lockup(markFn);
   alternatives[`${name}-icon.svg`] = svgDoc(64, 64, markFn(64));
 }
@@ -395,6 +472,7 @@ await sheet(
   'alle-merker.png',
 );
 await sheet(referenceMarks, 'referanser.png');
+await sheet({ 'kasse-7 (forrige)': referenceMarks['kasse-7'], ...boxMarks }, 'kasser.png');
 
 const logoDir = join(here, 'logo');
 mkdirSync(logoDir, { recursive: true });
