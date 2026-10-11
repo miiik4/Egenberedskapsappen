@@ -212,6 +212,8 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - [x] When the Kvartalssjekk section is replaced, also replace the hero alt text and `oversikt.webp` (2026-10-10:
       the eight 1.0 screenshots are now from the app in the simulator, demo household from `lib/demo-data.ts`; the
       three Egenberedskap+ ones are still design renders)
+- [ ] Logo and three launch posters (A3 PDF, 4:5 feed and story PNGs) drafted in `docs/marketing/` (2026-10-11);
+      not reviewed by a person yet. Check the release line and URL before anything is printed or posted
 - [ ] Deploy to the prod hosting site with the real domain; indexing on only there
 - [x] Domain `egenberedskapappen.no` (without the s) in place (Mikkel, 2026-10-10)
 - [ ] **(Tarjei)** Buy `egenberedskapsappen.no` (with the s, as the app is named); suggested as the main domain, with
