@@ -259,6 +259,67 @@ const moreMarks = {
     <rect x="29" y="33" width="6" height="2.6" rx="1.3" fill="${C.bar}"/>`),
 };
 
+// Drafts after Mikkel's references (2026-10-11): a document with a plus, a first-aid case, a storage box labelled
+// with the days. The plus is never red: a red cross is a protected emblem.
+const plus = (cx, cy, size, fill) => {
+  const t = size * 0.34;
+  return `<rect x="${cx - t / 2}" y="${cy - size / 2}" width="${t}" height="${size}" rx="${t * 0.22}" fill="${fill}"/>` +
+    `<rect x="${cx - size / 2}" y="${cy - t / 2}" width="${size}" height="${t}" rx="${t * 0.22}" fill="${fill}"/>`;
+};
+/**
+ * A storage box: an overhanging lid and a body that narrows towards the bottom, with a handle slot. No clips on
+ * the lid, which made it read as a calendar. `front` draws on its face (about x 14–50, y 28–51).
+ */
+const crate = (front) => `
+    <rect x="8.5" y="17" width="47" height="8" rx="2.5" fill="${C.white}"/>
+    <path d="M11.5 26.5 H52.5 L50 49 Q49.7 52 46.7 52 H17.3 Q14.3 52 14 49 Z" fill="${C.white}"/>
+    <rect x="27" y="20" width="10" height="2.6" rx="1.3" fill="${C.navy}"/>
+    ${front}`;
+const seven = (() => {
+  const w = word('7', 15);
+  return `<g fill="${C.white}" transform="translate(${25 - w.width / 2} 45.7)">${w.paths}</g>`;
+})();
+
+const referenceMarks = {
+  // A document with rows, each with its own small sign, and a plus badge: the app's emergency info.
+  dokument: plate(`
+    <path d="M14 11 H36 L45 20 V51 Q45 53 43 53 H16 Q14 53 14 51 V13 Q14 11 16 11 Z" fill="${C.white}"/>
+    <path d="M36 11 V18 Q36 20 38 20 H45 Z" fill="${PALE}"/>
+    <rect x="19" y="21" width="6.5" height="6.5" rx="1.6" fill="${C.navy}"/>
+    <path d="M22.25 22.4 L24.5 24.3 V26.3 H20 V24.3 Z" fill="${C.white}"/>
+    <rect x="28.5" y="22.9" width="10" height="2.8" rx="1.4" fill="${PALE}"/>
+    <rect x="19" y="30.5" width="6.5" height="6.5" rx="1.6" fill="${C.accent}"/>
+    <path d="M22.25 31.7 Q24.4 34.2 24.4 35 A2.15 2.15 0 0 1 20.1 35 Q20.1 34.2 22.25 31.7 Z" fill="${C.white}"/>
+    <rect x="28.5" y="32.4" width="12" height="2.8" rx="1.4" fill="${PALE}"/>
+    <rect x="19" y="40" width="6.5" height="6.5" rx="1.6" fill="${C.navy}"/>
+    <rect x="21.45" y="41.3" width="1.6" height="2.6" rx="0.8" fill="${C.white}"/>
+    <circle cx="22.25" cy="45.1" r="0.85" fill="${C.white}"/>
+    <circle cx="44.5" cy="44.5" r="11.5" fill="${C.accent}" stroke="${C.navy}" stroke-width="3"/>
+    ${plus(44.5, 44.5, 12, C.white)}`),
+  // A first-aid case with a blue plus.
+  koffert: plate(`
+    <path d="M25 22 V17.5 Q25 14.5 28 14.5 H36 Q39 14.5 39 17.5 V22" fill="none" stroke="${C.white}" stroke-width="3.5"/>
+    <rect x="10" y="21" width="44" height="31" rx="5.5" fill="${C.white}"/>
+    ${plus(32, 36.5, 19, C.accent)}`),
+  // The case again, with the days bar under the plus: first aid and how long it lasts.
+  'koffert-dager': plate(`
+    <path d="M25 22 V17.5 Q25 14.5 28 14.5 H36 Q39 14.5 39 17.5 V22" fill="none" stroke="${C.white}" stroke-width="3.5"/>
+    <rect x="10" y="21" width="44" height="31" rx="5.5" fill="${C.white}"/>
+    ${plus(32, 33, 13, C.accent)}
+    <rect x="20" y="43" width="24" height="4.5" rx="2.25" fill="${PALE}"/>
+    <rect x="20" y="43" width="13.7" height="4.5" rx="2.25" fill="${C.bar}"/>`),
+  // A storage box labelled with the seven days DSB recommends.
+  'kasse-7': plate(crate(`
+    <rect x="17" y="31.5" width="16" height="16.5" rx="2.2" fill="${C.navy}"/>
+    ${seven}
+    <rect x="37" y="34.5" width="10" height="2.8" rx="1.4" fill="${PALE}"/>
+    <rect x="37" y="40.5" width="7" height="2.8" rx="1.4" fill="${PALE}"/>`)),
+  // The box with a plus on its label.
+  'kasse-pluss': plate(crate(`
+    <rect x="23" y="31" width="18" height="17.5" rx="2.5" fill="${C.accent}"/>
+    ${plus(32, 39.75, 11, C.white)}`)),
+};
+
 /** Mark beside the word, as `horizontal`, for any mark. `split` sets «appen» in the accent colour. */
 const lockup = (markFn, { text = C.navy, accent = C.accent, background, split = false, pad = 24 } = {}) => {
   const s = 96;
@@ -298,7 +359,7 @@ const alternatives = {
   'skjold-halv-dark.svg': lockup((s) => markSkjoldHalv(s, { plate: '#123A62' }), { text: C.white, background: C.navy }),
   'skjold-halv-icon.svg': svgDoc(64, 64, markSkjoldHalv(64)),
 };
-for (const [name, markFn] of Object.entries(moreMarks)) {
+for (const [name, markFn] of Object.entries({ ...moreMarks, ...referenceMarks })) {
   alternatives[`${name}-light.svg`] = lockup(markFn);
   alternatives[`${name}-icon.svg`] = svgDoc(64, 64, markFn(64));
 }
@@ -307,29 +368,33 @@ for (const [name, svg] of Object.entries(alternatives)) {
   await sharp(Buffer.from(svg), { density: 72 * 4 }).png().toFile(join(altDir, name.replace('.svg', '.png')));
 }
 
-/** Every mark on one sheet: large, at home-screen size, and with a label, for comparing. */
-const sheetMarks = {
-  'Dagens': mark, hus: markHus, ring: markRing, skjold: markSkjold, 'skjold-hus': markSkjoldHus,
-  'skjold-halv': markSkjoldHalv, ...moreMarks,
-};
-{
+/** Marks on one sheet: large, at home-screen size, and with a label, for comparing. */
+const sheet = async (marks, file) => {
   const cols = 5;
   const cellW = 260;
   const cellH = 250;
-  const entries = Object.entries(sheetMarks);
+  const entries = Object.entries(marks);
   const cells = entries.map(([label, fn], i) => {
     const x = (i % cols) * cellW + 20;
     const y = Math.floor(i / cols) * cellH + 20;
     return `<g transform="translate(${x} ${y})">${fn(150)}</g><g transform="translate(${x + 165} ${y + 95})">${fn(55)}</g>` +
       `<text x="${x}" y="${y + 185}" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="${C.navy}">${label}</text>`;
   });
-  const width = cols * cellW + 20;
+  const width = Math.min(entries.length, cols) * cellW + 20;
   const height = Math.ceil(entries.length / cols) * cellH + 10;
   // Inline clip paths repeat their ids at two sizes; the first of each wins, which is the same shape.
   await sharp(Buffer.from(svgDoc(width, height, cells.join(''), '#FFFFFF')), { density: 144 })
     .png()
-    .toFile(join(altDir, 'alle-merker.png'));
-}
+    .toFile(join(altDir, file));
+};
+await sheet(
+  {
+    Dagens: mark, hus: markHus, ring: markRing, skjold: markSkjold, 'skjold-hus': markSkjoldHus,
+    'skjold-halv': markSkjoldHalv, ...moreMarks, ...referenceMarks,
+  },
+  'alle-merker.png',
+);
+await sheet(referenceMarks, 'referanser.png');
 
 const logoDir = join(here, 'logo');
 mkdirSync(logoDir, { recursive: true });

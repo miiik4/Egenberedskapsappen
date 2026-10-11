@@ -30,6 +30,11 @@ Archivo, 700 weight, 112 % width. The letters are outlines, so the SVGs look rig
   `kasse` (storage box with the days bar), `kanne` (water can, half full), `lykt` (torch and beam).
 - Combinations: `hus-sjekk`, `hus-hylle` (a stocked shelf at home), `skjold-sjekkliste`, `kasse-skjold`.
 
+- From Mikkel's references (`referanser.png`): `dokument` (an info sheet with a plus badge), `koffert` (first-aid
+  case), `koffert-dager` (the case with the days bar), `kasse-7` (a storage box labelled 7, the days DSB
+  recommends), `kasse-pluss`. The plus is blue or white, never red: a red cross is a protected emblem. The box is our
+  own drawing, not Røde Kors's box or label.
+
 `alle-merker.png` shows every mark side by side, large and at home-screen size. These are sketches to pick a
 direction from; the chosen one gets a proper pass (optical balance, monochrome and Android themed versions).
 
