@@ -129,6 +129,66 @@ const stacked = (theme, { pad = 40 } = {}) => {
   );
 };
 
+// ---------------------------------------------------------------- Alternative marks (drafts to compare)
+
+/** A house whose floor is the days bar: the household, and how many days it manages. */
+const markHus = (s, { plate = C.navy, house = C.white, track = '#C9DDF2', bar = C.accent } = {}) => `
+  <g transform="scale(${s / 64})">
+    <rect width="64" height="64" rx="14" fill="${plate}"/>
+    <path d="M32 12.5 L51 28 Q52 29 52 30.5 V48 Q52 51 49 51 H15 Q12 51 12 48 V30.5 Q12 29 13 28 Z" fill="${house}" stroke="${house}" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="18.5" y="38" width="27" height="6" rx="3" fill="${track}"/>
+    <rect x="18.5" y="38" width="15.4" height="6" rx="3" fill="${bar}"/>
+  </g>`;
+
+/** Seven segments in a ring, one per day of DSB's week, four of them lit: the part-filled ring from Lager. */
+const markRing = (s, { plate = C.navy, lit = C.white, dim = C.track, dot = C.bar, litCount = 4 } = {}) => {
+  const r = 17;
+  // Square ends: round dashes in a ring read as a loading spinner.
+  const gap = 0.2;
+  const arcs = Array.from({ length: 7 }, (_, i) => {
+    const a0 = -Math.PI / 2 + (i * 2 * Math.PI) / 7 + gap / 2;
+    const a1 = a0 + (2 * Math.PI) / 7 - gap;
+    const p = (a) => `${(32 + r * Math.cos(a)).toFixed(2)} ${(32 + r * Math.sin(a)).toFixed(2)}`;
+    return `<path d="M${p(a0)} A${r} ${r} 0 0 1 ${p(a1)}" fill="none" stroke="${i < litCount ? lit : dim}" stroke-width="8"/>`;
+  }).join('');
+  return `<g transform="scale(${s / 64})"><rect width="64" height="64" rx="14" fill="${plate}"/>${arcs}<circle cx="32" cy="32" r="5" fill="${dot}"/></g>`;
+};
+
+/** Mark beside the word, as `horizontal`, for any mark. `split` sets «appen» in the accent colour. */
+const lockup = (markFn, { text = C.navy, accent = C.accent, background, split = false, pad = 24 } = {}) => {
+  const s = 96;
+  const size = 46;
+  const gap = 26;
+  const first = word(split ? 'Egenberedskaps' : 'Egenberedskapsappen', size);
+  const second = split ? word('appen', size) : null;
+  const width = pad * 2 + s + gap + first.width + (second ? second.width : 0);
+  const baseline = pad + s / 2 + size * 0.35;
+  const x = pad + s + gap;
+  return svgDoc(
+    Math.ceil(width),
+    pad * 2 + s,
+    `<g transform="translate(${pad} ${pad})">${markFn(s)}</g>` +
+      `<g fill="${text}" transform="translate(${x} ${baseline})">${first.paths}</g>` +
+      (second ? `<g fill="${accent}" transform="translate(${x + first.width} ${baseline})">${second.paths}</g>` : ''),
+    background,
+  );
+};
+
+const altDir = join(here, 'logo', 'alternativer');
+mkdirSync(altDir, { recursive: true });
+const alternatives = {
+  'hus-light.svg': lockup((s) => markHus(s)),
+  'hus-dark.svg': lockup((s) => markHus(s, { plate: '#123A62', track: '#2C5F8F', bar: C.bar }), { text: C.white, background: C.navy }),
+  'hus-icon.svg': svgDoc(64, 64, markHus(64)),
+  'ring-light.svg': lockup((s) => markRing(s), { split: true }),
+  'ring-dark.svg': lockup((s) => markRing(s, { plate: '#123A62', dim: '#2C5F8F' }), { text: C.white, accent: C.bar, split: true, background: C.navy }),
+  'ring-icon.svg': svgDoc(64, 64, markRing(64)),
+};
+for (const [name, svg] of Object.entries(alternatives)) {
+  writeFileSync(join(altDir, name), svg);
+  await sharp(Buffer.from(svg), { density: 72 * 4 }).png().toFile(join(altDir, name.replace('.svg', '.png')));
+}
+
 const logoDir = join(here, 'logo');
 mkdirSync(logoDir, { recursive: true });
 const logos = {};
@@ -266,12 +326,15 @@ h1 {
 .points { font-size: calc(var(--u) * 2.9); font-weight: 700; color: ${p.points}; }
 .visual { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
 .phone {
-  height: 100%; max-height: calc(var(--u) * 140); aspect-ratio: 960 / 2078;
-  background: #f4f7fa; border: calc(var(--u) * 1.3) solid #0d1620; border-radius: calc(var(--u) * 7.5);
+  /* content-box, so the screen inside the border keeps the screenshot's own shape and nothing is cropped. */
+  --bezel: calc(var(--u) * 1.3);
+  box-sizing: content-box; height: calc(100% - 2 * var(--bezel)); max-height: calc(var(--u) * 140);
+  aspect-ratio: 960 / 2078;
+  background: #f4f7fa; border: var(--bezel) solid #0d1620; border-radius: calc(var(--u) * 7.5);
   box-shadow: 0 0 0 1px #2b3a48, 0 calc(var(--u) * 4) calc(var(--u) * 8) calc(var(--u) * -3) rgb(11 43 74 / 0.45);
   overflow: hidden;
 }
-.phone img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.phone img { display: block; width: 100%; height: 100%; }
 .card {
   width: 100%; max-width: calc(var(--c) * 72);
   background: #123A62; border-radius: calc(var(--c) * 4.4);

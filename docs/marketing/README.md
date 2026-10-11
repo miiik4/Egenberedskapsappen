@@ -15,6 +15,14 @@ Archivo, 700 weight, 112 % width. The letters are outlines, so the SVGs look rig
 | `logo-stacked-*` | Square spaces: stands, the top of a flyer |
 | `mark`, `profile-1024.png` | Mark alone; profile picture for social media |
 
+**Alternatives** (`logo/alternativer/`, drafts to compare; `sammenligning.png` shows all three as logo and icon):
+
+- `hus`: a house whose floor is the days bar. The household and how long it manages, readable at icon size.
+- `ring`: seven segments, one per day of the week DSB recommends, four lit, as the part-filled ring in Lager.
+  «appen» in the accent colour, which also breaks up the long word.
+
+Picking one of them for the app icon too means a new native build and a `version` bump (`apps/mobile/AGENTS.md`).
+
 Keep clear space of at least a quarter of the mark's height around the logo. Don't recolour the mark or set the
 wordmark in another font.
 
