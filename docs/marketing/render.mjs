@@ -154,6 +154,36 @@ const markRing = (s, { plate = C.navy, lit = C.white, dim = C.track, dot = C.bar
   return `<g transform="scale(${s / 64})"><rect width="64" height="64" rx="14" fill="${plate}"/>${arcs}<circle cx="32" cy="32" r="5" fill="${dot}"/></g>`;
 };
 
+/** A shield, on the 64 grid: safety. Kept plain so it doesn't read as a coat of arms or an official emblem. */
+const SHIELD = 'M32 9.5 L49.5 15.5 Q52 16.4 52 19 V31 C52 42.5 43.5 50 32 54.5 C20.5 50 12 42.5 12 31 V19 Q12 16.4 14.5 15.5 Z';
+
+/** Shield with the days bar across it: the current mark's bar, protected. */
+const markSkjold = (s, { plate = C.navy, shield = C.white, track = '#C9DDF2', bar = C.accent } = {}) => `
+  <g transform="scale(${s / 64})">
+    <rect width="64" height="64" rx="14" fill="${plate}"/>
+    <path d="${SHIELD}" fill="${shield}"/>
+    <rect x="20" y="29" width="24" height="6.5" rx="3.25" fill="${track}"/>
+    <rect x="20" y="29" width="13.7" height="6.5" rx="3.25" fill="${bar}"/>
+  </g>`;
+
+/** Shield with a house cut out of it: a safe home. */
+const markSkjoldHus = (s, { plate = C.navy, shield = C.white, bar = C.bar } = {}) => `
+  <g transform="scale(${s / 64})">
+    <rect width="64" height="64" rx="14" fill="${plate}"/>
+    <path d="${SHIELD}" fill="${shield}"/>
+    <path d="M32 20 L42.5 28.2 V40.5 Q42.5 42 41 42 H23 Q21.5 42 21.5 40.5 V28.2 Z" fill="${plate}" stroke="${plate}" stroke-width="1.5" stroke-linejoin="round"/>
+    <rect x="25.5" y="35" width="13" height="3.6" rx="1.8" fill="${bar}"/>
+  </g>`;
+
+/** Half the shield filled: the household partly prepared. Simplest, and the most like a generic security app. */
+const markSkjoldHalv = (s, { plate = C.navy, shield = C.white, fill = C.bar } = {}) => `
+  <g transform="scale(${s / 64})">
+    <rect width="64" height="64" rx="14" fill="${plate}"/>
+    <defs><clipPath id="halv"><path d="${SHIELD}"/></clipPath></defs>
+    <path d="${SHIELD}" fill="${shield}"/>
+    <rect x="0" y="34" width="64" height="30" fill="${fill}" clip-path="url(#halv)"/>
+  </g>`;
+
 /** Mark beside the word, as `horizontal`, for any mark. `split` sets «appen» in the accent colour. */
 const lockup = (markFn, { text = C.navy, accent = C.accent, background, split = false, pad = 24 } = {}) => {
   const s = 96;
@@ -183,6 +213,15 @@ const alternatives = {
   'ring-light.svg': lockup((s) => markRing(s), { split: true }),
   'ring-dark.svg': lockup((s) => markRing(s, { plate: '#123A62', dim: '#2C5F8F' }), { text: C.white, accent: C.bar, split: true, background: C.navy }),
   'ring-icon.svg': svgDoc(64, 64, markRing(64)),
+  'skjold-light.svg': lockup((s) => markSkjold(s)),
+  'skjold-dark.svg': lockup((s) => markSkjold(s, { plate: '#123A62', track: '#2C5F8F', bar: C.bar }), { text: C.white, background: C.navy }),
+  'skjold-icon.svg': svgDoc(64, 64, markSkjold(64)),
+  'skjold-hus-light.svg': lockup((s) => markSkjoldHus(s)),
+  'skjold-hus-dark.svg': lockup((s) => markSkjoldHus(s, { plate: '#123A62' }), { text: C.white, background: C.navy }),
+  'skjold-hus-icon.svg': svgDoc(64, 64, markSkjoldHus(64)),
+  'skjold-halv-light.svg': lockup((s) => markSkjoldHalv(s)),
+  'skjold-halv-dark.svg': lockup((s) => markSkjoldHalv(s, { plate: '#123A62' }), { text: C.white, background: C.navy }),
+  'skjold-halv-icon.svg': svgDoc(64, 64, markSkjoldHalv(64)),
 };
 for (const [name, svg] of Object.entries(alternatives)) {
   writeFileSync(join(altDir, name), svg);

@@ -21,6 +21,14 @@ Archivo, 700 weight, 112 % width. The letters are outlines, so the SVGs look rig
 - `ring`: seven segments, one per day of the week DSB recommends, four lit, as the part-filled ring in Lager.
   «appen» in the accent colour, which also breaks up the long word.
 
+- `skjold`: a shield with the days bar across it. At small sizes the bar can read as an on/off switch.
+- `skjold-hus`: a shield with a house cut out of it, the days bar as its floor. A safe home.
+- `skjold-halv`: a shield half filled with blue, which also reads as a water level. Simplest, but closest to a
+  generic security app. `skjold-sammenligning.png` shows the three shields.
+
+Shields are kept plain on purpose: no orange and blue triangle (civil defence), no red cross (a protected emblem),
+nothing like a coat of arms or DSB's logo.
+
 Picking one of them for the app icon too means a new native build and a `version` bump (`apps/mobile/AGENTS.md`).
 
 Keep clear space of at least a quarter of the mark's height around the logo. Don't recolour the mark or set the
