@@ -191,8 +191,8 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - [ ] **(Mikkel)** Apple Developer account for Holm & Tall AS: enrolment sent 2026-10-05, waiting for Apple to verify
       that Mikkel can sign for the company (Apple may contact Tarjei, whose address is the work email). No news as of
       2026-10-14; not blocking, Android launches alone if needed
-- [ ] **(Mikkel)** Google Play Console account for Holm & Tall AS, as an organisation (uses the same D-U-N-S number)
-      (2026-10-14: set up, waiting only on the phone number verification)
+- [x] **(Mikkel)** Google Play Console account for Holm & Tall AS, as an organisation (uses the same D-U-N-S number)
+      (2026-10-14: set up and phone number verified, Mikkel)
 - [ ] App records for `no.htas.egenberedskap` in both stores, and `submit.production` filled in in
       `apps/mobile/eas.json`
 - [ ] Store listings in Norwegian: text, real screenshots, the privacy policy URL
