@@ -35,13 +35,17 @@ back from that:
 | Wed 21 Oct | Last day to answer review questions or resubmit |
 | Mon 26 Oct, before 11:00 | Release: App Store «Manually release this version», Play «Managed publishing»; website live on the real domain with store links |
 
+If Apple hasn't approved the developer account in time, 1.0 launches on Android alone and iOS follows when it's
+ready (Mikkel, 2026-10-14).
+
 If the builds aren't submitted by 19 October, privacy and QA items are not cut to make it. Mikkel decides the new
 date then (the strategy review suggests mid-November, with the winter outage season as the hook).
 
 ## 1. Content and facts
 
-- [ ] **(Mikkel)** Confirm the company details in `apps/web/src/company.ts` (org.nr., address, email, phone come
-      from Tarjei's draft). The privacy policy and contact page don't go live before this.
+- [x] **(Mikkel)** Confirm the company details in `apps/web/src/company.ts` (org.nr., address, email, phone come
+      from Tarjei's draft). The privacy policy and contact page don't go live before this. (Mikkel: correct,
+      2026-10-14)
 - [x] Compare `guidance.ts`, `catalogue.ts` and `guides.ts` with DSB's pages, with sources: `docs/dsb-check.md`
       (2026-10-08, draft; nothing changed in the code)
 - [ ] **(Mikkel)** Decide on the differences in `docs/dsb-check.md`: water (DSB now says about 20 L per person for
@@ -57,8 +61,10 @@ date then (the strategy review suggests mid-November, with the winter outage sea
       job, and deleting the backup erases the analysis data too (bdd002d, deployed to test, end-to-end 11/11)
 - [x] Soft delete off on both Firebase Storage buckets, and a 1-day lifecycle rule on `analysis/` as a backstop
       (2026-10-08)
-- [ ] **(Mikkel)** Ask Google for the Vertex AI abuse-monitoring exception (prompt logging) for test and prod, or
-      soften «vi lagrer ikke bildene» in the privacy policy until it's granted
+- [x] **(Mikkel)** Ask Google for the Vertex AI abuse-monitoring exception (prompt logging) for test and prod, or
+      soften «vi lagrer ikke bildene» in the privacy policy until it's granted (already softened: `personvern.astro`
+      says «Google kan for en kort periode logge …», checked 2026-10-14. AI analysis is hidden in 1.0, so asking
+      Google moves to the «Before Egenberedskap+» item)
 - [x] **(Mikkel)** Expo update checks send an install ID and IP address to Expo (USA) on every launch: name Expo in
       the privacy policy, or turn update checks off in production
 - [x] Privacy policy: also mention IP addresses (Firebase, Expo), the analysis job records (up to 24 h), and that
@@ -79,9 +85,11 @@ date then (the strategy review suggests mid-November, with the winter outage sea
 - [ ] Publish one signed update to a preview build and see it arrive, to prove the signing works end to end
 - [x] Website: clickjacking and CSP headers in `firebase.json` hosting (1ac953b, live on the test site)
 - [x] Reminders show item names on the lock screen (medicine names); use a neutral text (1ac953b)
-- [ ] The recovery-code screen is visible in the app switcher (decide: protect it, which also blocks screenshots of
-      the code on Android)
-- [ ] Before Egenberedskap+: drop v1 sync records, delete analysis photos from the phone's cache after the job
+- [x] The recovery-code screen is visible in the app switcher (decide: protect it, which also blocks screenshots of
+      the code on Android) (Mikkel, 2026-10-14: not protected)
+- [ ] Before Egenberedskap+: drop v1 sync records, delete analysis photos from the phone's cache after the job, and
+      ask Google for the Vertex AI abuse-monitoring exception for test and prod (then the policy can drop the sentence
+      about Google's logging)
 
 ## 3. AI analysis of rooms, on the test project
 
@@ -138,8 +146,10 @@ date then (the strategy review suggests mid-November, with the winter outage sea
 - [ ] *(fixed in code, 5de5d53; check on a device)* Android native config: notification icon, `blockedPermissions` for overlay, storage and media permissions
 - [ ] *(fixed in code, 5de5d53 and the commit after; check on a device)* Android documents: relock while adding a
       file, sensor wording, pinch-zoom, report PDF margins and timing
-- [ ] **(Mikkel)** On Android «Åpne PDF» can only share the file, so a passport PDF is one tap from mail apps. Opening
+- [x] **(Mikkel)** On Android «Åpne PDF» can only share the file, so a passport PDF is one tap from mail apps. Opening
       it in a viewer needs expo-intent-launcher (a new native package, so a `version` bump). Before 1.0, or later?
+      (Decided 2026-10-14: later. 1.0 keeps the share sheet with the button «Del eller åpne PDF-en» and a note that the
+      list also has apps that send it on; the viewer is under *After launch*)
 - [ ] Run the 16 device checks in `docs/android-review.md` on a real Android phone or emulator
 - [x] App language declared as Norwegian on iOS, so system parts (date picker) show Norwegian (5de5d53)
 - [ ] Walk through every flow in the simulator, including with no network (the QA agent couldn't: it needs simulator
@@ -179,8 +189,10 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - [x] Drafts of the listing text and the privacy-label answers: `docs/store/` (2026-10-08; check before use)
 - [x] D-U-N-S number for Holm & Tall AS (from Tarjei; used for the Apple enrolment)
 - [ ] **(Mikkel)** Apple Developer account for Holm & Tall AS: enrolment sent 2026-10-05, waiting for Apple to verify
-      that Mikkel can sign for the company (Apple may contact Tarjei, whose address is the work email)
+      that Mikkel can sign for the company (Apple may contact Tarjei, whose address is the work email). No news as of
+      2026-10-14; not blocking, Android launches alone if needed
 - [ ] **(Mikkel)** Google Play Console account for Holm & Tall AS, as an organisation (uses the same D-U-N-S number)
+      (2026-10-14: set up, waiting only on the phone number verification)
 - [ ] App records for `no.htas.egenberedskap` in both stores, and `submit.production` filled in in
       `apps/mobile/eas.json`
 - [ ] Store listings in Norwegian: text, real screenshots, the privacy policy URL
@@ -216,8 +228,10 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       not reviewed by a person yet. Check the release line and URL before anything is printed or posted
 - [ ] Deploy to the prod hosting site with the real domain; indexing on only there
 - [x] Domain `egenberedskapappen.no` (without the s) in place (Mikkel, 2026-10-10)
-- [ ] **(Tarjei)** Buy `egenberedskapsappen.no` (with the s, as the app is named); suggested as the main domain, with
-      the other one redirecting to it
+- [x] **(Tarjei)** Buy `egenberedskapsappen.no` (with the s, as the app is named); suggested as the main domain, with
+      the other one redirecting to it (both bought, Mikkel 2026-10-14)
+- [ ] DNS for `egenberedskapsappen.no` (with the s) isn't set up; point it at hosting as a redirect to
+      `egenberedskapappen.no`, which is set up
 
 ## After launch (1.1 and later, only when users ask)
 
@@ -225,6 +239,8 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
   Check Apple's guidelines 3.1.1 and 3.1.3(b) and Google's payments policy as they stand then: insurer codes are
   safest once the same thing can also be bought in the app. Needs a function that checks receipts and extends
   `entitledUntil`, and Mikkel's paid-apps agreements with bank and tax details in both stores.
+- Open PDFs in a viewer on Android (expo-intent-launcher with `ACTION_VIEW`, a native package, so a `version` bump)
+  instead of the share sheet, so a passport PDF isn't one tap from mail apps (`fil.tsx`, `docs/android-review.md` 3.4)
 - Server counts for insurers (codes redeemed, active backups, analyses per month), without tracking users
 - «Meld en skade» guide on top of the damage claims already stored on the phone
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
