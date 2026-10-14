@@ -198,8 +198,11 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - [ ] Store listings in Norwegian: text, real screenshots, the privacy policy URL
 - [ ] Privacy labels (App Store) and Data safety (Play) that match the privacy policy, including the room photos
       sent for AI analysis
-- [ ] Production build with EAS, seen passing App Check and running against prod
-- [ ] Submit for review
+- [ ] Production build with EAS, seen passing App Check and running against prod. On Android through Play's
+      **internal testing** track (decided 2026-10-14): Play Integrity only trusts an app installed from Play, so a
+      sideloaded APK can't prove App Check. The first upload is by hand in Play Console; after that `eas submit`
+      (`submit.production.android.track` is `internal`) with a Play service account key added to EAS credentials
+- [ ] Submit for review (Android: promote the build that passed internal testing to production, no rebuild)
 
 ## 7. Insurers and Egenberedskap+
 
