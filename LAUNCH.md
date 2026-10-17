@@ -164,6 +164,12 @@ date then (the strategy review suggests mid-November, with the winter outage sea
 - [ ] *(seen on the OnePlus 6, not fixed)* «Hold tallet riktig» in Kom i gang: the «Hver tredje måned» picker draws
       as a flat grey box on Android, unlike the rest of the form
 - [ ] Run the 16 device checks in `docs/android-review.md` on a real Android phone or emulator
+- [ ] *(walked through over adb on the OnePlus 6 by Claude, 2026-10-17: `docs/android-device-test-2026-10-17.md`;
+      not checked by a person)* Every flow from a fresh install worked except: the keyboard doesn't open when a
+      field is focused by code (the onboarding amounts, Møtested, Ny eiendom); «Rediger hjemme» is a blank row
+      in the Eiendeler property menu; no notification channel is created on Android 12 and older; «Neste å
+      gjøre» leads with water whatever the gap. Adding photos and files, the relock and the PDF content still
+      need a person with the phone
 - [x] App language declared as Norwegian on iOS, so system parts (date picker) show Norwegian (5de5d53)
 - [ ] Walk through every flow in the simulator, including with no network (the QA agent couldn't: it needs simulator
       access)
