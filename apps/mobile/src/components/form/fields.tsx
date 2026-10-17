@@ -1,15 +1,15 @@
 import { addDays, type IsoDate } from '@egenberedskap/core';
 import { DateTimePicker } from '@expo/ui/community/datetime-picker';
 import { router } from 'expo-router';
-import { useState, type Ref } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Platform,
   Pressable,
   StyleSheet,
+  TextInput as NativeTextInput,
   View,
   type KeyboardTypeOptions,
-  type TextInput as NativeTextInput,
 } from 'react-native';
 
 import { Icon } from '@/components/ui/icon';
@@ -27,6 +27,36 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
       <View style={styles.value}>{children}</View>
     </View>
   );
+}
+
+/** How long Android gets to finish a sheet's transition before a field asks for the keyboard. */
+const ANDROID_FOCUS_DELAY_MS = 350;
+
+/**
+ * `autoFocus` for a field. iOS handles the prop itself (`nativeAutoFocus`). On Android the prop,
+ * like `focus()` right after mount, binds the keyboard to the field without showing it when it
+ * runs during a screen transition or before layout (seen on a OnePlus 6), so there the field is
+ * focused from JavaScript once the transition is over. If focus has moved in the meantime,
+ * because the user pressed another field, that field keeps it.
+ */
+function useAutoFocus(autoFocus: boolean | undefined) {
+  const ref = useRef<NativeTextInput>(null);
+  const android = Platform.OS === 'android';
+  useEffect(() => {
+    if (!android || !autoFocus) return;
+    const focusedBefore = NativeTextInput.State.currentlyFocusedInput();
+    const timer = setTimeout(() => {
+      if (NativeTextInput.State.currentlyFocusedInput() !== focusedBefore) return;
+      ref.current?.focus();
+    }, ANDROID_FOCUS_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [android, autoFocus]);
+  return ref;
+}
+
+/** The native `autoFocus` prop, left to `useAutoFocus` on Android. */
+function nativeAutoFocus(autoFocus: boolean | undefined) {
+  return Platform.OS === 'android' ? undefined : autoFocus;
 }
 
 export function TextField({
@@ -51,15 +81,17 @@ export function TextField({
   /** A code that must not be learnt or suggested by the keyboard: no autocorrect, spellcheck or autofill. */
   secret?: boolean;
 }) {
+  const input = useAutoFocus(autoFocus);
   return (
     <FieldRow label={label}>
       <TextInput
+        ref={input}
         value={value}
         onChangeText={onChange}
         placeholder={placeholder}
         placeholderTextColor={Colors.tertiaryLabel}
         keyboardType={keyboardType}
-        autoFocus={autoFocus}
+        autoFocus={nativeAutoFocus(autoFocus)}
         autoCapitalize={autoCapitalize}
         textContentType={textContentType}
         autoCorrect={!secret}
@@ -82,27 +114,29 @@ export function NumberField({
   onChange,
   unit,
   decimals = false,
-  ref,
+  autoFocus,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   unit?: string;
   decimals?: boolean;
-  /** For focusing the field from outside, e.g. as it appears. */
-  ref?: Ref<NativeTextInput>;
+  /** Takes the keyboard as it appears, even from another field. */
+  autoFocus?: boolean;
 }) {
+  const input = useAutoFocus(autoFocus);
   return (
     <FieldRow label={label}>
       <View style={styles.numberRow}>
         <TextInput
+          ref={input}
           value={value}
           onChangeText={(text) => onChange(text.replace(decimals ? /[^\d,.]/g : /\D/g, ''))}
           placeholder="0"
           placeholderTextColor={Colors.tertiaryLabel}
           keyboardType={decimals ? 'decimal-pad' : 'number-pad'}
+          autoFocus={nativeAutoFocus(autoFocus)}
           accessibilityLabel={label}
-          ref={ref}
           style={[styles.input, styles.numberInput]}
         />
         {unit && <Text style={styles.unit}>{unit}</Text>}
