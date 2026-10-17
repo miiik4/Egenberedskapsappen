@@ -54,7 +54,8 @@ export default function Eiendeler() {
             <Stack.Toolbar.MenuAction
               icon="pencil"
               onPress={() => router.push({ pathname: '/eiendom', params: { id: property.id } })}>
-              Rediger {property.shortName.toLowerCase()}
+              {/* One template string, not `Rediger {…}`: the Android menu only reads a label from a single string child and would show a blank row. */}
+              {`Rediger ${property.shortName.toLowerCase()}`}
             </Stack.Toolbar.MenuAction>
           )}
           <Stack.Toolbar.MenuAction icon="plus" onPress={() => router.push('/eiendom')}>
