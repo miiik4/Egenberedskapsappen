@@ -34,8 +34,18 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const data = useData();
   const [permission, setPermission] = useState<Permission | null>(null);
 
+  // Scheduling runs are chained so two quick edits can't interleave one run's cancel with
+  // the other's scheduling. Creating the Android channel goes first in the same chain.
+  const queue = useRef(Promise.resolve());
+
   // Check on launch and whenever the app comes back, in case it was changed in Settings.
   useEffect(() => {
+    // Android 12 and older grant notifications without asking, so requestPermission (and the
+    // channel it creates) may never run there. Make the channel at startup, ahead of the
+    // first scheduling run, or the reminders land on expo-notifications' fallback channel.
+    queue.current = queue.current
+      .then(ensureAndroidChannel)
+      .catch((error) => console.error('Could not create the notification channel', error));
     let live = true;
     const refresh = () =>
       Notifications.getPermissionsAsync().then((status) => live && setPermission(toPermission(status)));
@@ -54,9 +64,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     return next;
   }, []);
 
-  // Reschedule after every change. Runs are chained so two quick edits can't interleave
-  // one run's cancel with the other's scheduling.
-  const queue = useRef(Promise.resolve());
+  // Reschedule after every change.
   useEffect(() => {
     if (permission !== 'granted' || !data.onboarded) return;
     const plan = planReminders({

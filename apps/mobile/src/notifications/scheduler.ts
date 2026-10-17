@@ -19,6 +19,11 @@ Notifications.setNotificationHandler({
   }),
 });
 
+/**
+ * Creates the channel the reminders are scheduled on. Idempotent, so it's safe to call both at
+ * startup and before asking for permission: Android 12 and older never ask, so startup is the
+ * only chance to make it there.
+ */
 export async function ensureAndroidChannel() {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL, {
