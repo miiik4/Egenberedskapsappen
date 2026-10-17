@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import type { ReactNode } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,6 +12,9 @@ import { Text } from '@/components/ui/text';
  * A form presented as a sheet, as in the design: a round close button on the left, the
  * title in the middle and a round, filled save button on the right. Without `onSave` it's an
  * information sheet with just the close button.
+ *
+ * A save runs once: taps while it's in flight are ignored and the button shows disabled, so a
+ * slow close (seen on an older Android phone) can't make a second copy.
  */
 export function FormSheet({
   title,
@@ -21,11 +24,24 @@ export function FormSheet({
 }: {
   title: string;
   canSave?: boolean;
-  onSave?: () => void;
+  onSave?: () => void | Promise<void>;
   children: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
   const android = Platform.OS === 'android';
+  const inFlight = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const save = async () => {
+    if (!onSave || inFlight.current) return;
+    inFlight.current = true;
+    setSaving(true);
+    try {
+      await onSave();
+    } finally {
+      inFlight.current = false;
+      setSaving(false);
+    }
+  };
   return (
     <AndroidKeyboardAvoiding>
       <ScrollView
@@ -44,9 +60,9 @@ export function FormSheet({
             <RoundButton
               label="Lagre"
               icon={{ ios: 'checkmark', android: 'check' }}
-              onPress={onSave}
+              onPress={save}
               prominent
-              disabled={!canSave}
+              disabled={!canSave || saving}
             />
           ) : (
             <View style={styles.spacer} />

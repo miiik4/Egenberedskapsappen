@@ -153,10 +153,16 @@ date then (the strategy review suggests mid-November, with the winter outage sea
       it in a viewer needs expo-intent-launcher (a new native package, so a `version` bump). Before 1.0, or later?
       (Decided 2026-10-14: later. 1.0 keeps the share sheet with the button «Del eller åpne PDF-en» and a note that the
       list also has apps that send it on; the viewer is under *After launch*)
-- [ ] *(in code, 2026-10-17; needs new builds, `version` 1.4.0)* «Velg fra kontaktene» on Ny nødkontakt opens the
-      phone's own contact picker (expo-contacts, a native package). iOS asks for no permission (the picker hands
-      over the one contact); Android asks for READ_CONTACTS the first time, WRITE_CONTACTS is blocked. Check the
-      pick, a contact with several numbers, and a denied permission on Android
+- [x] «Velg fra kontaktene» on Ny nødkontakt opens the phone's own contact picker (expo-contacts, a native package;
+      `version` 1.4.0, so new builds). iOS asks for no permission (the picker hands over the one contact); Android
+      asks for READ_CONTACTS the first time, WRITE_CONTACTS is blocked. Checked 2026-10-17 in the iOS simulator and
+      on a OnePlus 6 (Android 11, preview build 530d5e64): the prompt, deny → «Ingen tilgang til kontaktene», allow →
+      picker, a contact with two numbers, saving; the APK requests READ_CONTACTS only
+- [ ] *(fixed in code; not run on a phone)* A form's save could run twice on the OnePlus 6 when the sheet was slow
+      to close (two copies of the same contact). `FormSheet` now ignores taps while a save is in flight, for all
+      forms
+- [ ] *(seen on the OnePlus 6, not fixed)* «Hold tallet riktig» in Kom i gang: the «Hver tredje måned» picker draws
+      as a flat grey box on Android, unlike the rest of the form
 - [ ] Run the 16 device checks in `docs/android-review.md` on a real Android phone or emulator
 - [x] App language declared as Norwegian on iOS, so system parts (date picker) show Norwegian (5de5d53)
 - [ ] Walk through every flow in the simulator, including with no network (the QA agent couldn't: it needs simulator
