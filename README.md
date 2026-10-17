@@ -64,18 +64,16 @@ Backup, AI analysis of rooms and restore are off in 1.0: `EGENBEREDSKAP_PLUS_ENA
 
 ## Builds
 
-Builds and updates belong to the Expo account `holm-and-tall-as`. The full runbook (profiles, when a new build is needed, publishing signed updates, the signing key and what to do if it's lost) is in `docs/releasing.md`.
+Builds and updates belong to the Expo account `holm-and-tall-as`. The full runbook (profiles, when a new build is needed, publishing updates) is in `docs/releasing.md`.
 
-### Signed updates
+### Updates
 
-Over-the-air updates are code-signed: a build only accepts updates signed with the key that matches `apps/mobile/certs/certificate.pem`. The private key is never in git and never sent to Expo; `eas update` signs locally. It lives in `~/.egenberedskapsappen/keys/private-key.pem` on Mikkel's Mac, with a backup in his password manager. Publish updates with the script, which passes the key:
+Over-the-air updates (`eas update`) carry JavaScript-only changes to installed builds with the same `version`. They are not code-signed: Expo only offers update signing on its paid Production plan (decided 2026-10-17, see `docs/releasing.md`), so the Expo account itself is what protects the update channel. Keep two-factor login on it and give nobody else publishing rights.
 
 ```sh
 cd apps/mobile
 npm run publish-update -- --channel production --message "…"
 ```
-
-An update published without the key is rejected by every build. If the key is lost, published builds can't receive updates until a new build with a new certificate is out (`npx expo-updates codesigning:generate`, then a `version` bump).
 
 
 Backup needs the native Firebase SDK, so it only works in a development build, not in Expo Go (everything else still does).

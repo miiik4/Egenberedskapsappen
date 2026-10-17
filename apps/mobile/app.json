@@ -2,7 +2,7 @@
   "expo": {
     "name": "Egenberedskapsappen",
     "slug": "egenberedskapsappen",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
@@ -126,12 +126,7 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/b92cddc0-f00c-4701-b7f9-99dfcf4a2ccc",
-      "codeSigningCertificate": "./certs/certificate.pem",
-      "codeSigningMetadata": {
-        "keyid": "main",
-        "alg": "rsa-v1_5-sha256"
-      }
+      "url": "https://u.expo.dev/b92cddc0-f00c-4701-b7f9-99dfcf4a2ccc"
     }
   }
 }

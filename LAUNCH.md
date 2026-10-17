@@ -82,14 +82,12 @@ date then (the strategy review suggests mid-November, with the winter outage sea
 
 - [x] Security review of the app, sync, backend and website: no critical issues; three major ones fixed (9a48948),
       full report in `docs/security-review-2026-10.md`
-- [x] Over-the-air updates are code-signed (certificate in `apps/mobile/certs`, private key only on Mikkel's Mac) and
-      published from the company account «holm-and-tall-as» (2026-10-09)
-- [x] Private key for signed updates backed up in Mikkel's password manager (2026-10-09)
-- [ ] **(Mikkel)** Publish one signed update to a preview build and see it arrive, to prove the signing works end to
-      end. Tried 2026-10-17: EAS refuses, «code signing requires a subscription to the EAS Production or
-      Enterprise plan», and the holm-and-tall-as account has none. Either buy the plan before launch, or drop
-      code signing (a new build, since the builds reject unsigned updates); until then JS fixes only reach phones
-      through new builds
+- [x] ~~Over-the-air updates are code-signed~~ Signing dropped again 2026-10-17 (Mikkel): EAS only signs updates on
+      its Production plan (USD 199/month), and 1.0 stays on the free plan. Updates are published from the company
+      account «holm-and-tall-as», which is now what protects the channel; `version` 1.6.0, new builds needed
+- [ ] **(Mikkel)** Two-factor login on the Expo account «holm-and-tall-as», and no access tokens that aren't needed,
+      since the account alone guards the update channel now
+- [ ] Publish one update to a preview build and see it arrive
 - [x] Website: clickjacking and CSP headers in `firebase.json` hosting (1ac953b, live on the test site)
 - [x] Reminders show item names on the lock screen (medicine names); use a neutral text (1ac953b)
 - [x] The recovery-code screen is visible in the app switcher (decide: protect it, which also blocks screenshots of

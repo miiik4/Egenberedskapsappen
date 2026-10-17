@@ -1,7 +1,7 @@
-# Releasing: builds, updates and signing
+# Releasing: builds and updates
 
-How to build the app, publish over-the-air updates, and keep the update signing key safe. Written 2026-10-09,
-when the project moved to the company Expo account and updates became code-signed.
+How to build the app and publish over-the-air updates. Written 2026-10-09, when the project moved to the
+company Expo account; updates were code-signed from then until 2026-10-17 (see «Why updates aren't signed»).
 
 ## Accounts
 
@@ -39,81 +39,45 @@ Production builds use App Attest and Play Integrity and need no secrets.
 
 Over-the-air updates only reach builds with the same `version` in `app.json` (runtime policy `appVersion`).
 
-- **JS-only change:** publish a signed update (below).
+- **JS-only change:** publish an update (below).
 - **Native change** (a new native package, a config plugin, app.json native settings such as permissions, icons,
-  `infoPlist`, code signing): bump `version`, then make new builds. Otherwise an update could reach a build that
+  `infoPlist`, the `updates` block): bump `version`, then make new builds. Otherwise an update could reach a build that
   lacks the native code and crash it.
 - **Egenberedskap+:** switched on only in a new version through store review, never with an update
   (LAUNCH.md, «Decided 2026-10-08»).
 
-## Signed updates
-
-Every build only accepts updates signed with the key behind `apps/mobile/certs/certificate.pem`. An update published
-without it, for example by someone who gets into the Expo account, is rejected by the app.
-
-| | Where | In git |
-| --- | --- | --- |
-| Private key | `~/.egenberedskapsappen/keys/private-key.pem` on Mikkel's Mac (mode 600), backup in Mikkel's password manager | Never (`*.pem` is ignored) |
-| Public key | `~/.egenberedskapsappen/keys/public-key.pem` (not needed by the app) | No |
-| Certificate | `apps/mobile/certs/certificate.pem`, valid 10 years from 2026-10-09, common name «Holm & Tall AS» | Yes |
-| Settings | `updates.codeSigningCertificate` and `codeSigningMetadata` (`keyid: main`, `rsa-v1_5-sha256`) in app.json | Yes |
-
-The key is never uploaded: `eas update` signs on the Mac and sends only the signature. Builds don't need the key.
-
-Dev clients leave the signature check out (`UPDATE_SIGNING=off`, in `app.config.ts`), or Metro would need the key to
-serve every reload. It's set by the `development` and `development-simulator` profiles and by `npm run ios` /
-`npm run android` in `apps/mobile`. A plain `npx expo run:ios` builds a client that checks, which Metro then can't
-serve. Preview, production and `eas update` never set it, so they always sign and check.
+## Updates
 
 ### Publishing an update
 
-Only Mikkel publishes updates. Always use the script, which passes the key (it runs `npx eas-cli`, so no global
-`eas` is needed):
+Only Mikkel publishes updates. Use the script (it runs `npx eas-cli`, so no global `eas` is needed):
 
 ```sh
 cd apps/mobile
+npm run publish-update -- --channel preview --message "…"        # to the test builds first
 npm run publish-update -- --channel production --message "Kort beskrivelse"
-npm run publish-update -- --channel preview --message "…"     # to test builds first
 ```
 
 Before publishing: `npm test`, `npm run typecheck` and `npm run lint` from the root, and try the change on a
-`preview` build.
+`preview` build. An update reaches a build on its next launch and is used from the launch after that, so close and
+reopen the app twice to see it.
 
-### Testing that signing works
+### Why updates aren't signed
 
-Not yet done (LAUNCH.md section 2). **Tried 2026-10-17 and refused by EAS:** «EAS Update code signing requires a
-subscription to the EAS Production or Enterprise plan», and the holm-and-tall-as account has no plan. Until the
-plan is bought, or code signing is dropped from app.json (a new build, since the builds reject unsigned updates),
-no update can be published, signed or not, and JS fixes reach phones only through new builds. Once it can:
+From 2026-10-09 to 2026-10-17 updates were code-signed with a key kept on Mikkel's Mac, so a stolen Expo account
+couldn't ship code. Publishing the first signed update failed: «EAS Update code signing requires a subscription to
+the EAS Production or Enterprise plan» (USD 199 a month in October 2026), and the account is on the free plan. Mikkel
+decided on 2026-10-17 to drop signing and stay on the free plan for 1.0: `codeSigningCertificate` and
+`codeSigningMetadata` left app.json (`version` went to 1.6.0, since that's native config), the certificate left the
+repo, and the private key on the Mac and in the password manager is no longer used.
 
-1. Build and install a `preview` build that includes the certificate (any build made after 8663ef2).
-2. Make a small visible JS change, publish it with `npm run publish-update -- --channel preview`.
-3. Close and reopen the app twice; the change should appear.
-4. Optional negative test: publish to `preview` with `npx eas-cli update` without the key. The app must keep running
-   the previous update.
+What protects the update channel now is the Expo account: keep two-factor login on `holm-and-tall-as`, keep it to
+Mikkel, and revoke any access token that isn't needed. If the plan is ever bought, signing comes back with
+`npx expo-updates codesigning:generate` and a `version` bump (the old key pair can be reused if it's still in the
+password manager).
 
-### Moving the key to a new Mac
-
-Restore `private-key.pem` from the password manager to `~/.egenberedskapsappen/keys/private-key.pem`, then
-`chmod 700 ~/.egenberedskapsappen ~/.egenberedskapsappen/keys` and `chmod 600` on the file.
-
-### If the key is lost or leaked
-
-Builds already installed can't receive updates signed with a new key. Then:
-
-1. Generate a new pair, keeping the key outside the repo:
-   ```sh
-   cd apps/mobile
-   npx expo-updates codesigning:generate --key-output-directory ~/.egenberedskapsappen/keys \
-     --certificate-output-directory certs --certificate-validity-duration-years 10 \
-     --certificate-common-name "Holm & Tall AS"
-   ```
-2. Back up the new key in the password manager.
-3. Bump `version` in app.json, make new builds and submit them.
-4. If the key leaked: rotate the Expo account password and tokens as well, since signing is what stops a stolen
-   account from shipping code.
-
-Before the certificate expires (2036), make a new one the same way and ship it in a new version.
+The free plan covers updates for 1 000 monthly active users; above that Expo bills usage, and the Starter plan
+(USD 19 a month) covers 3 000.
 
 ## Website
 

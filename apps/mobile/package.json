@@ -66,12 +66,12 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "UPDATE_SIGNING=off expo run:android",
-    "ios": "UPDATE_SIGNING=off expo run:ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "publish-update": "npx eas-cli update --private-key-path \"$HOME/.egenberedskapsappen/keys/private-key.pem\""
+    "publish-update": "npx eas-cli update"
   },
   "private": true
 }
