@@ -87,7 +87,9 @@ date then (the strategy review suggests mid-November, with the winter outage sea
       account «holm-and-tall-as», which is now what protects the channel; `version` 1.6.0, new builds needed
 - [ ] **(Mikkel)** Two-factor login on the Expo account «holm-and-tall-as», and no access tokens that aren't needed,
       since the account alone guards the update channel now
-- [ ] Publish one update to a preview build and see it arrive
+- [x] Publish one update to a preview build and see it arrive (2026-10-17: update group `ec3663ec` to channel
+      `preview`, downloaded by preview build `b5397291` (1.6.0) on the OnePlus 6 at the first launch and running at the
+      second, when the server answered «no update available»; checked in logcat by Claude, not seen by a person)
 - [x] Website: clickjacking and CSP headers in `firebase.json` hosting (1ac953b, live on the test site)
 - [x] Reminders show item names on the lock screen (medicine names); use a neutral text (1ac953b)
 - [x] The recovery-code screen is visible in the app switcher (decide: protect it, which also blocks screenshots of
