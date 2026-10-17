@@ -13,13 +13,12 @@ import {
 import type { StockDraft } from '@egenberedskap/store';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Switch } from 'react-native';
 
 import { confirmDelete, CountField, DateField, DestructiveButton, NumberField, parseNumber, TextField } from '@/components/form/fields';
 import { MenuField } from '@/components/form/menu-field';
 import { FormSheet } from '@/components/form/sheet';
 import { Row, Section } from '@/components/ui/list';
-import { Colors } from '@/constants/theme';
+import { Switch } from '@/components/ui/switch';
 import { useActions, useData } from '@/data/data-provider';
 
 type Params = { id?: string; type?: string; litres?: string; meals?: string };
@@ -139,7 +138,7 @@ export default function Vare() {
         <Row
           title="Påminnelse"
           trailing={
-            <Switch value={remind} onValueChange={setRemind} accessibilityLabel="Påminnelse" trackColor={{ true: Colors.accent }} />
+            <Switch value={remind} onValueChange={setRemind} accessibilityLabel="Påminnelse" />
           }
         />
       </Section>

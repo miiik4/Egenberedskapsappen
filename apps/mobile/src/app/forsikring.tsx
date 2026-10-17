@@ -1,13 +1,14 @@
 import { INSURANCE_ALERT_SHARE } from '@egenberedskap/core';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Switch } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { confirmDelete, DestructiveButton, NumberField, parseNumber, TextField } from '@/components/form/fields';
 import { MenuField } from '@/components/form/menu-field';
 import { FormSheet } from '@/components/form/sheet';
 import { useHomeInsurance } from '@/components/preparedness/home-insurance';
 import { Row, Section } from '@/components/ui/list';
+import { Switch } from '@/components/ui/switch';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useActions } from '@/data/data-provider';
 import { Text } from '@/components/ui/text';
@@ -92,7 +93,6 @@ export default function Forsikring() {
               value={alertNearSum}
               onValueChange={setAlertNearSum}
               accessibilityLabel="Varsle når innboet nærmer seg forsikringssummen"
-              trackColor={{ true: Colors.accent }}
             />
           }
         />

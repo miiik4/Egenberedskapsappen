@@ -89,6 +89,26 @@ Two limits of the method matter for reading this report:
 7. Cosmetic: with font scale 1.3 the icon before «Lagret på telefonen, kan åpnes uten nett» sits at the top of
    the wrapped line.
 
+## Fixed in code the same day (not yet seen on the phone)
+
+- Bug 1: on Android a field with `autoFocus` (and the onboarding amounts, now `autoFocus` too) is focused from
+  JavaScript 350 ms after it appears, once the sheet's transition is over, and the focused field is blurred when
+  the keyboard is put away, so the next press brings the keyboard back (`components/form/fields.tsx`,
+  `components/ui/keyboard-avoiding.tsx`, `velkommen.tsx`). The delay is one constant and may need tuning.
+- Bug 2: the «Rediger …» menu label is one template string (`eiendeler/index.tsx`).
+- Bug 3: the notification channel is created at startup, first in the scheduling chain
+  (`notifications/notifications-provider.tsx`). Existing installs move onto it the next time reminders are
+  rescheduled.
+- Bug 4: the gaps are ordered by the days closing each adds, so «Neste å gjøre» leads with what the days card
+  calls the limit (`packages/core/src/actions.ts`, with a test).
+- Bug 5 and what Mikkel saw in «Ny vare»: the Android dropdowns are no longer the Material text field with a
+  wallpaper tint and an underline; the value is a link on the row and a tap opens a small card with the options
+  in the app's colours (`components/form/menu-field.android.tsx`). The switches share one component with a
+  blue track and a white knob on Android, instead of the phone's own accent on the knob
+  (`components/ui/switch.tsx`).
+
+All of it is JavaScript only, so it can go out as a signed update to the preview build for a check.
+
 ## Not covered, needs a person with the phone
 
 - Adding a photo, a gallery picture and a file to a document and to a belonging; the relock when coming back

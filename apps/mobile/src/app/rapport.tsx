@@ -1,11 +1,12 @@
 import { buildReport, summarizeRooms } from '@egenberedskap/core';
 import { useState } from 'react';
-import { Alert, Platform, StyleSheet, Switch, View } from 'react-native';
+import { Alert, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { DateField, TextField } from '@/components/form/fields';
 import { FormSheet } from '@/components/form/sheet';
 import { PrimaryButton } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { CheckCircle } from '@/components/ui/check-circle';
 import { EmptyRow, Row, Section } from '@/components/ui/list';
 import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
@@ -120,7 +121,7 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
   return (
     <Row
       title={label}
-      trailing={<Switch value={value} onValueChange={onChange} accessibilityLabel={label} trackColor={{ true: Colors.accent }} />}
+      trailing={<Switch value={value} onValueChange={onChange} accessibilityLabel={label} />}
     />
   );
 }

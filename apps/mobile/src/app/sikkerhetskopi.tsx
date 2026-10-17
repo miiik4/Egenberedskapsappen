@@ -1,12 +1,13 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Share, StyleSheet, Switch, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Share, StyleSheet, View } from 'react-native';
 
 import { useBackup } from '@/backup/backup-provider';
 import { backupErrorMessage, cleanActivationCode } from '@/backup/messages';
 import { DestructiveButton, TextField } from '@/components/form/fields';
 import { FormSheet } from '@/components/form/sheet';
 import { PrimaryButton } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Row, Section } from '@/components/ui/list';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';

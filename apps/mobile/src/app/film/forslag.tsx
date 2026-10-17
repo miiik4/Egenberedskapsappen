@@ -2,7 +2,7 @@ import { BELONGING_CATEGORIES, type BelongingCategory } from '@egenberedskap/cor
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Switch } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { useAnalysis } from '@/analysis/analysis-provider';
 import { cropFile } from '@/analysis/photos';
@@ -10,6 +10,7 @@ import { NumberField, parseNumber, TextField } from '@/components/form/fields';
 import { MenuField } from '@/components/form/menu-field';
 import { FormSheet } from '@/components/form/sheet';
 import { Row, Section } from '@/components/ui/list';
+import { Switch } from '@/components/ui/switch';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 
@@ -64,7 +65,7 @@ export default function Forslag() {
       <Section>
         <Row
           title="Ta med"
-          trailing={<Switch value={selected} onValueChange={setSelected} accessibilityLabel="Ta med" trackColor={{ true: Colors.accent }} />}
+          trailing={<Switch value={selected} onValueChange={setSelected} accessibilityLabel="Ta med" />}
         />
       </Section>
     </FormSheet>

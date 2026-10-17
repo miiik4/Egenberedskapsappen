@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { router, Stack } from 'expo-router';
-import { Alert, Linking, Platform, StyleSheet, Switch } from 'react-native';
+import { Alert, Linking, Platform, StyleSheet } from 'react-native';
 
 import { CHECK_INTERVALS_MONTHS, type CheckIntervalMonths } from '@egenberedskap/core';
 
@@ -8,6 +8,7 @@ import { DestructiveButton } from '@/components/form/fields';
 import { MenuField } from '@/components/form/menu-field';
 import { MembersSection } from '@/components/form/members';
 import { Row, Section } from '@/components/ui/list';
+import { Switch } from '@/components/ui/switch';
 import { Screen } from '@/components/ui/screen';
 import { CONTACT_EMAIL, EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { Colors, Spacing } from '@/constants/theme';

@@ -12,10 +12,11 @@ import {
 } from '@egenberedskap/core';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect } from 'react';
-import { Platform, Pressable, StyleSheet, Switch, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { DateField } from '@/components/form/fields';
 import { WarningDot } from '@/components/ui/check-circle';
+import { Switch } from '@/components/ui/switch';
 import { Card } from '@/components/ui/card';
 import { Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
@@ -110,7 +111,6 @@ export default function Vare() {
                 value={item.remind}
                 onValueChange={(remind) => update({ remind })}
                 accessibilityLabel="Påminnelse"
-                trackColor={{ true: Colors.accent }}
               />
             }
           />
