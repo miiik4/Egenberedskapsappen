@@ -86,3 +86,22 @@ PERSONVERN
 Savner dere noe? Trykk «Gi tilbakemelding» under Innstillinger og skriv til oss.
 
 Appen er ikke laget av eller tilknyttet DSB eller andre myndigheter. Les myndighetenes råd på sikkerhverdag.no.
+
+## Versjonsnotater (Google Play)
+
+Play tar notatene per språk i denne formen; språkkoden må finnes i butikkoppføringen (nb-NO). Maks 500 tegn.
+
+Første utgave, 1.6.0 (versjonskode 3), oktober 2026:
+
+```
+<nb-NO>
+Første utgave av Egenberedskapsappen.
+
+• Se hvor mange døgn husstanden klarer seg uten strøm og vann, ut fra det dere faktisk har.
+• Lager med handleliste bygget på DSBs råd, og påminnelser før noe går ut.
+• Nødinfo: nødnumre, nødkontakter og møtested, alltid tilgjengelig uten nett.
+• Dokumenter og innboliste lagret trygt på telefonen, med PDF til forsikringsselskapet.
+
+Alt ligger på telefonen. Ingen konto, ingen sporing.
+</nb-NO>
+```
