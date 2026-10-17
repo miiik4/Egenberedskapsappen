@@ -54,9 +54,9 @@ describe('nextActions', () => {
     expect(food?.kind === 'buyFood' && food.suggestions.map((t) => t.id)).toEqual(['oats', 'driedFruitNuts']);
   });
 
-  it('puts a missing heat source right after the amounts, since it holds the number at zero', () => {
+  it('puts a missing heat source before the amounts, since it alone holds the number at zero', () => {
     const cold = items.filter((i) => i.type !== 'heatSource');
-    expect(nextActions(two, cold, today).slice(0, 3).map(label)).toEqual(['buyWater', 'buyFood', 'get heatSource']);
+    expect(nextActions(two, cold, today).slice(0, 3).map(label)).toEqual(['get heatSource', 'buyWater', 'buyFood']);
   });
 
   it('asks for baby food and pet food when the household needs them', () => {
@@ -81,6 +81,19 @@ describe('nextActions', () => {
       'addContact',
     ]);
     expect(nextActions(two, items, today, { ...plan, contacts: 2, meetingPlace: true }).map(label)).not.toContain('addContact');
+  });
+
+  it('leads with the gap that lifts the number most, not always the water', () => {
+    // 2 adults, a child and a dog need 10 litres a day: 30 litres is 3 days. No food holds the number at 0,
+    // so food is worth 3 days and water none, and the days card says the food is what's missing most.
+    const family: HouseholdMembers = { ...two, children: 1, dogs: 1 };
+    const stock = [item('w', { type: 'drinkingWater', litres: 30 }), item('h', { type: 'heatSource' })];
+    const plan = { contacts: 0, meetingPlace: false, followUps: [] };
+    const [food, contact, place, water] = nextActions(family, stock, today, plan);
+    expect(food).toMatchObject({ kind: 'buyFood', days: 7, dayChange: 3 });
+    expect(contact?.kind).toBe('addContact');
+    expect(place?.kind).toBe('addMeetingPlace');
+    expect(water).toMatchObject({ kind: 'buyWater', litres: 40, dayChange: 0 });
   });
 
   it('keeps what the beredskapssjekk left to fix until it is done', () => {

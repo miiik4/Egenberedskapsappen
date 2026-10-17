@@ -23,9 +23,11 @@ export type PlanState = { contacts: number; meetingPlace: boolean; followUps: Fo
  * What the household should do next, most valuable first: close the gaps that hold the
  * number down, replace expiring items that would lower it (soonest first), get what's
  * missing from the list, and only then replace expiring items that don't change it.
- * With `plan`, an emergency contact and a meeting place come right after the biggest gap,
- * so the plan for a crisis is never pushed out of sight by the shopping, and what the
- * beredskapssjekk left to fix follows the gaps.
+ * The gaps go by how many days closing each one adds (`dayChange`), the biggest first, so
+ * the top line names the same thing the days card calls the limit; water, food and heat
+ * keep that order when they tie. With `plan`, an emergency contact and a meeting place come
+ * right after the biggest gap, so the plan for a crisis is never pushed out of sight by the
+ * shopping, and what the beredskapssjekk left to fix follows the gaps.
  */
 export function nextActions(
   members: HouseholdMembers,
@@ -57,6 +59,8 @@ export function nextActions(
   }
   const heat = missing.find((t) => t.id === 'heatSource');
   if (heat) gaps.push({ kind: 'getType', type: heat, dayChange: daysWith({ type: 'heatSource' }) });
+  // The gap that lifts the number most leads. Array.prototype.sort is stable, so ties keep water, food, heat.
+  gaps.sort((a, b) => b.dayChange - a.dayChange);
 
   const nodinfo: NextAction[] = [];
   if (plan && plan.contacts === 0) nodinfo.push({ kind: 'addContact', dayChange: 0 });
