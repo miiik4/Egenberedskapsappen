@@ -48,10 +48,13 @@ date then (the strategy review suggests mid-November, with the winter outage sea
       2026-10-14)
 - [x] Compare `guidance.ts`, `catalogue.ts` and `guides.ts` with DSB's pages, with sources: `docs/dsb-check.md`
       (2026-10-08, draft; nothing changed in the code)
-- [ ] **(Mikkel)** Decide on the differences in `docs/dsb-check.md`: water (DSB now says about 20 L per person for
+- [x] **(Mikkel)** Decide on the differences in `docs/dsb-check.md`: water (DSB now says about 20 L per person for
       the week, no per-day figure), the iodine hint, «Kan spises kald» for canned dinners, items DSB lists that we
-      don't, and the water and power-outage guides
-- [ ] Decisions applied in the code with sources (7ad8aca); remove the three `TODO(before launch)` notes once signed off
+      don't, and the water and power-outage guides (decided 2026-10-17, see below)
+- [x] Decisions applied in the code with sources (7ad8aca); remove the three `TODO(before launch)` notes once signed off
+      (2026-10-17: Mikkel asked Claude to decide from DSB's pages and to take out anything uncertain; pages
+      fetched again, decisions in `docs/dsb-check.md`, TODOs removed. The new copy hasn't been read in the app by
+      a person yet)
 - [x] Guidance in words instead of from `guidance.ts`: «en uke» in `lager/kategori/[id].tsx` and `guides.ts`,
       «innen en måned» in `beredskapssjekk.tsx`; and «2 personer trenger 21 hver» is missing «måltider»
 

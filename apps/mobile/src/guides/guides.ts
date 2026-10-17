@@ -7,8 +7,8 @@ import {
 
 import { formatPeriod } from '@/lib/format';
 
-// Checked point by point against DSB's pages in docs/dsb-check.md (2026-10-08). The wording is ours.
-// TODO(before launch): Mikkel signs off on docs/dsb-check.md.
+// Checked point by point against DSB's pages in docs/dsb-check.md (checked again 2026-10-17). The
+// wording is ours; advice we couldn't source and weren't sure of has been taken out.
 
 export type Guide = {
   id: GuideId;
@@ -43,7 +43,7 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Når strømmen går',
         points: [
-          'Samle dere i ett rom og hold dørene lukket, så holder dere på varmen.',
+          'Lukk dørene, eller heng tepper mellom rommene og foran vinduene, så holder dere på varmen.',
           'Kle dere lag på lag, helst med ull innerst.',
           'Lytt på NRK på DAB-radioen. Der kommer beskjeder fra myndighetene.',
           'Bruk aldri grill, gassbrenner eller propanovn som ikke er laget for innendørs bruk. De kan gi kullosforgiftning.',
@@ -73,7 +73,7 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Gå gjennom lageret',
         points: [
-          `DSB anbefaler at husstanden klarer seg selv i ${week}.`,
+          `Myndighetene anbefaler at husstanden klarer seg selv i ${week}.`,
           'Fyll ut Lager i appen, så ser dere hva som mangler.',
           'Gjør beredskapssjekken, så holder dere lageret oppdatert.',
         ],
@@ -87,13 +87,16 @@ export const GUIDES: Record<GuideId, Guide> = {
     sections: [
       {
         heading: 'Hvor mye',
-        points: [`Regn med ${water} per person per døgn, til drikke og matlaging. Dyr trenger vann i tillegg.`],
+        points: [
+          `Regn med ${water} per person per døgn, til drikke, matlaging og hygiene. Det er omtrent det DSB anbefaler for en uke.`,
+          'Dyr trenger vann i tillegg.',
+        ],
       },
       {
         heading: 'Slik lagrer dere det',
         points: [
           'Bruk kanner eller flasker som er laget for drikkevann.',
-          'Vask dem med såpe, desinfiser med litt husholdningsklor og skyll godt.',
+          'Vask dem med såpe og vann, desinfiser med husholdningsklor og skyll godt. DSB forklarer hvor mye klor som trengs.',
           'La vannet i springen renne til det er kaldt, og fyll kannene helt opp.',
           'Oppbevar dem mørkt, kjølig og frostfritt, unna bensin og kjemikalier.',
           `Bytt vannet hver ${STORED_WATER_SHELF_LIFE_MONTHS}. måned. Appen minner dere på det.`,
@@ -105,11 +108,12 @@ export const GUIDES: Record<GuideId, Guide> = {
           'Følg rådene fra kommunen.',
           'Sil vannet først hvis det er grumsete.',
           'Kok det opp så det bobler kraftig, og la det kjøle seg ned av seg selv.',
-          'Vannrensetabletter kan brukes i stedet for koking. Følg bruksanvisningen.',
+          'Det finnes også vannrensetabletter. Følg bruksanvisningen.',
           'Ikke drikk vannet hvis det kan ha kommet kjemikalier i det.',
         ],
       },
     ],
+    link: { label: 'Les om å lagre drikkevann hos DSB', url: 'https://www.dsb.no/sikkerhverdag/egenberedskap/slik-lagrer-du-drikkevann/' },
   },
   childrenAndPets: {
     id: 'childrenAndPets',
@@ -120,15 +124,14 @@ export const GUIDES: Record<GuideId, Guide> = {
         heading: 'Barn',
         points: [
           `Ha barnemat, bleier og det barnet trenger for ${weekInWords}.`,
-          'Snakk rolig med barna om hva som skjer. Gi dem en oppgave, som å holde lommelykten.',
-          'Ta med noe kjent, som en bamse eller et spill uten strøm.',
+          'Snakk rolig og ærlig med barna om hva som skjer, uten å skremme. Lytt til det de lurer på.',
         ],
       },
       {
         heading: 'Dyr',
         points: [
           `Ha fôr til ${weekInWords} for hvert dyr, og vann i tillegg til husstandens.`,
-          'Ha med bur, bånd og eventuelle medisiner hvis dere må dra.',
+          'Ha et transportbur klart, og et ekstra lager av medisiner hvis dyret bruker det.',
         ],
       },
     ],
@@ -150,7 +153,7 @@ export const GUIDES: Record<GuideId, Guide> = {
       {
         heading: 'Avtal det før det skjer',
         points: [
-          'Bli enige om hva dere kan hjelpe hverandre med, som å se til hverandre, dele vann, lade telefonen, overnatte eller hente barn.',
+          'Bli enige om hva dere kan hjelpe hverandre med, som førstehjelp, husly hvis noen må forlate boligen, handling og transport, å låne hverandre utstyr eller en mobil på et annet nett.',
           'Fortell hverandre om noen trenger medisiner eller ekstra hjelp.',
           'Legg beredskapsvennen inn som nødkontakt under Nødinfo, så har dere nummeret uten nett.',
         ],

@@ -1,8 +1,7 @@
 # DSB check (LAUNCH.md section 1), draft for review
 
 Prepared 2026-10-08 against DSB's pages as served that day. sikkerhverdag.no/egenberedskap now redirects to
-dsb.no/sikkerhverdag/egenberedskap. **Nothing in the code has been changed and no TODO removed.** Mikkel reviews
-this first. The DSB wording below is paraphrased; the source column says where to read the original.
+dsb.no/sikkerhverdag/egenberedskap. Decisions and changes are under *Decisions (2026-10-17)*. The DSB wording below is paraphrased; the source column says where to read the original.
 
 Status: **match**, **differs** (DSB says something else), **partly** (matches in part, or DSB says more),
 **not found** (no DSB source found), **n/a** (an app setting or our own wording, not a DSB fact).
@@ -29,7 +28,38 @@ Sources used (all fetched 2026-10-08):
 | S-shared | https://www.dsb.no/sikkerhverdag/egenberedskap/felles-egenberedskap/ |
 | FAL | https://lovdata.no/dokument/NL/lov/1989-06-16-69 (forsikringsavtaleloven § 8-5) |
 
-## Decisions for Mikkel
+## Decisions (2026-10-17)
+
+Mikkel asked Claude to decide each point from DSB's pages and to take out anything we couldn't be sure of. The
+pages above were fetched again on 2026-10-17 and still say the same. Nobody has read the new copy in the app yet.
+
+1. **Water:** the model stays at 3 L per person per day. That's 21 L a week, just over DSB's «rundt 20 liter», so
+   it errs on the safe side. The wording now says the water is for drinking, cooking *and* hygiene, as DSB says
+   (guide, `vare.tsx`, `guidance.ts`). The guide says «omtrent det DSB anbefaler for en uke», with no per-day
+   figure credited to DSB.
+2. **Iodine:** «For alle under 40, gravide og ammende» (7ad8aca). This matches DSB.
+3. **Canned food:** the hint no longer says «Kan spises kald» (7ad8aca).
+4. **Missing items:** added a cooking stove with fuel, nappies (only for households with infants) and menstrual
+   products (7ad8aca). The others are covered in the guides instead of the list: somewhere to stay
+   (power-outage guide), a list on paper and more than one payment card (plan and power-outage guides). Warm
+   clothes count under «Ullpledd og soveposer».
+5. **Water guide:** has DSB's steps (7ad8aca), plus a link to DSB's page for the chlorine amount. Taken out: the
+   claim that purification tablets can replace boiling (DSB only says such products exist).
+6. **Power-outage guide:** somewhere to stay, smoke alarm and extinguisher (7ad8aca). «Samle dere i ett rom» is
+   now DSB's advice: close the doors or hang blankets between rooms and in front of the windows. Kept as our own
+   general advice: dress in layers, save the phone battery, keep the torch in a fixed place.
+7. **Catalogue comment:** says «our selection based on DSB's checklist» (7ad8aca).
+
+Also changed:
+- «DSB anbefaler at husstanden klarer seg selv» in the plan guide → «Myndighetene anbefaler», as DSB words it.
+- Children: DSB's advice (honest without frightening them, listen). Taken out: give them a task, bring a teddy.
+- Pets: transport carrier and spare medicines, as DSB says. «Bånd» taken out.
+- Beredskapsvenn: the examples are now from DSB's own list (first aid, shelter, shopping and transport,
+  lending equipment or a phone on another network).
+- Pet water (1 L per dog, 0.25 L per cat a day) is kept as our figure. It comes from the rule of thumb of about
+  50 ml per kg of body weight, and DSB gives no amount. Without it, the water days would leave pets out.
+
+## Points as found on 2026-10-08
 
 1. **Water.** DSB's current pages give **about 20 litres per person**, enough for a week and covering drinking,
    cooking *and* hygiene (S-water, S-store, S-faq). They give no per-day figure. We use 3 L per person per day for

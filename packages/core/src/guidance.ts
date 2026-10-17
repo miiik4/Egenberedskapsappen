@@ -1,6 +1,5 @@
 // Reference figures the app measures a household against. Each one is compared with DSB's pages
-// in docs/dsb-check.md (2026-10-08); a source is cited below where the figure matches.
-// TODO(before launch): Mikkel signs off on docs/dsb-check.md.
+// in docs/dsb-check.md (checked again 2026-10-17); a source is cited below where the figure matches.
 
 /**
  * Norwegian authorities recommend that households can manage on their own for one week.
@@ -12,16 +11,17 @@ export const TARGET_DAYS = 7;
 export const SCALE_MAX_DAYS = 10;
 
 /**
- * Drinking and cooking water, per person per day. DSB gives no per-day figure: its current pages
- * say about 20 litres per person for a week, for drinking, cooking and hygiene, which is roughly
- * 3 litres a day. Source: https://www.dsb.no/sikkerhverdag/egenberedskap/vann-i-beredskap/
+ * Water per person per day, for drinking, cooking and hygiene. DSB gives no per-day figure: its
+ * current pages say about 20 litres per person for a week, so 3 a day (21 a week) errs on the safe
+ * side. Source: https://www.dsb.no/sikkerhverdag/egenberedskap/vann-i-beredskap/
  * (also https://www.dsb.no/sikkerhverdag/egenberedskap/slik-lagrer-du-drikkevann/).
  */
 export const WATER_LITRES_PER_PERSON_PER_DAY = 3;
 
 /**
- * Drinking water for pets, per animal per day. Our figures: DSB says to store water for pets too
- * but gives no amount (https://www.dsb.no/sikkerhverdag/egenberedskap/egenberedskap-for-kjaledyr/).
+ * Drinking water for pets, per animal per day. Our figures, from the rule of thumb of about 50 ml
+ * per kg of body weight (a 20 kg dog, a 5 kg cat). DSB says to store water for pets too but gives
+ * no amount (https://www.dsb.no/sikkerhverdag/egenberedskap/egenberedskap-for-kjaledyr/).
  */
 export const WATER_LITRES_PER_DOG_PER_DAY = 1;
 export const WATER_LITRES_PER_CAT_PER_DAY = 0.25;

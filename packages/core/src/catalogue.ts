@@ -7,7 +7,6 @@ import type { HouseholdMembers, IsoDate, StockCategory, StockItem, StockType } f
  * (https://www.dsb.no/sikkerhverdag/egenberedskap/slik-bidrar-du-til-norges-beredskap/ and
  * https://www.dsb.no/siteassets/sikkerhverdag/egenberedskap/sjekkliste-egenberedskap-a4-bokmal.pdf).
  * The names, hints and amounts are ours. Compared item by item in docs/dsb-check.md.
- * TODO(before launch): Mikkel signs off on docs/dsb-check.md.
  */
 export type StockTypeInfo = {
   id: StockType;

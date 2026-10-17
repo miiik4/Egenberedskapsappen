@@ -117,7 +117,7 @@ export default function Vare() {
         header="Mengde"
         footer={
           info.measure === 'litres'
-            ? `Regnestykket bruker ${WATER_LITRES_PER_PERSON_PER_DAY} liter per person per døgn, til drikke og matlaging.`
+            ? `Regnestykket bruker ${WATER_LITRES_PER_PERSON_PER_DAY} liter per person per døgn, til drikke, matlaging og hygiene.`
             : info.measure === 'meals'
               ? `Omtrent hvor mange måltider alt dette gir. ${MEALS_PER_PERSON_PER_DAY} måltider er ett døgn for én person.`
               : existing
