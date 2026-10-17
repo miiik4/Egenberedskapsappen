@@ -89,7 +89,15 @@ Two limits of the method matter for reading this report:
 7. Cosmetic: with font scale 1.3 the icon before «Lagret på telefonen, kan åpnes uten nett» sits at the top of
    the wrapped line.
 
-## Fixed in code the same day (not yet seen on the phone)
+## Fixed in code the same day, and checked again on the phone with preview build e5246b2e
+
+Publishing the fixes as a signed update failed: EAS refuses code signing without a Production plan, which
+the account doesn't have (LAUNCH.md section 2). They went out as a new preview build instead. Checked on the
+OnePlus 6 in that build: the onboarding amount field, «Møtested» and «Ny eiendom» all open the keyboard by
+themselves; «Rediger hjemme» shows in the property menu; `dumpsys notification` lists the «Påminnelser»
+channel; the dropdown rows and their options card look as intended, and the switch has a blue track with a
+white knob. The second ordering fix for «Neste å gjøre» (below) came after that build and is covered by
+tests, not yet seen on the phone.
 
 - Bug 1: on Android a field with `autoFocus` (and the onboarding amounts, now `autoFocus` too) is focused from
   JavaScript 350 ms after it appears, once the sheet's transition is over, and the focused field is blurred when
@@ -99,8 +107,10 @@ Two limits of the method matter for reading this report:
 - Bug 3: the notification channel is created at startup, first in the scheduling chain
   (`notifications/notifications-provider.tsx`). Existing installs move onto it the next time reminders are
   rescheduled.
-- Bug 4: the gaps are ordered by the days closing each adds, so «Neste å gjøre» leads with what the days card
-  calls the limit (`packages/core/src/actions.ts`, with a test).
+- Bug 4: the gaps are ordered by the days each kind has, fewest first, which is exactly how the days card
+  picks its limit (`packages/core/src/actions.ts`, with tests). A first version ordered by the days closing
+  each gap adds; on the phone that still led with water when food and heat were both at zero, since closing
+  one of them alone adds nothing.
 - Bug 5 and what Mikkel saw in «Ny vare»: the Android dropdowns are no longer the Material text field with a
   wallpaper tint and an underline; the value is a link on the row and a tap opens a small card with the options
   in the app's colours (`components/form/menu-field.android.tsx`). The switches share one component with a

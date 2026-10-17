@@ -67,7 +67,8 @@ serve. Preview, production and `eas update` never set it, so they always sign an
 
 ### Publishing an update
 
-Only Mikkel publishes updates. Always use the script, which passes the key:
+Only Mikkel publishes updates. Always use the script, which passes the key (it runs `npx eas-cli`, so no global
+`eas` is needed):
 
 ```sh
 cd apps/mobile
@@ -80,7 +81,10 @@ Before publishing: `npm test`, `npm run typecheck` and `npm run lint` from the r
 
 ### Testing that signing works
 
-Not yet done (LAUNCH.md section 2). Once:
+Not yet done (LAUNCH.md section 2). **Tried 2026-10-17 and refused by EAS:** «EAS Update code signing requires a
+subscription to the EAS Production or Enterprise plan», and the holm-and-tall-as account has no plan. Until the
+plan is bought, or code signing is dropped from app.json (a new build, since the builds reject unsigned updates),
+no update can be published, signed or not, and JS fixes reach phones only through new builds. Once it can:
 
 1. Build and install a `preview` build that includes the certificate (any build made after 8663ef2).
 2. Make a small visible JS change, publish it with `npm run publish-update -- --channel preview`.
