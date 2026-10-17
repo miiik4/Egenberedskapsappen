@@ -96,8 +96,9 @@ the account doesn't have (LAUNCH.md section 2). They went out as a new preview b
 OnePlus 6 in that build: the onboarding amount field, «Møtested» and «Ny eiendom» all open the keyboard by
 themselves; «Rediger hjemme» shows in the property menu; `dumpsys notification` lists the «Påminnelser»
 channel; the dropdown rows and their options card look as intended, and the switch has a blue track with a
-white knob. The second ordering fix for «Neste å gjøre» (below) came after that build and is covered by
-tests, not yet seen on the phone.
+white knob. The second ordering fix for «Neste å gjøre» (below) came after that build and was checked in the
+next one, e034c383: with 30 litres of water and neither food nor heat, the list leads with «Kjøp mat for 7
+døgn», as the card does.
 
 - Bug 1: on Android a field with `autoFocus` (and the onboarding amounts, now `autoFocus` too) is focused from
   JavaScript 350 ms after it appears, once the sheet's transition is over, and the focused field is blurred when
