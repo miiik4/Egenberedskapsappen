@@ -1,11 +1,14 @@
 import { Archivo_600SemiBold } from '@expo-google-fonts/archivo/600SemiBold';
 import { Archivo_700Bold } from '@expo-google-fonts/archivo/700Bold';
+import { MaterialSymbols_400Regular } from '@expo-google-fonts/material-symbols/400Regular';
 import { SourceSans3_400Regular } from '@expo-google-fonts/source-sans-3/400Regular';
 import { SourceSans3_500Medium } from '@expo-google-fonts/source-sans-3/500Medium';
 import { SourceSans3_600SemiBold } from '@expo-google-fonts/source-sans-3/600SemiBold';
 import { SourceSans3_700Bold } from '@expo-google-fonts/source-sans-3/700Bold';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider, type Theme } from 'expo-router';
 import { useFonts } from 'expo-font';
+import { NavigationBar } from 'expo-navigation-bar';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, type Theme } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { Platform, StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -13,7 +16,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AnalysisProvider } from '@/analysis/analysis-provider';
 import { BackupProvider } from '@/backup/backup-provider';
 import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
-import { Colors } from '@/constants/theme';
+import { Colors, Fonts } from '@/constants/theme';
 import { DataProvider, useData } from '@/data/data-provider';
 import { DocumentLockProvider } from '@/documents/lock';
 import { NotificationsProvider } from '@/notifications/notifications-provider';
@@ -41,8 +44,9 @@ export default function RootLayout() {
   const dark = useColorScheme() === 'dark';
   // Android keeps the last shared report until now, so the mail app could read it (make-report.ts).
   useEffect(() => clearSharedReports(), []);
-  // The brand's typefaces, bundled with the app. Nothing shows until they're in, so no screen
-  // flashes in the system font first; a font that fails to load falls back to it.
+  // The brand's typefaces, bundled with the app, and the Android icon font. Nothing shows until
+  // they're in, so no screen flashes in the system font first or draws an icon a frame late; a
+  // font that fails to load falls back to the system font.
   const [fontsLoaded, fontError] = useFonts({
     Archivo_600SemiBold,
     Archivo_700Bold,
@@ -50,11 +54,19 @@ export default function RootLayout() {
     SourceSans3_500Medium,
     SourceSans3_600SemiBold,
     SourceSans3_700Bold,
+    [Fonts.symbols]: MaterialSymbols_400Regular,
   });
   if (!fontsLoaded && !fontError) return null;
 
   return (
     <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+      {/* Android is always light, so its system bars get dark icons; iOS follows the system. */}
+      {Platform.OS === 'android' && (
+        <>
+          <StatusBar style="dark" />
+          <NavigationBar style="dark" />
+        </>
+      )}
       <ThemeProvider value={Platform.OS === 'ios' ? (dark ? DarkTheme : DefaultTheme) : androidTheme}>
         <DataProvider>
           <NotificationsProvider>

@@ -66,6 +66,11 @@ export const Fonts = {
     '600': 'SourceSans3_600SemiBold',
     '700': 'SourceSans3_700Bold',
   },
+  /**
+   * Material Symbols, the Android icons. Same name expo-symbols registers it under, so its
+   * SymbolView finds it already loaded.
+   */
+  symbols: 'MaterialSymbols_400Regular',
 } as const;
 
 export const Radius = {
