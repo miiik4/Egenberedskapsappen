@@ -96,6 +96,16 @@ describe('nextActions', () => {
     expect(water).toMatchObject({ kind: 'buyWater', litres: 40, dayChange: 0 });
   });
 
+  it('names the limit the days card names when no single gap lifts the number', () => {
+    // 30 litres is 5 days for two adults; no food and no heat both hold the number at 0, so closing either
+    // alone adds nothing. The card says the food is missing most (water, food, heat break the tie), so the
+    // list starts with food too, then the plan, then heat, and the water that is only short comes last.
+    const stock = [item('w', { type: 'drinkingWater', litres: 30 })];
+    const plan = { contacts: 0, meetingPlace: false, followUps: [] };
+    const kinds = nextActions(two, stock, today, plan).slice(0, 5).map(label);
+    expect(kinds).toEqual(['buyFood', 'addContact', 'addMeetingPlace', 'get heatSource', 'buyWater']);
+  });
+
   it('keeps what the beredskapssjekk left to fix until it is done', () => {
     const plan = { contacts: 1, meetingPlace: true, followUps: ['equipment', 'contacts'] as const };
     const labels = nextActions(two, items, today, { ...plan, followUps: [...plan.followUps] }).map((a) =>
