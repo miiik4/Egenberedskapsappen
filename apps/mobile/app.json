@@ -2,7 +2,7 @@
   "expo": {
     "name": "Egenberedskapsappen",
     "slug": "egenberedskapsappen",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
@@ -33,7 +33,8 @@
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.READ_MEDIA_IMAGES",
-        "android.permission.READ_MEDIA_VIDEO"
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.WRITE_CONTACTS"
       ]
     },
     "plugins": [
@@ -69,6 +70,12 @@
           "cameraPermission": "Ta bilder og film for å dokumentere innbo og dokumenter. Bildene sendes ikke noe sted uten at du velger det.",
           "microphonePermission": false,
           "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Velg en nødkontakt fra kontaktene dine. Appen leser bare den du velger, og sender ingenting videre."
         }
       ],
       [

@@ -153,6 +153,10 @@ date then (the strategy review suggests mid-November, with the winter outage sea
       it in a viewer needs expo-intent-launcher (a new native package, so a `version` bump). Before 1.0, or later?
       (Decided 2026-10-14: later. 1.0 keeps the share sheet with the button «Del eller åpne PDF-en» and a note that the
       list also has apps that send it on; the viewer is under *After launch*)
+- [ ] *(in code, 2026-10-17; needs new builds, `version` 1.4.0)* «Velg fra kontaktene» on Ny nødkontakt opens the
+      phone's own contact picker (expo-contacts, a native package). iOS asks for no permission (the picker hands
+      over the one contact); Android asks for READ_CONTACTS the first time, WRITE_CONTACTS is blocked. Check the
+      pick, a contact with several numbers, and a denied permission on Android
 - [ ] Run the 16 device checks in `docs/android-review.md` on a real Android phone or emulator
 - [x] App language declared as Norwegian on iOS, so system parts (date picker) show Norwegian (5de5d53)
 - [ ] Walk through every flow in the simulator, including with no network (the QA agent couldn't: it needs simulator

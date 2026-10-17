@@ -17,7 +17,7 @@ on a device yet; see «Still to check».
 
 | Flow | When | What | Where | Readable by us/Expo? |
 | --- | --- | --- | --- | --- |
-| **EAS Update check** | every app launch | random per-install `EAS-Client-ID`, IP address, platform, runtime version (`1.3.0`), channel, IDs of the running and embedded update | Expo (650 Industries, USA), `u.expo.dev` | yes |
+| **EAS Update check** | every app launch | random per-install `EAS-Client-ID`, IP address, platform, runtime version (`1.4.0`), channel, IDs of the running and embedded update | Expo (650 Industries, USA), `u.expo.dev` | yes |
 
 That is the only flow the app starts itself. `app.json` has `updates.url` set and no `checkAutomatically`, so
 expo-updates uses its default (`ON_LOAD`): it checks on every launch. The app has no other `expo-updates` code.
@@ -28,6 +28,11 @@ app; the body is pre-filled with the app version and iOS/Android version, and th
 
 Not sent: no Firebase call (below), no analytics, no crash reporting, no ad SDK, no push token (reminders are local
 notifications; there's no `getExpoPushTokenAsync` or FCM), no contacts, no location.
+
+«Velg fra kontaktene» on Ny nødkontakt (1.4.0) opens the phone's own contact picker (expo-contacts) and copies the
+name and number of the one contact picked into the app's database on the phone. iOS asks for no contacts permission
+(the system picker hands the contact over); Android asks for `READ_CONTACTS` once, and `WRITE_CONTACTS` is blocked
+in `app.json`. Nothing is sent anywhere, so Contacts stays «not collected» in both stores.
 
 ### No Firebase call with the switch off (read in code, 2026-10-09)
 
