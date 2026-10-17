@@ -158,9 +158,9 @@ date then (the strategy review suggests mid-November, with the winter outage sea
       asks for READ_CONTACTS the first time, WRITE_CONTACTS is blocked. Checked 2026-10-17 in the iOS simulator and
       on a OnePlus 6 (Android 11, preview build 530d5e64): the prompt, deny → «Ingen tilgang til kontaktene», allow →
       picker, a contact with two numbers, saving; the APK requests READ_CONTACTS only
-- [ ] *(fixed in code; not run on a phone)* A form's save could run twice on the OnePlus 6 when the sheet was slow
-      to close (two copies of the same contact). `FormSheet` now ignores taps while a save is in flight, for all
-      forms
+- [x] A form's save could run twice on the OnePlus 6 when the sheet was slow to close (two copies of the same
+      contact). `FormSheet` now ignores taps while a save is in flight, for all forms; three fast taps on the
+      OnePlus 6 (preview build 2c0bc005) saved one contact
 - [ ] *(seen on the OnePlus 6, not fixed)* «Hold tallet riktig» in Kom i gang: the «Hver tredje måned» picker draws
       as a flat grey box on Android, unlike the rest of the form
 - [ ] Run the 16 device checks in `docs/android-review.md` on a real Android phone or emulator
