@@ -121,8 +121,13 @@ date then (the strategy review suggests mid-November, with the winter outage sea
 - [x] `roles/firebaseappcheck.tokenVerifier` for the functions' service account (2026-10-08)
 - [ ] **(Mikkel)** The functions' service account also got `roles/editor` by default, as on test. Keep it, or cut it
       down to the roles it needs
-- [ ] App Check: register **App Attest** (needs the Apple Team ID) and **Play Integrity** (needs the app in Play
-      Console with its SHA-256)
+- [ ] App Check: register **App Attest** (needs the Apple Team ID) and ~~**Play Integrity**~~ *(Play Integrity done
+      2026-10-18 by Claude on Mikkel's go: Play Console «Beskyttet med Play» → Play Integrity API linked to the prod Cloud
+      project `egenberedskapsappen` (374868390030), which also enabled the API; the Play app signing certificate's
+      SHA-256 `5A:BD:E2:B6:…:C7:16` added to the prod Android app with `firebase apps:android:sha:create`; the App Check
+      registration for the Android app uses Play Integrity with that fingerprint and a 1-hour token TTL. Storage,
+      Firestore and Auth are still «Unenforced». Nothing seen passing yet: 1.0 never initialises App Check while
+      Egenberedskap+ is off, so the proof waits for the first build with it on, installed from Play)*
 - [ ] Only after a release build has been seen passing App Check: **enforce** it for Firestore and Storage
 
 ## 5. App, before the store build
