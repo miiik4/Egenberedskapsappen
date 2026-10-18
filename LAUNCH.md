@@ -220,9 +220,16 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       (2026-10-14: set up and phone number verified, Mikkel)
 - [ ] App records for `no.htas.egenberedskap` in both stores, and `submit.production` filled in in
       `apps/mobile/eas.json`
-- [ ] Store listings in Norwegian: text, real screenshots, the privacy policy URL
+- [ ] Store listings in Norwegian: text, real screenshots, the privacy policy URL. *(2026-10-18, Claude in Play Console:
+      app name corrected to «Egenberedskapsappen», short and full description entered and saved as a draft; category
+      Livsstil, tag Hus og hjem, contact e-mail, phone and website set. Still to add by hand: the 512 px icon, the
+      1024×500 feature graphic and the six screenshots in `~/Downloads/play-skjermbilder` (the pane can't upload files),
+      and the privacy policy URL)*
 - [ ] Privacy labels (App Store) and Data safety (Play) that match the privacy policy, including the room photos
-      sent for AI analysis
+      sent for AI analysis. *(Play, 2026-10-18: Data safety answered per `docs/store/privacy-answers.md` and saved as a
+      draft; it can't be submitted before the privacy policy URL is set. The other eight content declarations are
+      saved: app access, ads, advertising ID, content rating PEGI 3, target audience 18+, government, financial,
+      health; answers in `docs/store/play-console.md`)*
 - [ ] *(built 2026-10-17: EAS build `41eee8db`, version 1.6.0, version code 3, package `no.htas.egenberedskap`, from
       commit 0cdaa7a; the AAB is in Mikkel's Downloads as `Egenberedskapsappen-1.6.0-production.aab`. Mikkel wants
       this as the release. Not yet uploaded or seen passing App Check)*
