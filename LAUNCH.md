@@ -222,9 +222,9 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       `apps/mobile/eas.json`
 - [ ] Store listings in Norwegian: text, real screenshots, the privacy policy URL. *(2026-10-18, Claude in Play Console:
       app name corrected to «Egenberedskapsappen», short and full description entered and saved as a draft; category
-      Livsstil, tag Hus og hjem, contact e-mail, phone and website set. Still to add by hand: the 512 px icon, the
-      1024×500 feature graphic and the six screenshots in `~/Downloads/play-skjermbilder` (the pane can't upload files),
-      the privacy policy URL is set to https://egenberedskapappen.no/personvern)*
+      Livsstil, tag Hus og hjem, contact e-mail, phone and website set; the privacy policy URL is set to
+      https://egenberedskapappen.no/personvern. Icon, feature graphic and the six screenshots uploaded by Mikkel the same
+      day. Play's side is complete and sent for review; the App Store listing remains)*
 - [ ] Privacy labels (App Store) and Data safety (Play) that match the privacy policy, including the room photos
       sent for AI analysis. *(Play, 2026-10-18: Data safety answered per `docs/store/privacy-answers.md` and saved as a
       saved once the privacy policy URL was in place. The other eight content declarations are
@@ -235,14 +235,18 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       this as the release. Superseded the same day: Play requires a privacy policy link inside the app, so Innstillinger
       got a «Personvernerklæring» row (304d8ad) and a new production build was made: EAS build `6319b9e8`, version 1.6.0,
       version code 4, `Egenberedskapsappen-1.6.0-production-vc4.aab` in Mikkel's Downloads. Upload that one, not version
-      code 3. Status 2026-10-18 morning: internal testing is active with version code 3 (uploaded by Mikkel); the
-      production track has an empty draft release and Norway as its only country (set by Claude); nothing sent for
-      review yet, and App Check not seen passing)*
+      code 3. Status 2026-10-18: Mikkel uploaded version code 4 to internal testing; Claude added the same bundle from
+      the library to the production release «4 (1.6.0)» with Norway as the only country, and sent it for review (below).
+      App Check not seen passing yet; Play Integrity registration is still open in section 3)*
       Production build with EAS, seen passing App Check and running against prod. On Android through Play's
       **internal testing** track (decided 2026-10-14): Play Integrity only trusts an app installed from Play, so a
       sideloaded APK can't prove App Check. The first upload is by hand in Play Console; after that `eas submit`
       (`submit.production.android.track` is `internal`) with a Play service account key added to EAS credentials
-- [ ] Submit for review (Android: promote the build that passed internal testing to production, no rebuild)
+- [x] Submit for review (Android: promote the build that passed internal testing to production, no rebuild)
+      *(Play, 2026-10-18 by Claude on Mikkel's go: production release «4 (1.6.0)» (EAS build `6319b9e8`) with Norwegian
+      release notes from `docs/store/listing.md`, **managed publishing on**, 15 changes sent to Google for review; Play
+      says reviews usually finish within 7 days. Play's only warning is the missing R8 mapping file, harmless. On
+      26 Oct: Publiseringsoversikt → «Publiser endringene». iOS waits for the Apple account)*
 
 ## 7. Insurers and Egenberedskap+
 

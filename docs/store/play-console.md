@@ -1,6 +1,6 @@
 # Google Play Console: «Konfigurer appen din», answers for 1.0
 
-Written 2026-10-18 for the first production release (build 41eee8db, 1.6.0, version code 3, Egenberedskap+ off).
+Written 2026-10-18 for the first production release (1.6.0, Egenberedskap+ off; sent for review as version code 4, build 6319b9e8).
 The answers follow `privacy-answers.md` and `listing.md`; what the app does was checked in code and on the
 OnePlus 6 (`docs/android-device-test-2026-10-17.md`). Redo the Data safety and content rating answers in the version
 that turns Egenberedskap+ on.
@@ -43,3 +43,15 @@ the questionnaire, with kontakt@holmtall.no as the contact address.
 
 Free, no in-app products. Countries: Norway first (the app is Norwegian only); more can be added later. No ads
 declaration is in the content section above.
+
+## Produksjonsutgave og innsending (2026-10-18)
+
+| Step | What was done |
+| --- | --- |
+| Bundle | Version code 4 (1.6.0, EAS build `6319b9e8`), uploaded by Mikkel to internal testing, added to the production release from the library («Legg til fra biblioteket»; «Promoter» was blocked because the production track already had a draft) |
+| Release name | `4 (1.6.0)`, Play's suggestion |
+| Release notes | `listing.md`, «Release notes», inside `<no-NO>` … `</no-NO>` tags (the listing language is no-NO, not nb-NO). Play rejected blank lines inside the tags («Linje 3: Forventet </no-NO>»), so the notes have none |
+| Countries | Norway only |
+| Managed publishing | On, so an approval does not publish before 26 Oct. Publish from Publiseringsoversikt on release day |
+| Submission | 15 changes sent for review (production release, countries, listing, content declarations, category). Play's quick checks take up to 14 minutes first, then the review, «usually within 7 days» |
+| Warning | No deobfuscation file for the bundle. Harmless: nothing is minified in a way that needs a mapping file for crash reports yet; worth adding to the EAS build later |
