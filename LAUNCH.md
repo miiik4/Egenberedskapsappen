@@ -224,15 +224,17 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       app name corrected to «Egenberedskapsappen», short and full description entered and saved as a draft; category
       Livsstil, tag Hus og hjem, contact e-mail, phone and website set. Still to add by hand: the 512 px icon, the
       1024×500 feature graphic and the six screenshots in `~/Downloads/play-skjermbilder` (the pane can't upload files),
-      and the privacy policy URL)*
+      the privacy policy URL is set to https://egenberedskapappen.no/personvern)*
 - [ ] Privacy labels (App Store) and Data safety (Play) that match the privacy policy, including the room photos
       sent for AI analysis. *(Play, 2026-10-18: Data safety answered per `docs/store/privacy-answers.md` and saved as a
-      draft; it can't be submitted before the privacy policy URL is set. The other eight content declarations are
+      saved once the privacy policy URL was in place. The other eight content declarations are
       saved: app access, ads, advertising ID, content rating PEGI 3, target audience 18+, government, financial,
       health; answers in `docs/store/play-console.md`)*
 - [ ] *(built 2026-10-17: EAS build `41eee8db`, version 1.6.0, version code 3, package `no.htas.egenberedskap`, from
       commit 0cdaa7a; the AAB is in Mikkel's Downloads as `Egenberedskapsappen-1.6.0-production.aab`. Mikkel wants
-      this as the release. Not yet uploaded or seen passing App Check)*
+      this as the release. Superseded the same day: Play requires a privacy policy link inside the app, so Innstillinger
+      got a «Personvernerklæring» row (304d8ad) and a new production build with version code 4 was started; use that
+      AAB from Downloads. Not yet uploaded or seen passing App Check)*
       Production build with EAS, seen passing App Check and running against prod. On Android through Play's
       **internal testing** track (decided 2026-10-14): Play Integrity only trusts an app installed from Play, so a
       sideloaded APK can't prove App Check. The first upload is by hand in Play Console; after that `eas submit`
@@ -264,7 +266,9 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       three Egenberedskap+ ones are still design renders)
 - [ ] Logo and three launch posters (A3 PDF, 4:5 feed and story PNGs) drafted in `docs/marketing/` (2026-10-11);
       not reviewed by a person yet. Check the release line and URL before anything is printed or posted
-- [ ] Deploy to the prod hosting site with the real domain; indexing on only there
+- [x] Deploy to the prod hosting site with the real domain; indexing on only there (2026-10-18, Mikkel's go: `firebase
+      deploy --only hosting --project prod`; https://egenberedskapappen.no/personvern and /kontakt answer 200 with no
+      noindex tag)
 - [x] Domain `egenberedskapappen.no` (without the s) in place (Mikkel, 2026-10-10)
 - [x] **(Tarjei)** Buy `egenberedskapsappen.no` (with the s, as the app is named); suggested as the main domain, with
       the other one redirecting to it (both bought, Mikkel 2026-10-14)
