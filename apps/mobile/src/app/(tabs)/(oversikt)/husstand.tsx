@@ -10,7 +10,7 @@ import { MembersSection } from '@/components/form/members';
 import { Row, Section } from '@/components/ui/list';
 import { Switch } from '@/components/ui/switch';
 import { Screen } from '@/components/ui/screen';
-import { CONTACT_EMAIL, EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
+import { CONTACT_EMAIL, EGENBEREDSKAP_PLUS_ENABLED, PRIVACY_POLICY_URL } from '@/constants/config';
 import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { deleteEverything } from '@/data/delete-everything';
@@ -131,8 +131,9 @@ export default function Husstand() {
             }
           />
         </Section>
-        <Section footer="Savner du noe, eller er noe feil? Skriv til oss på e-post.">
+        <Section footer="Savner du noe, eller er noe feil? Skriv til oss på e-post. Personvernerklæringen sier hva appen lagrer, og hvor.">
           <Row title="Gi tilbakemelding" chevron onPress={giveFeedback} />
+          <Row title="Personvernerklæring" chevron onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {})} />
         </Section>
         <DestructiveButton label="Slett alle data" onPress={wipe} />
       </Screen>
