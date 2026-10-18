@@ -4,8 +4,28 @@
     {
       "name": "web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--workspace", "web", "run", "dev", "--", "--port", "4321"],
+      "runtimeArgs": [
+        "--workspace",
+        "web",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "4321"
+      ],
       "port": 4321
+    },
+    {
+      "name": "docs",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8765",
+        "--directory",
+        "docs"
+      ],
+      "port": 8765
     }
   ]
 }
