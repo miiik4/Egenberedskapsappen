@@ -235,7 +235,9 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       this as the release. Superseded the same day: Play requires a privacy policy link inside the app, so Innstillinger
       got a «Personvernerklæring» row (304d8ad) and a new production build was made: EAS build `6319b9e8`, version 1.6.0,
       version code 4, `Egenberedskapsappen-1.6.0-production-vc4.aab` in Mikkel's Downloads. Upload that one, not version
-      code 3. Not yet uploaded or seen passing App Check)*
+      code 3. Status 2026-10-18 morning: internal testing is active with version code 3 (uploaded by Mikkel); the
+      production track has an empty draft release and Norway as its only country (set by Claude); nothing sent for
+      review yet, and App Check not seen passing)*
       Production build with EAS, seen passing App Check and running against prod. On Android through Play's
       **internal testing** track (decided 2026-10-14): Play Integrity only trusts an app installed from Play, so a
       sideloaded APK can't prove App Check. The first upload is by hand in Play Console; after that `eas submit`
