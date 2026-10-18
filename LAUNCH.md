@@ -233,8 +233,9 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - [ ] *(built 2026-10-17: EAS build `41eee8db`, version 1.6.0, version code 3, package `no.htas.egenberedskap`, from
       commit 0cdaa7a; the AAB is in Mikkel's Downloads as `Egenberedskapsappen-1.6.0-production.aab`. Mikkel wants
       this as the release. Superseded the same day: Play requires a privacy policy link inside the app, so Innstillinger
-      got a «Personvernerklæring» row (304d8ad) and a new production build with version code 4 was started; use that
-      AAB from Downloads. Not yet uploaded or seen passing App Check)*
+      got a «Personvernerklæring» row (304d8ad) and a new production build was made: EAS build `6319b9e8`, version 1.6.0,
+      version code 4, `Egenberedskapsappen-1.6.0-production-vc4.aab` in Mikkel's Downloads. Upload that one, not version
+      code 3. Not yet uploaded or seen passing App Check)*
       Production build with EAS, seen passing App Check and running against prod. On Android through Play's
       **internal testing** track (decided 2026-10-14): Play Integrity only trusts an app installed from Play, so a
       sideloaded APK can't prove App Check. The first upload is by hand in Play Console; after that `eas submit`
