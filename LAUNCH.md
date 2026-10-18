@@ -285,7 +285,10 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - [x] **(Tarjei)** Buy `egenberedskapsappen.no` (with the s, as the app is named); suggested as the main domain, with
       the other one redirecting to it (both bought, Mikkel 2026-10-14)
 - [ ] DNS for `egenberedskapsappen.no` (with the s) isn't set up; point it at hosting as a redirect to
-      `egenberedskapappen.no`, which is set up
+      `egenberedskapappen.no`, which is set up. *(2026-10-18: added in Firebase Hosting as a redirect domain, status
+      «Needs setup» until the DNS at the registrar (nameservers dnsdomene.net) has A `199.36.158.100` and TXT
+      `hosting-site=egenberedskapsappen` on the bare domain, and the parking A record `185.126.36.19` is removed.
+      Firebase then verifies and issues the certificate, which can take up to a day. Mikkel enters the records)*
 
 ## After launch (1.1 and later, only when users ask)
 
