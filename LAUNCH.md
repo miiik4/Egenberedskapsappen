@@ -288,7 +288,10 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       `egenberedskapappen.no`, which is set up. *(2026-10-18: added in Firebase Hosting as a redirect domain, status
       «Needs setup» until the DNS at the registrar (nameservers dnsdomene.net) has A `199.36.158.100` and TXT
       `hosting-site=egenberedskapsappen` on the bare domain, and the parking A record `185.126.36.19` is removed.
-      Firebase then verifies and issues the certificate, which can take up to a day. Mikkel enters the records)*
+      Firebase then verifies and issues the certificate, which can take up to a day. Records entered by Mikkel the same
+      day and seen on the authoritative servers and public resolvers at 12:20, but Firebase's check still found the
+      old parking address in its cache (the old record had a 4-hour TTL). Press «Verify» on the domain in Hosting
+      again after ~16:30 on 2026-10-18, then check that https://egenberedskapsappen.no redirects)*
 
 ## After launch (1.1 and later, only when users ask)
 
