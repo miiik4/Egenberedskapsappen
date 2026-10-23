@@ -253,9 +253,9 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       says reviews usually finish within 7 days. Play's only warning is the missing R8 mapping file, harmless. On
       26 Oct: Publiseringsoversikt → «Publiser endringene». iOS waits for the Apple account)*
       ***Live on Google Play since 2026-10-23 (Mikkel), three days before the planned date:
-      https://play.google.com/store/apps/details?id=no.htas.egenberedskap. The listing still shows «Mikkel Holmberg»
-      as the developer; change the developer name to Holm & Tall AS under Innstillinger → Utviklerkonto →
-      Kontodetaljer in Play Console (Google reviews the change). iOS still waits for the Apple account.
+      https://play.google.com/store/apps/details?id=no.htas.egenberedskap. The listing showed «Mikkel Holmberg» as the
+      developer; Mikkel changed the developer name to the company under Kontodetaljer the same day (Google reviews
+      the change before it shows). iOS still waits for the Apple account.
       2026-10-23: the padded phone screenshots replaced with six composed ones (`docs/store/skjermbilder/`, built by
       `docs/store/render-screenshots.mjs`); Mikkel picked the files, Claude sent the change for review. When Google
       approves it: Publiseringsoversikt → «Publiser endringene».***
