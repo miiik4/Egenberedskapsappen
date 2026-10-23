@@ -33,7 +33,7 @@ the questionnaire, with kontakt@holmtall.no as the contact address.
 | Full description | `listing.md`, «Full description» |
 | App icon 512×512 | from `apps/mobile/assets/images/icon.png` (`sips -Z 512`) |
 | Feature graphic 1024×500 | `feature-graphic.png` (source `feature-graphic.html`, logo and font from `docs/marketing`) |
-| Phone screenshots | From the OnePlus 6 with the demo household, scaled to 1080×1920 with navy side bars (Play wants 16:9 to 9:16) |
+| Phone screenshots | `skjermbilder/1-oversikt.png` … `6-guide.png` (1080×1920): a Norwegian headline over the app screen on navy, composed by `render-screenshots.mjs` from the raw OnePlus 6 captures in `skjermbilder/kilde/` (demo household). Replaced the first set, which was the captures padded with navy side bars, on 2026-10-23 |
 | Category | Livsstil (alternative: Verktøy) |
 | Contact email | kontakt@holmtall.no |
 | Website | https://egenberedskapappen.no |
