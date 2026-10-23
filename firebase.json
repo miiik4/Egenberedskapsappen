@@ -10,6 +10,7 @@
   },
   "hosting": [
   {
+      "target": "app",
       "public": "apps/web/dist",
       "predeploy": ["npm --workspace web run build"],
       "cleanUrls": true,
@@ -43,6 +44,7 @@
       ]
     },
   {
+      "target": "firma",
       "public": "apps/firma/dist",
       "predeploy": ["npm --workspace firma run build"],
       "cleanUrls": true,
