@@ -91,9 +91,9 @@ npx firebase-tools deploy --only hosting:app --project test    # egenberedskapsa
 npx firebase-tools deploy --only hosting:firma --project prod  # the company site
 ```
 
-The `firma` target points at Hosting sites named `holmtall` (prod) and `holmtall-test` (test) that don't exist yet.
-Before the first deploy, create them (`npx firebase-tools hosting:sites:create holmtall --project prod`; site ids are
-global, so pick another and update `.firebaserc` if that one is taken), then connect the domain under Hosting in the
-Firebase console and set the DNS at the registrar. Nothing of this is done yet (LAUNCH.md, *After launch*).
+The `firma` target points at the Hosting sites `holmtall` (prod, https://holmtall.web.app) and `holmtall-test`
+(test, https://holmtall-test.web.app), both created and deployed 2026-10-23. The custom domains `holmtall.no` and
+`www.holmtall.no` (a redirect to the apex) are added to the prod site; they go live once the DNS at the registrar
+points at Hosting (the records are in LAUNCH.md, *After launch*).
 
 The headers (cache, CSP, no framing) are listed once per target in `firebase.json`; change both together.

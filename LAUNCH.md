@@ -316,10 +316,15 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - Ideas waiting for user demand: «Jeg er trygg», hazard warnings, power-saving mode, evacuation bag, barcode
   scanning, blog
 - Company site for Holm & Tall AS, `apps/firma` (Mikkel asked for it 2026-10-23): one page in bokmål about the
-  company, the app, insurers and contact, plus a privacy page. Built and configured as the Hosting target `firma`,
-  not deployed: the Hosting sites `holmtall`/`holmtall-test` must be created, the domain (holmtall.no, assumed from
-  the email address) confirmed and connected first. Mikkel checked the page and the names and roles on it (Tarjei
-  grunnlegger og daglig leder, Mikkel medgrunnlegger og utvikler) on 2026-10-23. The Krokstadelva origin story from
+  company, the app, insurers and contact, plus a privacy page. Mikkel checked the page and the names and roles on it
+  (Tarjei grunnlegger og daglig leder, Mikkel medgrunnlegger og utvikler) on 2026-10-23. Live the same day on
+  https://holmtall.web.app (Hosting target `firma`; `holmtall-test.web.app` with noindex for test). `holmtall.no` and
+  `www.holmtall.no` (redirect to the apex) are added as custom domains, waiting on DNS. **(Mikkel)** At the registrar:
+  change the A record for `holmtall.no` from 185.126.36.19 to **199.36.158.100**; add a TXT record on `holmtall.no`
+  with **`hosting-site=holmtall`** (keep the existing google-site-verification and SPF TXT records); change the CNAME
+  for `www.holmtall.no` from `holmtall.no` to **`holmtall.web.app`**. Hosting checks the records itself and issues
+  the certificate; nothing to click. Today 185.126.36.19 answers for holmtall.no, so check that nothing else is served
+  there before the A record changes (mail is unaffected: MX records stay, and the SPF record names the IP directly). The Krokstadelva origin story from
   the app's «Om oss» is on it too (Mikkel's choice, 2026-10-23)
 
 ## Not doing
