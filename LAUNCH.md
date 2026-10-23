@@ -319,7 +319,7 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
   company, the app, insurers and contact, plus a privacy page. Built and configured as the Hosting target `firma`,
   not deployed: the Hosting sites `holmtall`/`holmtall-test` must be created, the domain (holmtall.no, assumed from
   the email address) confirmed and connected, and the names and roles marked «(sjekk)» on the page checked by a
-  person first. Whether the Krokstadelva origin story from the app's «Om oss» belongs there is Mikkel's call
+  person first. The Krokstadelva origin story from the app's «Om oss» is on it too (Mikkel's choice, 2026-10-23)
 
 ## Not doing
 
