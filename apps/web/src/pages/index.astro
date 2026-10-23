@@ -10,6 +10,9 @@ import resultat from '../assets/skjermbilder/kom-i-gang-resultat.webp';
 import beredskapssjekk from '../assets/skjermbilder/beredskapssjekk.webp';
 import lager from '../assets/skjermbilder/lager.webp';
 import nodinfo from '../assets/skjermbilder/nodinfo.webp';
+
+/** The app on Google Play. The App Store link comes when the Apple account is approved (LAUNCH.md). */
+const PLAY_URL = 'https://play.google.com/store/apps/details?id=no.htas.egenberedskap';
 import oversikt from '../assets/skjermbilder/oversikt.webp';
 import underforsikret from '../assets/skjermbilder/underforsikret.webp';
 import { COMPANY } from '../company';
@@ -65,7 +68,7 @@ const FAQ = [
   },
   {
     q: 'Hvilke telefoner virker appen på?',
-    a: 'iPhone og Android.',
+    a: 'Android nå, fra Google Play. iPhone-versjonen kommer snart.',
   },
 ];
 ---
@@ -82,9 +85,10 @@ const FAQ = [
         på det som går ut på dato. Gratis, uten konto, og alt blir liggende på telefonen.
       </p>
       <div class="actions">
-        <a class="button" href="#regn-ut">Regn ut deres døgn</a>
-        <p class="soon">Kommer snart til iPhone og Android.</p>
+        <a class="button" href={PLAY_URL}>Last ned på Google Play</a>
+        <a class="button button-outline" href="#regn-ut">Regn ut deres døgn</a>
       </div>
+      <p class="soon">Gratis for Android. iPhone-versjonen kommer snart.</p>
     </div>
     <Phone
       src={oversikt}
@@ -351,8 +355,8 @@ const FAQ = [
   <section class="closing wrap">
     <div class="closing-card">
       <h2>Begynn med ett tall</h2>
-      <p>Egenberedskapsappen kommer snart til iPhone og Android, gratis for alle husstander.</p>
-      <a class="button button-light" href="#regn-ut">Regn ut deres døgn</a>
+      <p>Egenberedskapsappen er gratis for alle husstander. Last den ned til Android i dag. iPhone-versjonen kommer snart.</p>
+      <a class="button button-light" href={PLAY_URL}>Last ned på Google Play</a>
     </div>
   </section>
 </Base>
@@ -426,8 +430,18 @@ const FAQ = [
     margin-top: 36px;
   }
   .soon {
+    margin-top: 16px;
     color: var(--secondary);
     font-size: 1rem;
+  }
+  .button-outline {
+    background: transparent;
+    color: var(--accent);
+    box-shadow: inset 0 0 0 2px currentColor;
+  }
+  .button-outline:hover {
+    background: var(--accent-soft);
+    filter: none;
   }
   .hero :global(.hero-phone) {
     justify-self: center;
