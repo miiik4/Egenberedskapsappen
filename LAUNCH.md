@@ -252,6 +252,10 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       release notes from `docs/store/listing.md`, **managed publishing on**, 15 changes sent to Google for review; Play
       says reviews usually finish within 7 days. Play's only warning is the missing R8 mapping file, harmless. On
       26 Oct: Publiseringsoversikt → «Publiser endringene». iOS waits for the Apple account)*
+      ***Live on Google Play since 2026-10-23 (Mikkel), three days before the planned date:
+      https://play.google.com/store/apps/details?id=no.htas.egenberedskap. The listing still shows «Mikkel Holmberg»
+      as the developer; change the developer name to Holm & Tall AS under Innstillinger → Utviklerkonto →
+      Kontodetaljer in Play Console (Google reviews the change). iOS still waits for the Apple account.***
 
 ## 7. Insurers and Egenberedskap+
 
@@ -265,7 +269,7 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 
 - [x] Replace the «Kvartalssjekk» section in `apps/web/src/pages/index.astro` with «Beredskapssjekk» and its
       choice of interval (2026-10-10, ahead of the app on Mikkel's say; seen in the local preview, not deployed)
-- [ ] App Store and Google Play links
+- [ ] App Store and Google Play links *(Play is live: https://play.google.com/store/apps/details?id=no.htas.egenberedskap; the App Store link waits for Apple)*
 - [x] Every claim checked against the app; false ones fixed (287df93)
 - [x] *(resolved: the innbo list, receipts and PDF are shown as free, df22ba5)* The Egenberedskap+ section sells the innbo list, receipts and PDF as paid, but the app lets
       anyone add things by hand (depends on Tarjei's answer in section 7)
