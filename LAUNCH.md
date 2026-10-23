@@ -273,8 +273,8 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - [x] Replace the «Kvartalssjekk» section in `apps/web/src/pages/index.astro` with «Beredskapssjekk» and its
       choice of interval (2026-10-10, ahead of the app on Mikkel's say; seen in the local preview, not deployed)
 - [ ] App Store and Google Play links *(2026-10-23: the Play link is on the front page, in the hero, the closing card
-      and the FAQ, with «iPhone-versjonen kommer snart»; seen in the local preview, not deployed yet. The App Store
-      link waits for Apple)*
+      and the FAQ, with «iPhone-versjonen kommer snart»; deployed to prod hosting the same day and seen live on
+      egenberedskapappen.no. The App Store link waits for Apple)*
 - [x] Every claim checked against the app; false ones fixed (287df93)
 - [x] *(resolved: the innbo list, receipts and PDF are shown as free, df22ba5)* The Egenberedskap+ section sells the innbo list, receipts and PDF as paid, but the app lets
       anyone add things by hand (depends on Tarjei's answer in section 7)
