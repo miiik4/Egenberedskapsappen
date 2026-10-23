@@ -79,10 +79,21 @@ password manager).
 The free plan covers updates for 1 000 monthly active users; above that Expo bills usage, and the Starter plan
 (USD 19 a month) covers 3 000.
 
-## Website
+## Websites
+
+Two Astro sites, two Hosting targets in `firebase.json` and `.firebaserc`: `app` is `apps/web` (the app's site,
+egenberedskapappen.no) and `firma` is `apps/firma` (the company's site, holmtall.no). Both build in the predeploy
+step; a plain `--only hosting` deploys both.
 
 ```sh
-npx firebase-tools deploy --only hosting --project test   # egenberedskapsappen-test.web.app, noindex
+npx firebase-tools deploy --only hosting:app --project prod    # egenberedskapappen.no, indexed
+npx firebase-tools deploy --only hosting:app --project test    # egenberedskapsappen-test.web.app, noindex
+npx firebase-tools deploy --only hosting:firma --project prod  # the company site
 ```
 
-Prod hosting waits for the confirmed company details and the real domain (LAUNCH.md section 8).
+The `firma` target points at Hosting sites named `holmtall` (prod) and `holmtall-test` (test) that don't exist yet.
+Before the first deploy, create them (`npx firebase-tools hosting:sites:create holmtall --project prod`; site ids are
+global, so pick another and update `.firebaserc` if that one is taken), then connect the domain under Hosting in the
+Firebase console and set the DNS at the registrar. Nothing of this is done yet (LAUNCH.md, *After launch*).
+
+The headers (cache, CSP, no framing) are listed once per target in `firebase.json`; change both together.

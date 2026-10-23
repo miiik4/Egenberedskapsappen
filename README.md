@@ -10,6 +10,7 @@ Free for every household, with no ads and no tracking. Egenberedskap+ (encrypted
 | --- | --- |
 | `apps/mobile` | Expo app (iOS + Android), Expo Router, SDK 57 |
 | `apps/web` | Marketing site (Astro, static). Its calculator uses the days calculation from `packages/core`; the phone pictures are rendered from the iOS v2 design |
+| `apps/firma` | The company's own site, holmtall.no (Astro, static). Same fonts and colours as `apps/web`, its own Firebase Hosting site |
 | `packages/core` | Shared TypeScript: domain types, the days-covered calculation, guidance figures. No React, fully tested |
 | `packages/store` | On-device storage: SQLite schema, migrations and every read and write. Tested against real SQLite (`node:sqlite`); the app runs it on expo-sqlite |
 | `packages/sync` | End-to-end encryption and the sync engine for backup. Pure TypeScript, tested with two simulated phones |

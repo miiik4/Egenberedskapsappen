@@ -315,6 +315,11 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
 - Ideas waiting for user demand: «Jeg er trygg», hazard warnings, power-saving mode, evacuation bag, barcode
   scanning, blog
+- Company site for Holm & Tall AS, `apps/firma` (Mikkel asked for it 2026-10-23): one page in bokmål about the
+  company, the app, insurers and contact, plus a privacy page. Built and configured as the Hosting target `firma`,
+  not deployed: the Hosting sites `holmtall`/`holmtall-test` must be created, the domain (holmtall.no, assumed from
+  the email address) confirmed and connected, and the names and roles marked «(sjekk)» on the page checked by a
+  person first. Whether the Krokstadelva origin story from the app's «Om oss» belongs there is Mikkel's call
 
 ## Not doing
 

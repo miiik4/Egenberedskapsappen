@@ -1,0 +1,182 @@
+---
+import { APP, COMPANY, phoneHref } from '../company';
+import Base from '../layouts/Base.astro';
+
+// Names and roles come from the people themselves, not from the repo: a person checks them before the site goes live.
+const PEOPLE = [
+  { name: 'Tarjei Talleivsen', role: 'grunnlegger og daglig leder (sjekk)' },
+  { name: 'Mikkel Holmberg', role: 'utvikler (sjekk)' },
+];
+---
+
+<Base
+  title="Holm & Tall AS"
+  description="Holm & Tall AS i Porsgrunn lager Egenberedskapsappen, en gratis app for egenberedskap i norske husstander."
+>
+  <section class="intro">
+    <h1>Holm & Tall AS lager Egenberedskapsappen.</h1>
+    <p class="lead">
+      Vi er et lite norsk selskap i Porsgrunn. Det første vi har laget, er en gratis app som hjelper husstander å
+      være forberedt når strøm, vann eller nett faller ut, og å komme videre etter en skade.
+    </p>
+  </section>
+
+  <section id="hvem" aria-labelledby="hvem-head">
+    <h2 id="hvem-head">Hvem vi er</h2>
+    <dl class="people">
+      {
+        PEOPLE.map((person) => (
+          <div>
+            <dt>{person.name}</dt>
+            <dd>{person.role}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section id="appen" aria-labelledby="appen-head">
+    <h2 id="appen-head">Egenberedskapsappen</h2>
+    <p>
+      Appen regner ut hvor mange døgn husstanden klarer seg uten strøm og vann, viser hva som mangler, og minner dere
+      på det som går ut på dato. Den holder også orden på nødkontakter, viktige dokumenter og innboet, så det er
+      lettere å melde en skade.
+    </p>
+    <p>
+      Alt ligger på telefonen og virker uten nett. Appen har ingen konto, ingen reklame og ingen sporing. Rådene
+      bygger på anbefalingene fra Direktoratet for samfunnssikkerhet og beredskap (DSB); appen er ikke laget av DSB.
+    </p>
+    <ul class="links">
+      <li><a href={APP.site} rel="noopener">Les mer på egenberedskapappen.no</a></li>
+      <li><a href={APP.play} rel="noopener">Last ned på Google Play</a></li>
+      <li>iPhone-versjonen kommer snart.</li>
+    </ul>
+  </section>
+
+  <section id="forsikring" aria-labelledby="forsikring-head">
+    <h2 id="forsikring-head">For forsikringsselskaper</h2>
+    <p>
+      Egenberedskap+ er en utvidelse av appen med KI-dokumentasjon av innboet og kryptert sikkerhetskopi. Den er ikke
+      lansert ennå. Forsikringsselskaper skal kunne gi den til kundene sine som en del av forsikringen: kunden får en
+      aktiveringskode og legger den inn i appen, uten å lage en konto.
+    </p>
+    <p>
+      Kundenes opplysninger er kryptert på telefonen før de sendes. Verken vi eller forsikringsselskapet kan lese dem.
+      Kunden bestemmer selv hva som deles, for eksempel en innbooversikt som PDF når en skade skal meldes.
+    </p>
+    <p>
+      Vil dere tilby appen til kundene deres? Skriv til{' '}
+      <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>.
+    </p>
+  </section>
+
+  <section id="kontakt" aria-labelledby="kontakt-head">
+    <h2 id="kontakt-head">Kontakt</h2>
+    <dl class="contact">
+      <div>
+        <dt>E-post</dt>
+        <dd><a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a></dd>
+      </div>
+      <div>
+        <dt>Telefon</dt>
+        <dd><a href={phoneHref}>{COMPANY.phone}</a></dd>
+      </div>
+      <div>
+        <dt>Adresse</dt>
+        <dd>{COMPANY.name}, {COMPANY.street}, {COMPANY.postcode}</dd>
+      </div>
+      <div>
+        <dt>Org.nr.</dt>
+        <dd>{COMPANY.orgNumber}</dd>
+      </div>
+    </dl>
+    <p class="note">
+      Spørsmål om selve appen, og hjelp med den, finner dere på{' '}
+      <a href={`${APP.site}/kontakt`} rel="noopener">egenberedskapappen.no/kontakt</a>.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .intro {
+    padding-block: clamp(48px, 9vw, 112px) clamp(16px, 3vw, 32px);
+  }
+  h1 {
+    max-width: 14em;
+    font-size: clamp(1.75rem, 7vw, 3.25rem);
+    font-stretch: 112%;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    /* «Egenberedskapsappen.» is one long word: let it break rather than run off a narrow screen. */
+    overflow-wrap: anywhere;
+  }
+  .lead {
+    max-width: 36em;
+    margin-top: 24px;
+    font-size: clamp(1.2rem, 2vw, 1.375rem);
+    line-height: 1.5;
+  }
+
+  section + section {
+    margin-top: clamp(40px, 6vw, 64px);
+    padding-top: clamp(28px, 4vw, 40px);
+    border-top: 1px solid var(--separator);
+  }
+  section:not(.intro) {
+    display: grid;
+    gap: 12px 40px;
+  }
+  @media (min-width: 700px) {
+    section:not(.intro) {
+      grid-template-columns: 13rem 1fr;
+    }
+    section:not(.intro) > h2 {
+      grid-row: 1 / span 20;
+    }
+  }
+  h2 {
+    font-size: 1.125rem;
+    font-stretch: 112%;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    padding-top: 0.2em;
+  }
+  section:not(.intro) > p {
+    max-width: 42em;
+  }
+
+  dl {
+    margin: 0;
+  }
+  dl > div + div {
+    margin-top: 10px;
+  }
+  dt {
+    color: var(--label);
+    font-weight: 700;
+  }
+  dd {
+    margin: 0;
+  }
+  .contact dt {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--secondary);
+  }
+
+  .links {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .links li + li {
+    margin-top: 8px;
+  }
+  .links a {
+    font-weight: 600;
+  }
+  .note {
+    color: var(--secondary);
+    font-size: 1rem;
+  }
+</style>

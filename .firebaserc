@@ -3,5 +3,19 @@
     "default": "egenberedskapsappen-test",
     "test": "egenberedskapsappen-test",
     "prod": "egenberedskapsappen"
+  },
+  "targets": {
+    "egenberedskapsappen": {
+      "hosting": {
+        "app": ["egenberedskapsappen"],
+        "firma": ["holmtall"]
+      }
+    },
+    "egenberedskapsappen-test": {
+      "hosting": {
+        "app": ["egenberedskapsappen-test"],
+        "firma": ["holmtall-test"]
+      }
+    }
   }
 }

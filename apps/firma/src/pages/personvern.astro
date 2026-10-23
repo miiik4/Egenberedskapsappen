@@ -1,0 +1,82 @@
+---
+import { APP, COMPANY } from '../company';
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+  title="Personvern – Holm & Tall AS"
+  description="Hva nettsiden til Holm & Tall AS gjør med opplysningene om de som besøker den."
+>
+  <article class="page">
+    <h1>Personvern</h1>
+    <p class="updated">Sist oppdatert 23. oktober 2026</p>
+
+    <p>
+      Denne nettsiden bruker ingen informasjonskapsler, har ingen analyseverktøy og ingen sporing. Skriftene leveres
+      fra vårt eget domene, så ingen forespørsel går til Google Fonts eller andre.
+    </p>
+
+    <h2>Hvem som er ansvarlig</h2>
+    <p>
+      {COMPANY.name} (org.nr. {COMPANY.orgNumber}), {COMPANY.street}, {COMPANY.postcode}, er behandlingsansvarlig.
+      Spørsmål om personvern sendes til <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>.
+    </p>
+
+    <h2>Besøk på nettsiden</h2>
+    <p>
+      Siden ligger hos Firebase Hosting (Google Ireland Ltd.). Som for alle nettsider når IP-adressen til den som henter
+      siden fram til leverandøren som sender den. Vi bruker ikke disse opplysningene til noe, og vi fører ingen egen
+      logg over hvem som besøker siden.
+    </p>
+
+    <h2>E-post</h2>
+    <p>
+      Skriver dere til oss, bruker vi navnet, e-postadressen og det dere skriver bare til å svare og følge opp
+      henvendelsen. Vi gir ikke opplysningene videre.
+    </p>
+
+    <h2>Egenberedskapsappen</h2>
+    <p>
+      Appen har sin egen personvernerklæring på{' '}
+      <a href={APP.privacy} rel="noopener">egenberedskapappen.no/personvern</a>. Den sier hva som blir på
+      telefonen, og hva som sendes når dere selv slår på en funksjon som trenger det.
+    </p>
+
+    <h2>Rettighetene deres</h2>
+    <p>
+      Dere har rett til innsyn, retting og sletting. Ta kontakt på{' '}
+      <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>. Mener dere at vi behandler opplysninger i strid med
+      reglene, kan dere klage til <a href="https://www.datatilsynet.no/" rel="noopener">Datatilsynet</a>.
+    </p>
+  </article>
+</Base>
+
+<style>
+  .page {
+    max-width: 42em;
+    padding-block: clamp(40px, 7vw, 88px) 0;
+  }
+  h1 {
+    font-size: clamp(1.75rem, 7vw, 3.25rem);
+    font-stretch: 112%;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .updated {
+    margin-top: 14px;
+    color: var(--secondary);
+    font-size: 1rem;
+  }
+  .page > p:not(.updated) {
+    margin-top: 14px;
+  }
+  .updated + p {
+    margin-top: clamp(28px, 4vw, 44px);
+  }
+  h2 {
+    margin-top: 40px;
+    font-size: 1.375rem;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+</style>

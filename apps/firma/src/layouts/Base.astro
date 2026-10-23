@@ -1,0 +1,127 @@
+---
+// Fonts are served from our own domain, so no visitor's IP address goes to Google.
+import '@fontsource-variable/archivo/wdth.css';
+import '@fontsource-variable/source-sans-3';
+import '../styles/global.css';
+import { COMPANY } from '../company';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+
+// Only the build for the prod project may be indexed. Firebase passes the project to the
+// predeploy build (firebase.json), so the test site, and any build made without it, says noindex.
+const indexable = process.env.GCLOUD_PROJECT === 'egenberedskapsappen';
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const home = Astro.url.pathname === '/';
+---
+
+<!doctype html>
+<html lang="nb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {!indexable && <meta name="robots" content="noindex, nofollow" />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content="nb_NO" />
+    <meta name="theme-color" content="#F4F7FA" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#08131F" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="skip" href="#innhold">Gå til innholdet</a>
+    <header class="site-header wrap">
+      {home ? <p class="wordmark">{COMPANY.name}</p> : <a class="wordmark" href="/">{COMPANY.name}</a>}
+      <nav aria-label="Hovedmeny">
+        <ul>
+          <li><a href="/#appen">Egenberedskapsappen</a></li>
+          <li><a href="/#forsikring">For forsikringsselskaper</a></li>
+          <li><a href="/#kontakt">Kontakt</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="innhold" class="wrap">
+      <slot />
+    </main>
+
+    <footer class="site-footer wrap">
+      <p>
+        {COMPANY.name} · Org.nr. {COMPANY.orgNumber} · {COMPANY.street}, {COMPANY.postcode}
+      </p>
+      <p>
+        <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a> · <a href="/personvern">Personvern</a>
+      </p>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .skip {
+    position: absolute;
+    left: 16px;
+    top: -100px;
+    z-index: 10;
+    padding: 10px 16px;
+    background: var(--card);
+    border-radius: 8px;
+  }
+  .skip:focus {
+    top: 12px;
+  }
+
+  .site-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 32px;
+    padding-block: 28px 20px;
+    border-bottom: 1px solid var(--separator);
+  }
+  .wordmark {
+    margin: 0;
+    color: var(--label);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    font-stretch: 112%;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+  nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  nav a {
+    color: var(--secondary);
+    font-size: 1rem;
+    text-decoration: none;
+  }
+  nav a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .site-footer {
+    margin-top: clamp(48px, 8vw, 96px);
+    padding-block: 28px 48px;
+    border-top: 1px solid var(--separator);
+    color: var(--secondary);
+    font-size: 1rem;
+  }
+  .site-footer p + p {
+    margin-top: 6px;
+  }
+</style>

@@ -16,6 +16,20 @@
       "port": 4321
     },
     {
+      "name": "firma",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--workspace",
+        "firma",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "4322"
+      ],
+      "port": 4322
+    },
+    {
       "name": "docs",
       "runtimeExecutable": "python3",
       "runtimeArgs": [
