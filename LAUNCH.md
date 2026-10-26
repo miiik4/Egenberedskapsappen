@@ -364,6 +364,12 @@ public: anyone can read published documents, never drafts).
       signert». A draft «Eksempelpartner» (unsigned, never to be published) shows the fields; discard it when done.
       Mikkel's original draft page is kept, unbuilt and uncommitted, in `docs/marketing/partnerside-utkast.astro`, and
       its logos in `apps/web/src/assets/`: upload them to that partner's document instead
+- [x] CTC Bilpartner: Mikkel said 2026-10-26 the agreement is in place and to set them up without a code.
+      Published as `partner-ctc-bilpartner` (`/for/ctc-bilpartner`), logos from Mikkel's draft, discount section off.
+      Without a code the page makes no promise of an in-app greeting («Ingen reklame eller sporing» instead of
+      «Merket «Sponset»») and the title says «i samarbeid med». Headline, lead, share text and privacy line written
+      for the no-code page; **a person should read them** before the link is handed out. Seen in a local build
+      (noindex, nothing loaded from Sanity in the browser); not deployed
 - [ ] **(Mikkel)** Publishing in Sanity does not change the site: rebuild and deploy (`firebase deploy --only
       hosting:app --project prod`). A Sanity webhook that triggers a deploy can come later
 - [ ] **(Mikkel)** Hosted Studio, if wanted: `npm --workspace studio exec sanity deploy` (publishes a sanity.studio URL)

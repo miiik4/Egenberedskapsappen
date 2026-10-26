@@ -38,7 +38,11 @@ const STEPS = [
 ---
 
 <Base
-  title={`Et tilbud fra ${partner.name} – Egenberedskapsappen`}
+  title={
+    partner.code || partner.discountText
+      ? `Et tilbud fra ${partner.name} – Egenberedskapsappen`
+      : `Egenberedskapsappen i samarbeid med ${partner.name}`
+  }
   description={partner.description}
   noindex
 >
@@ -139,13 +143,23 @@ const STEPS = [
         <dt>Dokumentene er låst</dt>
         <dd>Face ID eller kode for å åpne dem, og de holdes utenfor sikkerhetskopien på Android.</dd>
       </div>
-      <div>
-        <dt>Merket «Sponset»</dt>
-        <dd>
-          Hilsenen fra {partner.name} er merket i appen, vises aldri i nødfunksjonene, og ingen personopplysninger går
-          til {partner.name}.
-        </dd>
-      </div>
+      {
+        // The greeting in the app comes with the code; without one there is no greeting to promise.
+        partner.code ? (
+          <div>
+            <dt>Merket «Sponset»</dt>
+            <dd>
+              Hilsenen fra {partner.name} er merket i appen, vises aldri i nødfunksjonene, og ingen personopplysninger
+              går til {partner.name}.
+            </dd>
+          </div>
+        ) : (
+          <div>
+            <dt>Ingen reklame eller sporing</dt>
+            <dd>Appen viser ingen reklame og sporer deg ikke, og ingen personopplysninger går til {partner.name}.</dd>
+          </div>
+        )
+      }
     </dl>
   </section>
 
