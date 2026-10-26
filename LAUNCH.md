@@ -326,10 +326,13 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       phone, not on Android)*
 - [ ] Native code (expo-location, expo-maps), so `version` is 1.7.0 and it needs new store builds; never `eas update`
       it onto 1.6.0
-- [ ] **(Mikkel)** Google Maps key for Android: in the Google Cloud project, enable «Maps SDK for Android», create an
-      API key restricted to Android apps `no.htas.egenberedskap` (+ `.dev`) with the SHA-1 of Play's app signing key and
-      the upload key, and set it as the EAS environment variable `GOOGLE_MAPS_ANDROID_API_KEY`. Without it the Android
-      screen shows the list only
+- [ ] Google Maps key for Android. *(2026-10-26: «Maps SDK for Android» enabled in the prod Cloud project, with the
+      EEA Terms of Service for Google Maps Platform accepted (Mikkel's go). Key «Google Maps Android (tilfluktsrom)»
+      created, only for that API and the apps `no.htas.egenberedskap` with Play's app signing SHA-1 `20:5E:3A:85:…`
+      and the upload key `D1:99:3E:AC:…`, and `no.htas.egenberedskap.dev` with the EAS dev keystore `3E:49:DE:58:…`.)*
+      **(Mikkel)** Put it in EAS as `GOOGLE_MAPS_ANDROID_API_KEY` for production, preview and development, then check
+      the map on the OnePlus with a preview build. A new signing key (Play key upgrade or a new EAS keystore) needs
+      its SHA-1 added to the key
 - [ ] Privacy: the position stays on the phone, but the map view fetches tiles from Apple or Google. Say so on
       `/personvern` and in the store privacy answers (App Store «Data not collected» for location still holds if
       nothing leaves; check Play's data safety for the Maps SDK). A person must read the final wording
