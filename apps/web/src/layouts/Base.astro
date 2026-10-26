@@ -8,13 +8,15 @@ import { COMPANY } from '../company';
 interface Props {
   title: string;
   description: string;
+  /** For pages that are handed out directly, like a partner's: not for search engines to list. */
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 
 // Only the build for the prod project may be indexed. Firebase passes the project to the
 // predeploy build (firebase.json), so the test site, and any build made without it, says noindex.
-const indexable = process.env.GCLOUD_PROJECT === 'egenberedskapsappen';
+const indexable = !noindex && process.env.GCLOUD_PROJECT === 'egenberedskapsappen';
 // Both sites point search engines at the real one.
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---

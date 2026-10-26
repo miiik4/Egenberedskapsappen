@@ -1,0 +1,439 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import analyse from '../../assets/skjermbilder/analyse.webp';
+import eiendeler from '../../assets/skjermbilder/eiendeler.webp';
+import oversikt from '../../assets/skjermbilder/oversikt.webp';
+import Phone from '../../components/Phone.astro';
+import Base from '../../layouts/Base.astro';
+import { getPartners } from '../../partners';
+
+/** One page per partner with a signed agreement in Sanity; none at all when there are none (src/partners.ts). */
+export const getStaticPaths = (async () => {
+  const partners = await getPartners();
+  return partners.map((partner) => ({ params: { slug: partner.slug }, props: { partner } }));
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+const { partner } = Astro.props as Props;
+
+/** The app on Google Play. The App Store link comes when the Apple account is approved (LAUNCH.md). */
+const PLAY_URL = 'https://play.google.com/store/apps/details?id=no.htas.egenberedskap';
+
+const STEPS = [
+  {
+    title: 'Last ned appen',
+    text: 'Gratis fra Google Play. Ingen konto og ingen betaling.',
+  },
+  {
+    title: 'Trykk «Har du en kode?»',
+    text: 'Du finner lenken på første skjerm når du åpner appen.',
+  },
+  {
+    title: 'Skriv inn koden',
+    text: `Så vises hilsenen fra ${partner.name} i appen${
+      partner.discountText ? ', og rabatten på Egenberedskap+ er knyttet til deg' : ''
+    }.`,
+  },
+];
+---
+
+<Base
+  title={`Et tilbud fra ${partner.name} – Egenberedskapsappen`}
+  description={partner.description}
+  noindex
+>
+  <section class="hero wrap">
+    <div class="hero-text">
+      <p class="from">I samarbeid med</p>
+      <picture class="partner">
+        {partner.logoDark !== partner.logo && <source media="(prefers-color-scheme: dark)" srcset={partner.logoDark.src} />}
+        <img
+          src={partner.logo.src}
+          width={partner.logo.width || undefined}
+          height={partner.logo.height || undefined}
+          alt={partner.name}
+        />
+      </picture>
+      <h1>{partner.headline}</h1>
+      <p class="lead">{partner.lead}</p>
+      <div class="actions">
+        <a class="button" href={PLAY_URL}>Last ned på Google Play</a>
+        {partner.code && <a class="button button-outline" href="#kode">Slik bruker du koden</a>}
+      </div>
+      <p class="soon">Gratis for Android. iPhone-versjonen kommer snart.</p>
+    </div>
+    <Phone
+      src={oversikt}
+      eager
+      class="hero-phone"
+      alt="Oversikt i appen: «Uten strøm og vann klarer husstanden seg i 4 døgn», med vann, mat og varme hver for seg, og «Kjøp mat for 3 døgn til» under."
+    />
+  </section>
+
+  {
+    partner.code && (
+      <section id="kode" class="steps wrap" aria-labelledby="kode-head">
+        <div class="section-head">
+          <h2 id="kode-head">Slik bruker du koden</h2>
+          <p>Det tar under ett minutt.</p>
+        </div>
+        <ol>
+          {
+            STEPS.map((step, i) => (
+              <li>
+                <span class="step-number" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </li>
+            ))
+          }
+        </ol>
+        <div class="ticket">
+          <div>
+            <p class="ticket-label">Din kode fra {partner.name}</p>
+            <p class="ticket-code" id="code">{partner.code}</p>
+          </div>
+          <button class="copy" id="copy" type="button" data-code={partner.code}>Kopier</button>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    partner.discountText && (
+      <section class="plus wrap" aria-labelledby="plus-head">
+        <div class="plus-head">
+          <p class="tab">Kommer</p>
+          <h2 id="plus-head">Rabatt på Egenberedskap+</h2>
+          <p>
+            Egenberedskap+ er ikke i appen ennå. Når det kommer, kan du filme et rom eller ta bilder, så foreslår appen
+            gjenstandene og hva de er verdt. Alt krypteres på telefonen før det sikkerhetskopieres, så bare du kan åpne det.
+            {partner.discountText}
+          </p>
+        </div>
+        <ul class="plus-phones">
+          <li>
+            <Phone src={analyse} alt="Analyse av kjøkkenet: bildene lastes opp, og appen ser etter gjenstander og verdier." />
+          </li>
+          <li>
+            <Phone src={eiendeler} alt="Eiendeler med samlet verdi og rommene stue, kjøkken, gang, soverom og bod." />
+          </li>
+        </ul>
+      </section>
+    )
+  }
+
+  <section class="privacy wrap" aria-labelledby="p-head">
+    <div class="section-head">
+      <h2 id="p-head">Det som er ditt, blir hos deg</h2>
+      <p>{partner.privacyLine}</p>
+    </div>
+    <dl class="promises">
+      <div>
+        <dt>Ingen konto</dt>
+        <dd>Du trenger verken e-post eller passord. Alt blir liggende på telefonen.</dd>
+      </div>
+      <div>
+        <dt>Dokumentene er låst</dt>
+        <dd>Face ID eller kode for å åpne dem, og de holdes utenfor sikkerhetskopien på Android.</dd>
+      </div>
+      <div>
+        <dt>Merket «Sponset»</dt>
+        <dd>
+          Hilsenen fra {partner.name} er merket i appen, vises aldri i nødfunksjonene, og ingen personopplysninger går
+          til {partner.name}.
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="closing wrap">
+    <div class="closing-card">
+      <h2>Begynn med ett tall</h2>
+      <p>Egenberedskapsappen er gratis for alle husstander. Last den ned til Android i dag. iPhone-versjonen kommer snart.</p>
+      <a class="button button-light" href={PLAY_URL}>Last ned på Google Play</a>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('#copy');
+  button?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(button.dataset.code ?? '');
+      button.textContent = 'Kopiert';
+      setTimeout(() => (button.textContent = 'Kopier'), 1500);
+    } catch {
+      // Clipboard can be blocked; the code is on screen, so it can still be typed in.
+    }
+  });
+</script>
+
+<style>
+  section {
+    padding-block: clamp(48px, 8vw, 96px);
+  }
+  h1,
+  h2,
+  h3 {
+    font-stretch: 108%;
+  }
+  h1 {
+    font-size: clamp(2.4rem, 5.6vw, 4.25rem);
+    font-stretch: 112%;
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+  h2 {
+    font-size: clamp(2rem, 4.2vw, 3rem);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+  }
+  h3 {
+    font-size: 1.1875rem;
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 52px;
+    padding: 0 26px;
+    background: var(--button);
+    color: #fff;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .button:hover {
+    filter: brightness(1.08);
+  }
+  .button-outline {
+    background: transparent;
+    color: var(--accent);
+    box-shadow: inset 0 0 0 2px currentColor;
+  }
+  .button-outline:hover {
+    background: var(--accent-soft);
+    filter: none;
+  }
+  /* White on the navy card in both modes, so the text stays navy too. */
+  .button-light {
+    background: #fff;
+    color: #0b2b4a;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+    align-items: center;
+    gap: clamp(32px, 6vw, 96px);
+    padding-block: clamp(40px, 7vw, 88px) clamp(40px, 6vw, 72px);
+  }
+  .from {
+    color: var(--secondary);
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  /* The navy logo in light mode, the white one in dark mode, straight on the page. */
+  .partner {
+    display: block;
+    margin: 12px 0 32px;
+  }
+  .partner img {
+    display: block;
+    width: auto;
+    height: 44px;
+  }
+  .lead {
+    max-width: 34em;
+    margin-top: 24px;
+    font-size: clamp(1.1875rem, 1.6vw, 1.375rem);
+    line-height: 1.5;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 22px;
+    margin-top: 36px;
+  }
+  .soon {
+    margin-top: 16px;
+    color: var(--secondary);
+    font-size: 1rem;
+  }
+  .hero :global(.hero-phone) {
+    justify-self: center;
+  }
+  @media (max-width: 820px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+    .hero :global(.hero-phone) {
+      max-width: 280px;
+    }
+  }
+
+  .section-head {
+    max-width: 640px;
+    margin-bottom: clamp(32px, 5vw, 48px);
+  }
+  .section-head p {
+    margin-top: 14px;
+    font-size: 1.1875rem;
+  }
+
+  .steps ol {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(16px, 3vw, 32px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .steps li {
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+  }
+  .step-number {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    margin-bottom: 14px;
+    background: var(--button);
+    color: #fff;
+    border-radius: 50%;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .steps li p {
+    margin-top: 8px;
+  }
+  @media (max-width: 860px) {
+    .steps ol {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ticket {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 440px;
+    margin-top: clamp(24px, 4vw, 40px);
+    padding: 16px 16px 16px 22px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+  }
+  .ticket p {
+    margin: 0;
+  }
+  .ticket-label {
+    color: var(--secondary);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .ticket-code {
+    color: var(--accent);
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 1.375rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .copy {
+    min-height: 44px;
+    padding: 0 20px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .plus {
+    border-top: 1px solid var(--separator);
+  }
+  .tab {
+    margin-bottom: 10px;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1.0625rem;
+  }
+  .plus-head {
+    max-width: 720px;
+    margin-inline: auto;
+    text-align: center;
+  }
+  .plus-head > p:not(.tab) {
+    margin-top: 18px;
+    font-size: 1.1875rem;
+  }
+  .plus-phones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(24px, 4vw, 48px);
+    margin: clamp(40px, 6vw, 64px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .plus-phones li {
+    width: min(260px, 100%);
+  }
+
+  .privacy {
+    border-top: 1px solid var(--separator);
+  }
+  .promises {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 clamp(24px, 4vw, 48px);
+    margin: 0;
+  }
+  .promises div {
+    padding-block: 22px 26px;
+    border-top: 2px solid var(--label);
+  }
+  .promises dt {
+    color: var(--label);
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.1875rem;
+  }
+  .promises dd {
+    margin: 8px 0 0;
+  }
+  @media (max-width: 760px) {
+    .promises {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .closing {
+    padding-top: 0;
+  }
+  .closing-card {
+    padding: clamp(32px, 6vw, 72px);
+    background: var(--hero);
+    border-radius: 28px;
+    color: var(--hero-muted);
+  }
+  .closing-card h2 {
+    color: var(--hero-text);
+  }
+  .closing-card p {
+    max-width: 32em;
+    margin: 14px 0 28px;
+    font-size: 1.1875rem;
+  }
+</style>

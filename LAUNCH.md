@@ -340,6 +340,33 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       without sending the position anywhere (e.g. a bundled municipality list to choose from). A typed-in list of
       points must be checked by a person before it's shown
 
+## 10. Partner pages from a CMS (Mikkel decided 2026-10-26 to build it now)
+
+`egenberedskapappen.no/for/<partner>` from one template (`apps/web/src/pages/for/[slug].astro`, built on Mikkel's
+draft page), with each partner a `partner` document in Sanity (project `8ej8zl2c`, dataset `production`, which is
+public: anyone can read published documents, never drafts).
+
+- [x] Studio in `apps/studio` (`npm --workspace studio run dev`), schema `partner` with bokmål fields: name, address
+      (slug), «Avtale signert» and «Om avtalen», logo and dark-mode logo, headline, lead, share text, code, the
+      Egenberedskap+ discount section on or off with its sentence, and what the partner gets to know. Schema
+      deployed to the project with `sanity schema deploy` (2026-10-26)
+- [x] The site fetches published partners with `agreementSigned == true` at build time (`apps/web/src/partners.ts`),
+      no token. Logos are inlined as data: URLs, so the CSP stays `'self'` and the browser never talks to Sanity.
+      Pages say noindex. No signed partner means no `/for/` pages; Sanity unreachable or a signed partner with a
+      missing field fails the build rather than deploying without the page (checked 2026-10-26: live build has no
+      `/for/` pages; a stubbed signed partner rendered in the local preview, light and dark, desktop and phone width,
+      copy button works; a wrong project id failed the build)
+- [x] Small scripts are emitted as files, not inlined (`astro.config.mjs`), so the copy button passes `script-src 'self'`
+- [ ] **(Mikkel)** Create each partner in the Studio once the agreement is signed, and only then turn on «Avtale
+      signert». A draft «Eksempelpartner» (unsigned, never to be published) shows the fields; discard it when done.
+      Mikkel's original draft page is kept, unbuilt and uncommitted, in `docs/marketing/partnerside-utkast.astro`, and
+      its logos in `apps/web/src/assets/`: upload them to that partner's document instead
+- [ ] **(Mikkel)** Publishing in Sanity does not change the site: rebuild and deploy (`firebase deploy --only
+      hosting:app --project prod`). A Sanity webhook that triggers a deploy can come later
+- [ ] **(Mikkel)** Hosted Studio, if wanted: `npm --workspace studio exec sanity deploy` (publishes a sanity.studio URL)
+- [ ] The app's «Har du en kode?», the partner greeting and a shared campaign code don't exist yet; activation codes
+      today are single-use and only unlock backup. Don't sign off a partner page that promises them until they do
+
 ## After launch (1.1 and later, only when users ask)
 
 - Buying Egenberedskap+ in the app (subscription, 29 kr/mnd; consider a yearly price and the store's 15–30 %).
@@ -353,11 +380,6 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
 - Ideas waiting for user demand: «Jeg er trygg», hazard warnings, power-saving mode, evacuation bag, barcode
   scanning, blog
-- Partner pages from a CMS (Mikkel asked 2026-10-26): `/for/<partner>` from one template, with name, logos, text and
-  code kept in Sanity (or a typed list in the repo while there are few partners), built into static pages so the CSP
-  stays `'self'` (logos copied into the build, not loaded from Sanity's CDN). The app's partner greeting should come
-  from the same source, served first-party. Waits for a signed partner and for the app to have the code entry the
-  draft page describes (it has no «Har du en kode?» yet; activation codes today are single-use and only unlock backup)
 - Company site for Holm & Tall AS, `apps/firma` (Mikkel asked for it 2026-10-23): one page in bokmål about the
   company, the app, insurers and contact, plus a privacy page. Mikkel checked the page and the names and roles on it
   (Tarjei grunnlegger og daglig leder, Mikkel medgrunnlegger og utvikler) on 2026-10-23. Live the same day on
