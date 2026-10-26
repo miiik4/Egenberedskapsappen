@@ -206,14 +206,23 @@ describe('sync between two phones', () => {
   });
 
   it('never lets the cloud see content', async () => {
-    await a.store.saveContact({ name: 'Ola Nordmann', relation: 'Partner', phone: '+47 900 00 000' });
-    const doc = await a.store.saveDocument({ name: 'Pass' });
-    await a.store.addDocumentFile({ documentId: doc, fileName: 'p.jpg', mimeType: 'image/jpeg', size: 4 });
-    await a.files.write('p.jpg', utf8('PASSPORT-PIXELS'));
+    // Long, distinctive secrets: a short one like 'Ola' turns up in random base64 now and then.
+    const secrets = {
+      name: 'Ola Nordmann-7f3c9e2a',
+      relation: 'Partner-b41d6c08',
+      phone: '+47 900 00 000',
+      document: 'Pass-dokument-e8d27b5c',
+      mimeType: 'image/jpeg',
+      pixels: 'PASSPORT-PIXELS-93a1f04d',
+    };
+    await a.store.saveContact({ name: secrets.name, relation: secrets.relation, phone: secrets.phone });
+    const doc = await a.store.saveDocument({ name: secrets.document });
+    await a.store.addDocumentFile({ documentId: doc, fileName: 'p.jpg', mimeType: secrets.mimeType, size: 4 });
+    await a.files.write('p.jpg', utf8(secrets.pixels));
     await sync(a);
 
     const everything = JSON.stringify([...vault.records.values()]) + [...vault.files.values()].map(fromUtf8).join();
-    for (const secret of ['Ola', '900 00 000', 'Pass', 'PASSPORT-PIXELS', 'image/jpeg']) {
+    for (const secret of [...Object.values(secrets), '900 00 000']) {
       expect(everything).not.toContain(secret);
     }
   });
