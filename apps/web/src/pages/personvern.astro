@@ -88,6 +88,15 @@ import Page from '../layouts/Page.astro';
     installasjonen, hvilken versjon av appen dere har, om det er iPhone eller Android, og IP-adressen. Ingenting av det
     dere har lagt inn i appen, sendes med.
   </p>
+  <h3>Kart over tilfluktsrom</h3>
+  <p>
+    Appen finner de nærmeste offentlige tilfluktsrommene ut fra posisjonen deres, og bare hvis dere tillater det.
+    Listen over rommene ligger i appen, så posisjonen brukes bare på telefonen og sendes ikke til oss. Kartet over
+    rommene vises med Apple Kart på iPhone og Google Maps på Android. Når kartet er åpent, henter telefonen kartbilder
+    fra Apple eller Google. Google Maps samler også inn opplysninger om enheten, IP-adressen, en tilfeldig ID og hvordan
+    kartet brukes, for å levere og forbedre kartet. Listen og veibeskrivelsen virker uten kartet.
+  </p>
+
   <h3>Hilsen fra en samarbeidspartner</h3>
   <p>
     Laster dere ned appen på Android fra en samarbeidspartners side hos oss, forteller Google Play appen hvilken
@@ -116,7 +125,10 @@ import Page from '../layouts/Page.astro';
       leser dem ikke.
     </dd>
     <dt>Apple og Google</dt>
-    <dd>Bekrefter at forespørsler kommer fra appen (App Attest og Play Integrity).</dd>
+    <dd>
+      Bekrefter at forespørsler kommer fra appen (App Attest og Play Integrity), og viser kartet over tilfluktsrom
+      (Apple Kart og Google Maps).
+    </dd>
     <dt>Expo (650 Industries, Inc., USA)</dt>
     <dd>Leverer oppdateringer av appen og ser forespørslene når appen spør etter dem.</dd>
   </dl>

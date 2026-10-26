@@ -87,6 +87,35 @@ Not declared: Personal info (incl. User IDs), Photos and videos, Files and docs,
 info, Location (the IP address isn't used to work out a location), Contacts, Messages, Audio, App activity, App
 info and performance.
 
+### 1.7.0: the shelter map and the partner greeting (draft 2026-10-26, for Mikkel to decide)
+
+What changes:
+- **Location** (`ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION`, when in use only; background location is blocked
+  in `app.json`): used on the phone to sort DSB's shelter list. Never sent by the app, so Location stays «not
+  collected».
+- **Google Maps SDK for Android** draws the map. Google's own disclosure
+  (https://developers.google.com/maps/documentation/android-sdk/play-data-disclosure) says the SDK collects request
+  metadata (device model, OS, SDK version), the IP address, a pseudonymous SDK identifier, crash traces, and map
+  interactions (panning, zooming). Google counts SDK-collected data as the app's to declare.
+- **Partner greeting**: the Play install referrer is read on the phone; the app then fetches
+  `egenberedskapappen.no/partnere/<slug>.json`. That request carries only the partner's name in the URL (and the IP,
+  as every request does); Firebase Hosting serves it and we don't log or store it. Nothing new to declare.
+
+Suggested additions to the Data safety form (on top of the 1.0 table):
+
+| Data type | Collected | Shared | Ephemeral | Required / optional | Purposes |
+| --- | --- | --- | --- | --- | --- |
+| Device or other IDs | Yes (also Maps SDK's pseudonymous ID) | No | No | Optional (only when the map is opened) | App functionality, Analytics |
+| App activity → App interactions | Yes (Maps SDK: panning and zooming) | No | No | Optional | App functionality, Analytics |
+| App info and performance → Crash logs | Yes (Maps SDK crashes) | No | No | Optional | App functionality |
+| App info and performance → Diagnostics | Yes (Maps SDK request metadata) | No | No | Optional | App functionality, Analytics |
+
+«Shared: No» assumes Google acts as a service provider for the map, as Play's definitions allow for SDKs that process
+data on the developer's behalf; Google's page also says the data is used to improve Google's services, so Mikkel
+should decide whether that counts as sharing. «Analytics» follows Google's stated use (measuring SDK usage).
+**A person must check this against the form before it's submitted.** The privacy page has a matching «Kart over
+tilfluktsrom» part (committed with this, not deployed).
+
 ### Mismatches for 1.0
 
 1. **The privacy policy describes Egenberedskap+ as if it were in the app.** `personvern.astro` says what backup

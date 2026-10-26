@@ -343,7 +343,10 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       **(Mikkel)** Put it in EAS as `GOOGLE_MAPS_ANDROID_API_KEY` for production, preview and development, then check
       the map on the OnePlus with a preview build. A new signing key (Play key upgrade or a new EAS keystore) needs
       its SHA-1 added to the key
-- [ ] Privacy: the position stays on the phone, but the map view fetches tiles from Apple or Google. Say so on
+- [ ] Privacy *(2026-10-26: drafted, not deployed or submitted: «Kart over tilfluktsrom» on `/personvern`, and the
+      1.7.0 Data safety additions for the Maps SDK in `docs/store/privacy-answers.md`; 1.7.0 release notes in
+      `docs/store/listing.md`. Mikkel reads all three and updates the Data safety form before 1.7.0 goes to production)*:
+      the position stays on the phone, but the map view fetches tiles from Apple or Google. Say so on
       `/personvern` and in the store privacy answers (App Store «Data not collected» for location still holds if
       nothing leaves; check Play's data safety for the Maps SDK). A person must read the final wording
 - [ ] Informasjonspunkter: link to the user's municipality's page, once there's a way to know the municipality

@@ -106,3 +106,15 @@ Første utgave av Egenberedskapsappen.
 Alt ligger på telefonen. Ingen konto, ingen sporing.
 </no-NO>
 ```
+
+1.7.0 (draft 2026-10-26, under 500 characters):
+
+```
+<no-NO>
+Nytt: Nærmeste tilfluktsrom under Nødinfo.
+• Se alle offentlige tilfluktsrom i gangavstand, med avstand, retning og antall plasser. Listen virker uten nett.
+• Kart over rommene, og veibeskrivelse i kartappen med ett trykk.
+• Posisjonen brukes bare på telefonen og sendes ikke til oss.
+Rommene er fra DSBs oversikt over offentlige tilfluktsrom.
+</no-NO>
+```
