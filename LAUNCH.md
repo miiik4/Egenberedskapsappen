@@ -293,14 +293,15 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - [x] Domain `egenberedskapappen.no` (without the s) in place (Mikkel, 2026-10-10)
 - [x] **(Tarjei)** Buy `egenberedskapsappen.no` (with the s, as the app is named); suggested as the main domain, with
       the other one redirecting to it (both bought, Mikkel 2026-10-14)
-- [ ] DNS for `egenberedskapsappen.no` (with the s) isn't set up; point it at hosting as a redirect to
-      `egenberedskapappen.no`, which is set up. *(2026-10-18: added in Firebase Hosting as a redirect domain, status
-      «Needs setup» until the DNS at the registrar (nameservers dnsdomene.net) has A `199.36.158.100` and TXT
-      `hosting-site=egenberedskapsappen` on the bare domain, and the parking A record `185.126.36.19` is removed.
-      Firebase then verifies and issues the certificate, which can take up to a day. Records entered by Mikkel the same
-      day and seen on the authoritative servers and public resolvers at 12:20, but Firebase's check still found the
-      old parking address in its cache (the old record had a 4-hour TTL). Press «Verify» on the domain in Hosting
-      again after ~16:30 on 2026-10-18, then check that https://egenberedskapsappen.no redirects)*
+- [x] DNS for `egenberedskapsappen.no` (with the s), redirecting to `egenberedskapappen.no` (checked with curl
+      2026-10-26: http and https on the bare domain answer 301 to https://egenberedskapappen.no/, certificate active)
+- [ ] `www.egenberedskapsappen.no` and `www.egenberedskapappen.no` fail with a certificate error: their CNAMEs
+      point at the bare domains, so they reach Firebase, but they weren't custom domains in Hosting, so Firebase
+      answered with its `*.firebaseapp.com` certificate. *(2026-10-26: both added in prod Hosting as redirects to
+      `egenberedskapappen.no` through the Hosting API; host and ownership active, certificate «validating».)*
+      **(Mikkel)** At the registrar, change both `www` CNAMEs from the bare domain to **`egenberedskapsappen.web.app`**,
+      as Hosting asks (the current ones work but aren't what it recommends). Then check that
+      https://www.egenberedskapsappen.no redirects to https://egenberedskapappen.no/
 
 ## After launch (1.1 and later, only when users ask)
 
@@ -315,6 +316,26 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
 - Ideas waiting for user demand: «Jeg er trygg», hazard warnings, power-saving mode, evacuation bag, barcode
   scanning, blog
+- Nearest public shelter on a map (Mikkel asked 2026-10-26). Source: DSB's «Tilfluktsrom – offentlige» on Geonorge,
+  NLOD (credit DSB), rebuilt nightly. Nationwide GeoJSON is 39 KB zipped, in EPSG:25833 (reproject to WGS84):
+  `https://nedlasting.geonorge.no/geonorge/Samfunnssikkerhet/TilfluktsromOffentlige/GeoJSON/Samfunnssikkerhet_0000_Norge_25833_TilfluktsromOffentlige_GeoJSON.zip`
+  (WFS `wfs.geonorge.no/skwms1/wfs.tilfluktsrom_offentlige` gives GML in 4326). 556 shelters, 297 187 places on
+  2026-10-26; fields `romnr`, `plasser`, `adresse`, no municipality or opening status. Bundle a trimmed snapshot
+  (lat/lon, places, address) and find the nearest on the phone, so the location never leaves it; refresh it by
+  `eas update` or a first-party file. The app must say what DSB says: in peacetime the rooms may be used for other
+  things and «skal kunne ryddes og klargjøres i løpet av 72 timer». The ~20 000 private shelters (for the people in
+  that building) have no public data.
+  Meeting points are a different thing: **kommunale informasjonspunkter** (DSB's *Veileder om kommunale
+  informasjonspunkter ved bortfall av elektronisk kommunikasjon*), where the municipality gives information when
+  power, phone and internet are down, set up when its crisis management decides. No national dataset; each
+  municipality publishes its own (Oslo: schools per bydel, PDF map; Bergen: one per bydel). Start with a link to the
+  user's municipality's page; a typed-in list must be checked by a person first. Needs a map: check
+  `apps/mobile/AGENTS.md` (react-native-maps or similar is native, so a `version` bump) and offline tiles
+- Partner pages from a CMS (Mikkel asked 2026-10-26): `/for/<partner>` from one template, with name, logos, text and
+  code kept in Sanity (or a typed list in the repo while there are few partners), built into static pages so the CSP
+  stays `'self'` (logos copied into the build, not loaded from Sanity's CDN). The app's partner greeting should come
+  from the same source, served first-party. Waits for a signed partner and for the app to have the code entry the
+  draft page describes (it has no «Har du en kode?» yet; activation codes today are single-use and only unlock backup)
 - Company site for Holm & Tall AS, `apps/firma` (Mikkel asked for it 2026-10-23): one page in bokmål about the
   company, the app, insurers and contact, plus a privacy page. Mikkel checked the page and the names and roles on it
   (Tarjei grunnlegger og daglig leder, Mikkel medgrunnlegger og utvikler) on 2026-10-23. Live the same day on
