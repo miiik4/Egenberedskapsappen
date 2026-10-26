@@ -46,6 +46,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           : undefined,
       },
     },
-    extra: { ...config.extra, variant: production ? 'production' : 'development' },
+    extra: {
+      ...config.extra,
+      variant: production ? 'production' : 'development',
+      // Expo strips android.config from the config the app can read, so the map asks this instead.
+      androidMaps: Boolean(process.env.GOOGLE_MAPS_ANDROID_API_KEY),
+    },
   };
 };

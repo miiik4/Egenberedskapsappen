@@ -14,7 +14,7 @@ const NORWAY = { latitude: 63.5, longitude: 11 };
  */
 const maps: typeof import('expo-maps') | null =
   requireOptionalNativeModule('ExpoMaps') &&
-  (Platform.OS === 'ios' || Boolean(Constants.expoConfig?.android?.config?.googleMaps?.apiKey))
+  (Platform.OS === 'ios' || Constants.expoConfig?.extra?.androidMaps === true)
     ? // eslint-disable-next-line @typescript-eslint/no-require-imports
       require('expo-maps')
     : null;
