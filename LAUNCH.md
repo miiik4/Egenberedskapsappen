@@ -400,6 +400,15 @@ public: anyone can read published documents, never drafts).
       Studio and deploy the site. The greeting also makes `/for/ctc-bilpartner` promise «Merket «Sponset»». The
       privacy page has a new «Hilsen fra en samarbeidspartner» part and a changed «Reklame og sporing» sentence
       (committed, **not deployed**); a person must read both before they go live with the release
+- [ ] **Temporary test greeting is live** (2026-10-26, Mikkel's go): CTC's «Hilsen i appen» is «Testhilsen fra CTC
+      Bilpartner. Denne teksten byttes ut før lansering.», and the site is deployed with it, so
+      `egenberedskapappen.no/partnere/ctc-bilpartner.json` answers (cached an hour) and the CTC page's Play link carries
+      the referrer. The deploy also published the privacy page drafts. **(Mikkel)** Replace the text before 1.7.0 goes
+      to production, then deploy the site again
+- [ ] 1.7.0 (version code 6) is on Play's internal testing track (2026-10-26 22:56). Play warns that 8 devices (2
+      phones, 6 tablets, ~0 %) lose support: the location permission makes GPS a required feature. Before production,
+      declare `android.hardware.location.gps` (and `.network`) as not required, so they keep the app and get the list
+      without position; a manifest change, so a new build
 - [ ] Test on the OnePlus via Play: uninstall the app, open the Play link from `/for/ctc-bilpartner` (with the
       phone's account on the internal testing list), install, open; the card should appear once the greeting exists
 - [ ] The app's «Har du en kode?», the partner greeting and a shared campaign code don't exist yet; activation codes
