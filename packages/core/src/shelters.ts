@@ -66,6 +66,34 @@ export function sheltersNear(
   return sorted.slice(0, Math.max(min, within));
 }
 
+/** Metres per point at zoom 0 on the equator in Web Mercator, the zoom scale both map views use. */
+const METERS_PER_POINT_AT_ZOOM_0 = 156_543.03392;
+
+/**
+ * The map camera that shows every point (the phone and the shelters listed), with a margin round the edge so
+ * markers aren't cut off: the middle of the points, and the closest zoom at which they all fit in a map of
+ * `width` × `height` points. One point alone, or points very close together, stop at `maxZoom`.
+ */
+export function cameraFor(
+  points: readonly LatLon[],
+  { width, height, margin = 0.2, maxZoom = 15 }: { width: number; height: number; margin?: number; maxZoom?: number },
+): { center: LatLon; zoom: number } | null {
+  if (points.length === 0 || width <= 0 || height <= 0) return null;
+  const lats = points.map((p) => p.latitude);
+  const lons = points.map((p) => p.longitude);
+  const center = {
+    latitude: (Math.min(...lats) + Math.max(...lats)) / 2,
+    longitude: (Math.min(...lons) + Math.max(...lons)) / 2,
+  };
+  const cos = Math.cos(rad(center.latitude));
+  const metersNorth = (Math.max(...lats) - Math.min(...lats)) * 111_320;
+  const metersEast = (Math.max(...lons) - Math.min(...lons)) * 111_320 * cos;
+  const metersPerPoint = Math.max(metersEast / width, metersNorth / height) * (1 + 2 * margin);
+  if (metersPerPoint === 0) return { center, zoom: maxZoom };
+  const zoom = Math.log2((METERS_PER_POINT_AT_ZOOM_0 * cos) / metersPerPoint);
+  return { center, zoom: Math.min(maxZoom, Math.max(2, Math.floor(zoom * 2) / 2)) };
+}
+
 /** The `count` shelters closest to `from`, nearest first. All on the phone: the position goes nowhere. */
 export function nearestShelters(from: LatLon, count = 5, shelters: readonly Shelter[] = SHELTERS): NearbyShelter[] {
   return shelters

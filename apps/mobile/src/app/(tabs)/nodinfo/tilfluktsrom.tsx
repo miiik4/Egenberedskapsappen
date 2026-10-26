@@ -76,7 +76,7 @@ export default function Tilfluktsrom() {
       <Stack.Screen options={{ title: 'Tilfluktsrom' }} />
       <Screen>
         {shelterMapAvailable && (
-          <ShelterMap at={at} shelters={nearby.map((n) => n.shelter)} reachMeters={nearby.at(-1)?.meters ?? 0} title={title} />
+          <ShelterMap at={at} shelters={nearby.map((n) => n.shelter)} title={title} />
         )}
 
         {position.status === 'loading' && (

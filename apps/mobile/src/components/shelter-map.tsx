@@ -1,6 +1,7 @@
-import type { LatLon, Shelter } from '@egenberedskap/core';
+import { cameraFor, type LatLon, type Shelter } from '@egenberedskap/core';
 import { requireOptionalNativeModule } from 'expo';
 import Constants from 'expo-constants';
+import { useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
 import { Colors, Radius, Spacing } from '@/constants/theme';
@@ -21,29 +22,14 @@ const maps: typeof import('expo-maps') | null =
 
 export const shelterMapAvailable = maps !== null;
 
-/** Close enough that the farthest shelter shown is on the map, roughly: each zoom step halves the distance across. */
-function zoomFor(reachMeters: number): number {
-  if (reachMeters <= 1000) return 14;
-  if (reachMeters <= 2000) return 13;
-  if (reachMeters <= 4000) return 12;
-  if (reachMeters <= 8000) return 11;
-  return 10;
-}
+const HEIGHT = 280;
 
-export function ShelterMap({
-  at,
-  shelters,
-  reachMeters,
-  title,
-}: {
-  at: LatLon | null;
-  shelters: Shelter[];
-  /** How far away the farthest shelter in `shelters` is. */
-  reachMeters: number;
-  title: (s: Shelter) => string;
-}) {
+export function ShelterMap({ at, shelters, title }: { at: LatLon | null; shelters: Shelter[]; title: (s: Shelter) => string }) {
+  const [width, setWidth] = useState(0);
   if (!maps) return null;
-  const cameraPosition = { coordinates: at ?? NORWAY, zoom: at ? zoomFor(reachMeters) : 4 };
+  // The phone and every shelter listed, so none of them is off the edge; all of Norway before there's a position.
+  const camera = at ? cameraFor([at, ...shelters], { width, height: HEIGHT }) : null;
+  const cameraPosition = camera ? { coordinates: camera.center, zoom: camera.zoom } : { coordinates: NORWAY, zoom: 4 };
   const markers = shelters.map((shelter) => ({
     id: shelter.id,
     coordinates: { latitude: shelter.latitude, longitude: shelter.longitude },
@@ -51,7 +37,7 @@ export function ShelterMap({
   }));
 
   return (
-    <View style={styles.map}>
+    <View style={styles.map} onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
       {Platform.OS === 'ios' ? (
         <maps.AppleMaps.View
           style={StyleSheet.absoluteFill}
@@ -73,7 +59,7 @@ export function ShelterMap({
 
 const styles = StyleSheet.create({
   map: {
-    height: 280,
+    height: HEIGHT,
     marginHorizontal: Spacing.screen,
     borderRadius: Radius.card,
     overflow: 'hidden',

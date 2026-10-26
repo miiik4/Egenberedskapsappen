@@ -409,6 +409,16 @@ public: anyone can read published documents, never drafts).
       phones, 6 tablets, ~0 %) lose support: the location permission makes GPS a required feature. Before production,
       declare `android.hardware.location.gps` (and `.network`) as not required, so they keep the app and get the list
       without position; a manifest change, so a new build
+- [x] Tested on the OnePlus via Play (2026-10-26 23:05, internal testing build 6, 1.7.0): installed from the Play link
+      with the CTC referrer (`installerPackageName=com.android.vending`), welcome screens, then Oversikt showed the
+      «Sponset» card with CTC's logo and the test greeting, with nothing typed. Nødinfo → shelters: location «only this
+      time», Google Maps drew the map (key and SHA-1 restriction work), the list showed 3 shelters near Porsgrunn,
+      tapping one opened Google Maps on that spot. Flight mode not tried (a system setting on Mikkel's phone)
+- [x] Found in that test: the map was centred on the phone at a fixed zoom, so 2 of 3 markers were off the edge. Now
+      the camera frames the phone and every shelter listed (`cameraFor` in core, with tests); seen in the iOS simulator
+      near Porsgrunn and at Oslo S. JavaScript only
+- [x] Play's GPS warning: `plugins/optional-location-hardware.js` declares location, GPS and network location as not
+      required (checked in the introspected manifest). Native config, so it needs a new build
 - [ ] Test on the OnePlus via Play: uninstall the app, open the Play link from `/for/ctc-bilpartner` (with the
       phone's account on the internal testing list), install, open; the card should appear once the greeting exists
 - [ ] The app's «Har du en kode?», the partner greeting and a shared campaign code don't exist yet; activation codes

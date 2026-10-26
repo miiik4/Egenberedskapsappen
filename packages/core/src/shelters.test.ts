@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  cameraFor,
   compassDirection,
   distanceMeters,
   nearestShelters,
@@ -59,6 +60,25 @@ describe('shelters', () => {
     const hammerfest = sheltersNear({ latitude: 70.6634, longitude: 23.6821 });
     expect(hammerfest.length).toBeGreaterThanOrEqual(3);
     expect(hammerfest.every((n) => n.meters < 10_000)).toBe(true);
+  });
+
+  it('frames the phone and every shelter listed, not just the nearest', () => {
+    // Porsgrunn on 2026-10-26: one shelter 2 km north-west, two almost 4 km north.
+    const phone = { latitude: 59.1, longitude: 9.68 };
+    const points = [phone, { latitude: 59.1156, longitude: 9.6533 }, { latitude: 59.135, longitude: 9.66 }];
+    const camera = cameraFor(points, { width: 360, height: 280 })!;
+    expect(camera.center.latitude).toBeCloseTo(59.1175, 3);
+    // Every point is inside the visible map, margin included.
+    const metersPerPoint = (156_543.03392 * Math.cos((camera.center.latitude * Math.PI) / 180)) / 2 ** camera.zoom;
+    for (const p of points) {
+      expect(Math.abs(p.latitude - camera.center.latitude) * 111_320).toBeLessThan((280 / 2) * metersPerPoint);
+    }
+    expect(camera.zoom).toBeGreaterThanOrEqual(11);
+    expect(camera.zoom).toBeLessThanOrEqual(13);
+
+    // One point, or none, doesn't zoom to infinity or fail.
+    expect(cameraFor([phone], { width: 360, height: 280 })?.zoom).toBe(15);
+    expect(cameraFor([], { width: 360, height: 280 })).toBeNull();
   });
 
   it('carries DSB’s list, all inside Norway', () => {
