@@ -9,6 +9,7 @@
     },
     "development": {
       "extends": "base",
+      "environment": "development",
       "developmentClient": true,
       "distribution": "internal",
       "env": {
@@ -37,6 +38,7 @@
     },
     "production": {
       "extends": "base",
+      "environment": "production",
       "autoIncrement": true,
       "env": {
         "APP_VARIANT": "production"
