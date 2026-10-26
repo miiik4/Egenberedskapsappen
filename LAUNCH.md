@@ -369,7 +369,9 @@ public: anyone can read published documents, never drafts).
       Without a code the page makes no promise of an in-app greeting («Ingen reklame eller sporing» instead of
       «Merket «Sponset»») and the title says «i samarbeid med». Headline, lead, share text and privacy line written
       for the no-code page; **a person should read them** before the link is handed out. Seen in a local build
-      (noindex, nothing loaded from Sanity in the browser); not deployed
+      (noindex, nothing loaded from Sanity in the browser). Deployed to prod hosting 2026-10-26 on Mikkel's go;
+      https://egenberedskapappen.no/for/ctc-bilpartner answers 200 (also via www and the domain with the s), noindex,
+      logos inline, no console errors
 - [ ] **(Mikkel)** Publishing in Sanity does not change the site: rebuild and deploy (`firebase deploy --only
       hosting:app --project prod`). A Sanity webhook that triggers a deploy can come later
 - [ ] **(Mikkel)** Hosted Studio, if wanted: `npm --workspace studio exec sanity deploy` (publishes a sanity.studio URL)
