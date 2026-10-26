@@ -327,6 +327,13 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       `android.config` from the config the app reads, so the key check was always false; fixed in a873a7e with
       `extra.androidMaps`. Needs `npm run publish-update -- --channel preview --environment preview` (Mikkel) or a new
       preview build, then the map, list, directions and flight mode checked on the phone. Location was off on it)*
+- [x] More shelters where there are many (Mikkel, 2026-10-26): every public shelter within 3 km (about 40 minutes on
+      foot), at least the nearest 3, at most 30 (`sheltersNear` in core); 10 rows, then «Vis alle». The map shows them
+      all and zooms to the farthest. From DSB's list: Oslo S 30, Bergen sentrum 12, Porsgrunn 7, Hammerfest 3 (before:
+      five, the last 78 km away). Seen in the iOS simulator at Oslo S
+- [x] Back to Nødinfo: a link straight to the shelters or a document opened with nothing underneath, so Android had
+      no back arrow and the tab did nothing; the Nødinfo stack now always has its list underneath
+      (`unstable_settings`, as Lager has). Opened from the row it already worked (checked on the OnePlus)
 - [ ] Native code (expo-location, expo-maps), so `version` is 1.7.0 and it needs new store builds; never `eas update`
       it onto 1.6.0
 - [ ] Google Maps key for Android. *(2026-10-26: «Maps SDK for Android» enabled in the prod Cloud project, with the

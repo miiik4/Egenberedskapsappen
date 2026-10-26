@@ -49,6 +49,23 @@ export function compassDirection(from: LatLon, to: LatLon): CompassDirection {
   return DIRECTIONS[Math.round(bearing / 45) % 8]!;
 }
 
+/** About 40 minutes on foot. */
+export const SHELTER_WALK_METERS = 3000;
+
+/**
+ * The shelters worth showing from `from`, nearest first: every one within walking distance, so a city lists many
+ * and a small town a few, but never fewer than `min` (the nearest, however far) and never more than `max`.
+ */
+export function sheltersNear(
+  from: LatLon,
+  { radiusMeters = SHELTER_WALK_METERS, min = 3, max = 30 }: { radiusMeters?: number; min?: number; max?: number } = {},
+  shelters: readonly Shelter[] = SHELTERS,
+): NearbyShelter[] {
+  const sorted = nearestShelters(from, max, shelters);
+  const within = sorted.filter((n) => n.meters <= radiusMeters).length;
+  return sorted.slice(0, Math.max(min, within));
+}
+
 /** The `count` shelters closest to `from`, nearest first. All on the phone: the position goes nowhere. */
 export function nearestShelters(from: LatLon, count = 5, shelters: readonly Shelter[] = SHELTERS): NearbyShelter[] {
   return shelters

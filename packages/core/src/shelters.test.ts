@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { compassDirection, distanceMeters, nearestShelters, SHELTERS, SHELTERS_UPDATED, type Shelter } from './shelters';
+import {
+  compassDirection,
+  distanceMeters,
+  nearestShelters,
+  SHELTERS,
+  SHELTERS_UPDATED,
+  sheltersNear,
+  type Shelter,
+} from './shelters';
 
 const OSLO_S = { latitude: 59.9111, longitude: 10.7528 };
 const BERGEN = { latitude: 60.3913, longitude: 5.3221 };
@@ -34,6 +42,23 @@ describe('shelters', () => {
     expect(nearby.map((n) => n.shelter.id)).toEqual(['near', 'middle']);
     expect(nearby[0]!.meters).toBeLessThan(1500);
     expect(nearby[0]!.direction).toBe('nord');
+  });
+
+  it('lists every shelter within walking distance, at least a few, at most a page', () => {
+    // 0.5, 1, 2, 4 and 10 km north of Oslo S.
+    const list = [0.5, 1, 2, 4, 10].map((km) => shelter(`${km}`, OSLO_S.latitude + km / 111.2, OSLO_S.longitude));
+    expect(sheltersNear(OSLO_S, {}, list).map((n) => n.shelter.id)).toEqual(['0.5', '1', '2']);
+    expect(sheltersNear(OSLO_S, { radiusMeters: 5000 }, list).map((n) => n.shelter.id)).toEqual(['0.5', '1', '2', '4']);
+    // Nothing within reach from Bergen: still the nearest few (the northernmost), however far.
+    expect(sheltersNear(BERGEN, { min: 2 }, list).map((n) => n.shelter.id)).toEqual(['10', '4']);
+    expect(sheltersNear(OSLO_S, { radiusMeters: 50_000, max: 4 }, list)).toHaveLength(4);
+  });
+
+  it('gives a city many shelters and a small place a few, from DSB’s real list', () => {
+    expect(sheltersNear(OSLO_S).length).toBeGreaterThanOrEqual(20);
+    const hammerfest = sheltersNear({ latitude: 70.6634, longitude: 23.6821 });
+    expect(hammerfest.length).toBeGreaterThanOrEqual(3);
+    expect(hammerfest.every((n) => n.meters < 10_000)).toBe(true);
   });
 
   it('carries DSB’s list, all inside Norway', () => {

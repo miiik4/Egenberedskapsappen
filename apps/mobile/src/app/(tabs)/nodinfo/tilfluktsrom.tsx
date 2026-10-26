@@ -1,4 +1,4 @@
-import { nearestShelters, SHELTERS_UPDATED, type LatLon, type Shelter } from '@egenberedskap/core';
+import { SHELTER_WALK_METERS, sheltersNear, SHELTERS_UPDATED, type LatLon, type Shelter } from '@egenberedskap/core';
 import * as Location from 'expo-location';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -12,7 +12,8 @@ import { Text } from '@/components/ui/text';
 import { Colors, Spacing } from '@/constants/theme';
 import { formatDate, formatDistance } from '@/lib/format';
 
-const NEAREST = 5;
+/** Rows before «Vis alle»; the map always shows every shelter in the list. */
+const FIRST_ROWS = 10;
 /** Farther than this, the list can't help: say so, and give DSB's advice. */
 const FAR_M = 50_000;
 
@@ -53,6 +54,7 @@ function directions(shelter: Shelter) {
  */
 export default function Tilfluktsrom() {
   const [position, setPosition] = useState<Position>({ status: 'loading' });
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     findPosition(false).then(setPosition);
@@ -64,13 +66,18 @@ export default function Tilfluktsrom() {
   };
 
   const at = position.status === 'found' ? position.at : null;
-  const nearby = at ? nearestShelters(at, NEAREST) : [];
+  // Every shelter within walking distance, so Oslo lists many and Porsgrunn a few; at least the nearest three.
+  const nearby = at ? sheltersNear(at) : [];
+  const rows = showAll ? nearby : nearby.slice(0, FIRST_ROWS);
+  const allWithinWalk = nearby.length > 0 && nearby.every((n) => n.meters <= SHELTER_WALK_METERS);
 
   return (
     <>
       <Stack.Screen options={{ title: 'Tilfluktsrom' }} />
       <Screen>
-        {shelterMapAvailable && <ShelterMap at={at} shelters={nearby.map((n) => n.shelter)} title={title} />}
+        {shelterMapAvailable && (
+          <ShelterMap at={at} shelters={nearby.map((n) => n.shelter)} reachMeters={nearby.at(-1)?.meters ?? 0} title={title} />
+        )}
 
         {position.status === 'loading' && (
           <View style={styles.loading}>
@@ -95,12 +102,13 @@ export default function Tilfluktsrom() {
         {nearby.length > 0 && (
           <Section
             header="Nærmest deg"
+            headerDetail={allWithinWalk ? `${nearby.length} innen ${SHELTER_WALK_METERS / 1000} km` : undefined}
             footer={
               nearby[0] && nearby[0].meters > FAR_M
                 ? 'Det er langt til nærmeste offentlige tilfluktsrom. Søk beskyttelse der du er.'
                 : 'Trykk på et rom for veibeskrivelse i Kart.'
             }>
-            {nearby.map(({ shelter, meters, direction }) => (
+            {rows.map(({ shelter, meters, direction }) => (
               <Row
                 key={shelter.id}
                 title={title(shelter)}
@@ -114,6 +122,9 @@ export default function Tilfluktsrom() {
                 onPress={() => directions(shelter)}
               />
             ))}
+            {rows.length < nearby.length && (
+              <Row title={`Vis alle ${nearby.length}`} titleColor={Colors.accent} onPress={() => setShowAll(true)} />
+            )}
           </Section>
         )}
 

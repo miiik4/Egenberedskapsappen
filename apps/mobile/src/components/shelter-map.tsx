@@ -21,9 +21,29 @@ const maps: typeof import('expo-maps') | null =
 
 export const shelterMapAvailable = maps !== null;
 
-export function ShelterMap({ at, shelters, title }: { at: LatLon | null; shelters: Shelter[]; title: (s: Shelter) => string }) {
+/** Close enough that the farthest shelter shown is on the map, roughly: each zoom step halves the distance across. */
+function zoomFor(reachMeters: number): number {
+  if (reachMeters <= 1000) return 14;
+  if (reachMeters <= 2000) return 13;
+  if (reachMeters <= 4000) return 12;
+  if (reachMeters <= 8000) return 11;
+  return 10;
+}
+
+export function ShelterMap({
+  at,
+  shelters,
+  reachMeters,
+  title,
+}: {
+  at: LatLon | null;
+  shelters: Shelter[];
+  /** How far away the farthest shelter in `shelters` is. */
+  reachMeters: number;
+  title: (s: Shelter) => string;
+}) {
   if (!maps) return null;
-  const cameraPosition = { coordinates: at ?? NORWAY, zoom: at ? 13 : 4 };
+  const cameraPosition = { coordinates: at ?? NORWAY, zoom: at ? zoomFor(reachMeters) : 4 };
   const markers = shelters.map((shelter) => ({
     id: shelter.id,
     coordinates: { latitude: shelter.latitude, longitude: shelter.longitude },
