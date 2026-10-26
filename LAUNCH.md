@@ -405,7 +405,15 @@ public: anyone can read published documents, never drafts).
       `egenberedskapappen.no/partnere/ctc-bilpartner.json` answers (cached an hour) and the CTC page's Play link carries
       the referrer. The deploy also published the privacy page drafts. **(Mikkel)** Replace the text before 1.7.0 goes
       to production, then deploy the site again
-- [ ] 1.7.0 (version code 6) is on Play's internal testing track (2026-10-26 22:56). Play warns that 8 devices (2
+- [ ] 1.7.0 (version code 6) to production (Mikkel's go, 2026-10-26 ~23:25): release saved in Play with the 1.7.0
+      notes, together with the updated Data safety form (as drafted in `docs/store/privacy-answers.md`: app
+      interactions, crash logs and diagnostics collected, not shared, optional; device IDs gain «Analyse»; Location not
+      declared). Both wait in the publishing overview as «Send 2 endringer til gjennomgang»; managed publishing is on,
+      so after Google approves, Mikkel presses «Publiser». Then: replace CTC's test greeting, deploy the site. The map
+      framing (b7bc778) follows as an update to 1.7.0; GPS-optional (`plugins/optional-location-hardware.js`) with the
+      next native release. Play also flags «Optimaliseringen av DEX-koden er under terskelen» (no R8 minification),
+      to fix by Feb 2027
+- [x] 1.7.0 (version code 6) is on Play's internal testing track (2026-10-26 22:56). Play warns that 8 devices (2
       phones, 6 tablets, ~0 %) lose support: the location permission makes GPS a required feature. Before production,
       declare `android.hardware.location.gps` (and `.network`) as not required, so they keep the app and get the list
       without position; a manifest change, so a new build
