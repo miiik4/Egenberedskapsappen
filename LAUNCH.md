@@ -400,11 +400,14 @@ public: anyone can read published documents, never drafts).
       Studio and deploy the site. The greeting also makes `/for/ctc-bilpartner` promise «Merket «Sponset»». The
       privacy page has a new «Hilsen fra en samarbeidspartner» part and a changed «Reklame og sporing» sentence
       (committed, **not deployed**); a person must read both before they go live with the release
-- [ ] **Temporary test greeting is live** (2026-10-26, Mikkel's go): CTC's «Hilsen i appen» is «Testhilsen fra CTC
-      Bilpartner. Denne teksten byttes ut før lansering.», and the site is deployed with it, so
+- [x] CTC's «Hilsen i appen» is now «Hilsen fra CTC Bilpartner. Vi ønsker deg og husstanden en trygg hverdag.»
+      (generic, on Mikkel's say, 2026-10-26; site deployed, the JSON answers with it). It replaced the test greeting:
+      «Testhilsen fra CTC Bilpartner. Denne teksten byttes ut før lansering.», and the site is deployed with it, so
       `egenberedskapappen.no/partnere/ctc-bilpartner.json` answers (cached an hour) and the CTC page's Play link carries
       the referrer. The deploy also published the privacy page drafts. **(Mikkel)** Replace the text before 1.7.0 goes
-      to production, then deploy the site again
+      to production, then deploy the site again *(done 2026-10-26)*
+- [ ] An app keeps the greeting it fetched first and never asks again, so the OnePlus still shows the test text and a
+      later change in Sanity won't reach phones that already have one. Refresh it now and then (e.g. once a day)
 - [ ] 1.7.0 (version code 6) to production (Mikkel's go, 2026-10-26 ~23:25): release saved in Play with the 1.7.0
       notes, together with the updated Data safety form (as drafted in `docs/store/privacy-answers.md`: app
       interactions, crash logs and diagnostics collected, not shared, optional; device IDs gain «Analyse»; Location not
