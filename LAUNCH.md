@@ -323,7 +323,10 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       72-hour caveat, private shelters not included, and what an informasjonspunkt is. The list works without
       network; the map needs it for tiles. Farther than 50 km it says so and gives DSB's advice. *(2026-10-26: seen
       in the iOS simulator at Oslo S: permission prompt, five rooms from 160 m, markers on the map. Not yet on a real
-      phone, not on Android)*
+      phone, not on Android)* *(2026-10-26, OnePlus 6, preview build 1.7.0: the screen opens, but no map. Expo strips
+      `android.config` from the config the app reads, so the key check was always false; fixed in a873a7e with
+      `extra.androidMaps`. Needs `npm run publish-update -- --channel preview --environment preview` (Mikkel) or a new
+      preview build, then the map, list, directions and flight mode checked on the phone. Location was off on it)*
 - [ ] Native code (expo-location, expo-maps), so `version` is 1.7.0 and it needs new store builds; never `eas update`
       it onto 1.6.0
 - [ ] Google Maps key for Android. *(2026-10-26: «Maps SDK for Android» enabled in the prod Cloud project, with the
