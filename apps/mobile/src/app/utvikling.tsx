@@ -20,13 +20,16 @@ import { Text } from '@/components/ui/text';
  * - `?handling=krypto`: check that the phone's AES reads what Node's WebCrypto wrote
  * - `?handling=backup&kode=<activation code>`: turn backup on and show the recovery code
  * - `?handling=gjenopprett&kode=<recovery code>`: wipe the phone, then restore from the backup
+ * - `?handling=partner&kode=<slug>`: act as if Google Play handed over that partner at install (its greeting is
+ *   then fetched from the live site); add `&hilsen=<text>` to show a made-up greeting with a test logo instead;
+ *   `?handling=partner` alone forgets the partner
  */
 export default function Utvikling() {
-  const { handling, kode } = useLocalSearchParams<{ handling?: string; kode?: string }>();
+  const { handling, kode, hilsen } = useLocalSearchParams<{ handling?: string; kode?: string; hilsen?: string }>();
   const actions = useActions();
   const backup = useBackup();
   // Each link's result is kept with the link it answers, so a new link shows «Arbeider …» until it's done.
-  const run = `${handling}|${kode}`;
+  const run = `${handling}|${kode}|${hilsen}`;
   const [result, setResult] = useState<{ run: string; text: string } | null>(null);
   const [done, setDone] = useState(false);
 
@@ -45,6 +48,12 @@ export default function Utvikling() {
             report(['BACKUP PÅ', recoveryCode]);
             break;
           }
+          case 'partner': {
+            const greeting = kode && hilsen ? { slug: kode, name: 'Testpartner', greeting: hilsen, logo: TEST_LOGO, logoDark: TEST_LOGO } : null;
+            await actions.setPartner(kode ? { slug: kode, greeting, hidden: false } : null);
+            report([kode ? `PARTNER ${kode}` : 'PARTNER GLEMT']);
+            break;
+          }
           case 'gjenopprett':
             await deleteEverything(actions.reset);
             await backup.restore(kode ?? '');
@@ -61,7 +70,7 @@ export default function Utvikling() {
     })();
     // Once per link: a new link to this same screen only changes the parameters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handling, kode]);
+  }, [handling, kode, hilsen]);
 
   if (done || !__DEV__) return <Redirect href="/" />;
   return (
@@ -74,6 +83,13 @@ export default function Utvikling() {
     </SafeAreaView>
   );
 }
+
+/** A made-up SVG logo for `?handling=partner&hilsen=…`, so the card can be seen before a partner has a greeting. */
+const TEST_LOGO = `data:image/svg+xml;base64,${btoa(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" viewBox="0 0 200 40">' +
+    '<rect width="40" height="40" rx="8" fill="#0E5FC0"/>' +
+    '<text x="52" y="28" font-family="Helvetica" font-size="22" font-weight="700" fill="#0B2B4A">Testpartner</text></svg>',
+)}`;
 
 /** Known answers from Node's WebCrypto: the phone must read them, and read its own writing back. */
 async function cryptoCheck(): Promise<string[]> {

@@ -14,6 +14,7 @@ import {
 import { router, Stack, type Href } from 'expo-router';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 
+import { PartnerCard } from '@/components/partner-card';
 import { DaysHero, type HeroAction } from '@/components/preparedness/days-hero';
 import { DAY_ROWS } from '@/components/preparedness/day-rows';
 import { INSURANCE_ALERT_TITLE, useHomeInsurance } from '@/components/preparedness/home-insurance';
@@ -157,6 +158,8 @@ export default function Oversikt() {
             <LinkText strong label="Se hele listen" onPress={() => toLager({ pathname: '/lager', params: { filter: 'mangler' } })} />
           </>
         )}
+
+        <PartnerCard />
 
         <Section header="Forsikring">
           <Row

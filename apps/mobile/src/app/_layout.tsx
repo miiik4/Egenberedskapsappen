@@ -20,6 +20,7 @@ import { Colors, Fonts } from '@/constants/theme';
 import { DataProvider, useData } from '@/data/data-provider';
 import { DocumentLockProvider } from '@/documents/lock';
 import { NotificationsProvider } from '@/notifications/notifications-provider';
+import { usePartnerReferral } from '@/partner/use-partner-referral';
 import { clearSharedReports } from '@/report/make-report';
 
 /**
@@ -90,6 +91,7 @@ const sheet = { presentation: 'modal' } as const;
 
 function Routes() {
   const { onboarded } = useData();
+  usePartnerReferral();
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

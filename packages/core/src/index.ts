@@ -9,6 +9,7 @@ export * from './dates';
 export * from './guidance';
 export * from './guides';
 export * from './insurance';
+export * from './partners';
 export * from './reminders';
 export * from './report';
 export * from './shelters';

@@ -110,6 +110,16 @@ export const partner = defineType({
       validation: (rule) => rule.required().max(170),
     }),
     defineField({
+      name: 'appGreeting',
+      title: 'Hilsen i appen',
+      type: 'string',
+      group: 'page',
+      description:
+        'Én setning i kortet merket «Sponset» på Oversikt, for dem som lastet ned appen fra partnersiden (Android). ' +
+        'Uten hilsen vises ikke kortet. Ikke lov noe appen ikke gjør.',
+      validation: (rule) => rule.max(200),
+    }),
+    defineField({
       name: 'code',
       title: 'Kode',
       type: 'string',

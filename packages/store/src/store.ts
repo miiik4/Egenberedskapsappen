@@ -6,6 +6,7 @@ import {
   isFollowUp,
   isDamage,
   isStockType,
+  parsePartnerGreeting,
   peopleIn,
   stockType,
   type Belonging,
@@ -14,6 +15,7 @@ import {
   type ClaimItem,
   type FollowUp,
   type Household,
+  type PartnerGreeting,
   type Suggestion, type HouseholdMembers, type IsoDate, type StockItem } from '@egenberedskap/core';
 
 import { migrate } from './schema';
@@ -101,7 +103,29 @@ export type AppData = {
   /** Damage claims, newest first. */
   claims: StoredClaim[];
   backup: BackupState | null;
+  /** The partner whose page this phone was installed from (Android's Play referrer). This phone only. */
+  partner: StoredPartner | null;
+  /** The Play install referrer has been read once on this phone, so it isn't asked again. */
+  partnerReferrerRead: boolean;
 };
+
+/** `greeting` is null until it has been fetched from our site; `hidden` once the user put the card away. */
+export type StoredPartner = { slug: string; greeting: PartnerGreeting | null; hidden: boolean };
+
+function toStoredPartner(json: string | null): StoredPartner | null {
+  if (!json) return null;
+  try {
+    const value = JSON.parse(json) as { slug?: unknown; greeting?: unknown; hidden?: unknown };
+    if (typeof value.slug !== 'string') return null;
+    return {
+      slug: value.slug,
+      greeting: value.greeting ? parsePartnerGreeting(value.slug, value.greeting) : null,
+      hidden: value.hidden === true,
+    };
+  } catch {
+    return null;
+  }
+}
 
 /** Without an id it's a new record; with one it replaces that record. */
 export type Draft<T extends { id: string }> = Omit<T, 'id'> & { id?: string };
@@ -262,6 +286,8 @@ export function createStore({ db, newId, now, today }: Deps) {
         ownerBirthDate,
         checkInterval,
         followUps,
+        partner,
+        partnerReferrer,
       ] = await Promise.all(
         [
           'onboardedOn',
@@ -279,6 +305,8 @@ export function createStore({ db, newId, now, today }: Deps) {
           'ownerBirthDate',
           'checkIntervalMonths',
           'followUps',
+          'partner',
+          'partnerReferrer',
         ].map(
           getSetting,
         ),
@@ -521,6 +549,8 @@ export function createStore({ db, newId, now, today }: Deps) {
           backupVaultId && backupEntitledUntil
             ? { vaultId: backupVaultId, entitledUntil: backupEntitledUntil, lastSyncedAt: lastSyncedAt ?? null }
             : null,
+        partner: toStoredPartner(partner ?? null),
+        partnerReferrerRead: partnerReferrer === 'read',
       };
     },
 
@@ -909,6 +939,10 @@ export function createStore({ db, newId, now, today }: Deps) {
       });
     },
     setLastSynced: (at: string) => setSetting('lastSyncedAt', at),
+
+    /** Never synced: the partner belongs to the install, not the household. */
+    setPartner: (partner: StoredPartner | null) => setSetting('partner', partner ? JSON.stringify(partner) : null),
+    markPartnerReferrerRead: () => setSetting('partnerReferrer', 'read'),
 
     /** A phone restored from backup skips the welcome questions: the answers came with it. */
     markOnboarded: () => setSetting('onboardedOn', today()),

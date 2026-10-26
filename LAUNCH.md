@@ -375,6 +375,23 @@ public: anyone can read published documents, never drafts).
 - [ ] **(Mikkel)** Publishing in Sanity does not change the site: rebuild and deploy (`firebase deploy --only
       hosting:app --project prod`). A Sanity webhook that triggers a deploy can come later
 - [ ] **(Mikkel)** Hosted Studio, if wanted: `npm --workspace studio exec sanity deploy` (publishes a sanity.studio URL)
+- [x] Partner greeting without typing, Android (Mikkel chose the Play Install Referrer, 2026-10-26). The partner
+      page's Play link carries `referrer=utm_source=partner&utm_campaign=<slug>` (`partnerReferrer` in
+      `packages/core/src/partners.ts`; Play Console can count installs per partner from the utm values, no tracking of
+      ours). On first launch the app reads it once with `expo-application`'s `getInstallReferrerAsync` (already in
+      the native build through expo-notifications, so no `version` bump), stores the partner on this phone only
+      (settings `partner`, `partnerReferrer`, never synced) and fetches `egenberedskapappen.no/partnere/<slug>.json`,
+      built from the new Studio field «Hilsen i appen» (schema deployed 2026-10-26). Oversikt shows it in a card
+      marked «Sponset» with «Skjul»; never in Nødinfo. iPhone has no install referrer and gets nothing yet. Checked:
+      core and store tests; the card and «Skjul» in the iOS simulator with `utvikling?handling=partner&kode=…&hilsen=…`
+      (SVG data URL logos render); CTC's real logos pass the app's check. **Not checked:** a real install from Play
+      with the referrer, which only works through Play (internal testing track), not a sideloaded APK
+- [ ] **(Mikkel)** Order matters: ship the app release with this first, then write CTC's «Hilsen i appen» in the
+      Studio and deploy the site. The greeting also makes `/for/ctc-bilpartner` promise «Merket «Sponset»». The
+      privacy page has a new «Hilsen fra en samarbeidspartner» part and a changed «Reklame og sporing» sentence
+      (committed, **not deployed**); a person must read both before they go live with the release
+- [ ] Test on the OnePlus via Play: uninstall the app, open the Play link from `/for/ctc-bilpartner` (with the
+      phone's account on the internal testing list), install, open; the card should appear once the greeting exists
 - [ ] The app's «Har du en kode?», the partner greeting and a shared campaign code don't exist yet; activation codes
       today are single-use and only unlock backup. Don't sign off a partner page that promises them until they do
 

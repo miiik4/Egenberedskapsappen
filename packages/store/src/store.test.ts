@@ -527,6 +527,32 @@ describe('insurance and beredskapssjekk', () => {
     expect((await store.load()).documentLock).toBe(true);
   });
 
+  it('remembers the partner this phone was installed from, and that the referrer was read', async () => {
+    const empty = await store.load();
+    expect(empty.partner).toBeNull();
+    expect(empty.partnerReferrerRead).toBe(false);
+
+    await store.markPartnerReferrerRead();
+    await store.setPartner({ slug: 'ctc-bilpartner', greeting: null, hidden: false });
+    let data = await store.load();
+    expect(data.partnerReferrerRead).toBe(true);
+    expect(data.partner).toEqual({ slug: 'ctc-bilpartner', greeting: null, hidden: false });
+
+    const greeting = {
+      slug: 'ctc-bilpartner',
+      name: 'CTC Bilpartner',
+      greeting: 'Hilsen.',
+      logo: 'data:image/svg+xml;base64,PHN2Zy8+',
+      logoDark: 'data:image/svg+xml;base64,PHN2Zy8+',
+    };
+    await store.setPartner({ slug: 'ctc-bilpartner', greeting, hidden: true });
+    data = await store.load();
+    expect(data.partner).toEqual({ slug: 'ctc-bilpartner', greeting, hidden: true });
+
+    await store.setPartner(null);
+    expect((await store.load()).partner).toBeNull();
+  });
+
   it('remembers and clears a requested expiry review', async () => {
     await store.setExpiryReview('2026-10-09');
     expect((await store.load()).expiryReviewOn).toBe('2026-10-09');
