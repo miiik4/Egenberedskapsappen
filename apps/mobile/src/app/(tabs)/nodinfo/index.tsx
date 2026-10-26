@@ -121,6 +121,15 @@ export default function Nodinfo() {
           )}
         </Section>
 
+        <Section header="Tilfluktsrom" footer="Offentlige tilfluktsrom fra DSB. Listen virker uten nett.">
+          <Row
+            title="Nærmeste tilfluktsrom"
+            leading={<Icon name={{ ios: 'shield.fill', android: 'shield' }} size={17} color={Colors.accent} />}
+            chevron
+            onPress={() => router.push('/nodinfo/tilfluktsrom')}
+          />
+        </Section>
+
         <Section header="Dokumenter" footer="Pass, resepter og skjøte lagres på telefonen og kan åpnes uten nett.">
           {documents.map((d) => (
             <Row

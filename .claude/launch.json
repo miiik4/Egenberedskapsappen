@@ -40,6 +40,21 @@
         "docs"
       ],
       "port": 8765
+    },
+    {
+      "name": "metro",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--workspace",
+        "mobile",
+        "run",
+        "start",
+        "--",
+        "--dev-client",
+        "--port",
+        "8081"
+      ],
+      "port": 8081
     }
   ]
 }

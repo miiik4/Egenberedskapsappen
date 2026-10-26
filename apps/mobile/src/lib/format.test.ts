@@ -5,6 +5,7 @@ import {
   formatDate,
   formatDateWithYear,
   formatDays,
+  formatDistance,
   formatExpiry,
   formatIn,
   formatKr,
@@ -73,5 +74,13 @@ describe('format', () => {
   it('makes initials', () => {
     expect(initials('Ola Nordmann')).toBe('ON');
     expect(initials('kari')).toBe('K');
+  });
+  it('rounds distances to what matters on foot', () => {
+    expect(formatDistance(3)).toBe('10 m');
+    expect(formatDistance(347)).toBe('350 m');
+    expect(formatDistance(999)).toBe('1,0 km');
+    expect(formatDistance(1234)).toBe('1,2 km');
+    expect(formatDistance(14_400)).toBe('14 km');
+    expect(formatDistance(7_634_000)).toBe('7 634 km');
   });
 });

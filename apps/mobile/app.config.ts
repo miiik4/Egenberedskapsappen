@@ -37,6 +37,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ...config.android,
       package: id,
       googleServicesFile: `./firebase/${firebase}/google-services.json`,
+      // The shelter map on Android is Google Maps, which needs a key restricted to the app's
+      // package and signing certificates. Without one, the screen shows the list only.
+      config: {
+        ...config.android?.config,
+        googleMaps: process.env.GOOGLE_MAPS_ANDROID_API_KEY
+          ? { apiKey: process.env.GOOGLE_MAPS_ANDROID_API_KEY }
+          : undefined,
+      },
     },
     extra: { ...config.extra, variant: production ? 'production' : 'development' },
   };

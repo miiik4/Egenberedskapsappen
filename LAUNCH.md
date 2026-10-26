@@ -295,13 +295,47 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       the other one redirecting to it (both bought, Mikkel 2026-10-14)
 - [x] DNS for `egenberedskapsappen.no` (with the s), redirecting to `egenberedskapappen.no` (checked with curl
       2026-10-26: http and https on the bare domain answer 301 to https://egenberedskapappen.no/, certificate active)
-- [ ] `www.egenberedskapsappen.no` and `www.egenberedskapappen.no` fail with a certificate error: their CNAMEs
-      point at the bare domains, so they reach Firebase, but they weren't custom domains in Hosting, so Firebase
-      answered with its `*.firebaseapp.com` certificate. *(2026-10-26: both added in prod Hosting as redirects to
-      `egenberedskapappen.no` through the Hosting API; host and ownership active, certificate «validating».)*
-      **(Mikkel)** At the registrar, change both `www` CNAMEs from the bare domain to **`egenberedskapsappen.web.app`**,
-      as Hosting asks (the current ones work but aren't what it recommends). Then check that
-      https://www.egenberedskapsappen.no redirects to https://egenberedskapappen.no/
+- [x] `www.egenberedskapsappen.no` and `www.egenberedskapappen.no` failed with a certificate error: their CNAMEs
+      point at the bare domains, so they reached Firebase, but they weren't custom domains in Hosting, so Firebase
+      answered with its `*.firebaseapp.com` certificate. Both added in prod Hosting as redirects to
+      `egenberedskapappen.no` through the Hosting API (2026-10-26); checked with curl the same evening: http and https
+      on both `www` names end on https://egenberedskapappen.no/ with 200
+- [ ] **(Mikkel)** At the registrar, change both `www` CNAMEs from the bare domain to **`egenberedskapsappen.web.app`**,
+      as Hosting recommends, so the certificates keep renewing if the bare domains ever move. Not urgent: it works today
+
+## 9. Nearest shelter (Mikkel decided 2026-10-26 to build it now)
+
+DSB's «Tilfluktsrom – offentlige» from Geonorge (NLOD, credit DSB): 556 public shelters, 297 187 places on
+2026-10-26, with room number, places and address, but no municipality or opening status. Private shelters (~20 000,
+for the people in that building) have no public data. Meeting points are a different thing: **kommunale
+informasjonspunkter** (DSB's *Veileder om kommunale informasjonspunkter ved bortfall av elektronisk kommunikasjon*),
+where the municipality gives information when power, phone and internet are down. There is no national dataset;
+each municipality publishes its own (Oslo: schools per bydel; Bergen: one per bydel).
+
+- [x] Snapshot in the app: `packages/core/scripts/update-shelters.mjs` reads DSB's WFS in EPSG:4326 and writes
+      `packages/core/src/shelters-data.ts` (58 KB). Coordinates match DSB's own 4326 output exactly (an earlier
+      reprojection from UTM 33 was up to 42 m off in eastern Finnmark, so it was dropped). Refresh: run the script,
+      commit, `eas update`
+- [x] `nearestShelters`, distance and compass direction in `packages/core/src/shelters.ts`, with tests; all on the
+      phone, the position goes nowhere
+- [ ] Screen Nødinfo → «Nærmeste tilfluktsrom» (`nodinfo/tilfluktsrom.tsx`): map (Apple Maps on iPhone, Google Maps
+      on Android), the five nearest with distance, direction and places, tap for walking directions in Kart. DSB's
+      72-hour caveat, private shelters not included, and what an informasjonspunkt is. The list works without
+      network; the map needs it for tiles. Farther than 50 km it says so and gives DSB's advice. *(2026-10-26: seen
+      in the iOS simulator at Oslo S: permission prompt, five rooms from 160 m, markers on the map. Not yet on a real
+      phone, not on Android)*
+- [ ] Native code (expo-location, expo-maps), so `version` is 1.7.0 and it needs new store builds; never `eas update`
+      it onto 1.6.0
+- [ ] **(Mikkel)** Google Maps key for Android: in the Google Cloud project, enable «Maps SDK for Android», create an
+      API key restricted to Android apps `no.htas.egenberedskap` (+ `.dev`) with the SHA-1 of Play's app signing key and
+      the upload key, and set it as the EAS environment variable `GOOGLE_MAPS_ANDROID_API_KEY`. Without it the Android
+      screen shows the list only
+- [ ] Privacy: the position stays on the phone, but the map view fetches tiles from Apple or Google. Say so on
+      `/personvern` and in the store privacy answers (App Store «Data not collected» for location still holds if
+      nothing leaves; check Play's data safety for the Maps SDK). A person must read the final wording
+- [ ] Informasjonspunkter: link to the user's municipality's page, once there's a way to know the municipality
+      without sending the position anywhere (e.g. a bundled municipality list to choose from). A typed-in list of
+      points must be checked by a person before it's shown
 
 ## After launch (1.1 and later, only when users ask)
 
@@ -316,21 +350,6 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
 - Ideas waiting for user demand: «Jeg er trygg», hazard warnings, power-saving mode, evacuation bag, barcode
   scanning, blog
-- Nearest public shelter on a map (Mikkel asked 2026-10-26). Source: DSB's «Tilfluktsrom – offentlige» on Geonorge,
-  NLOD (credit DSB), rebuilt nightly. Nationwide GeoJSON is 39 KB zipped, in EPSG:25833 (reproject to WGS84):
-  `https://nedlasting.geonorge.no/geonorge/Samfunnssikkerhet/TilfluktsromOffentlige/GeoJSON/Samfunnssikkerhet_0000_Norge_25833_TilfluktsromOffentlige_GeoJSON.zip`
-  (WFS `wfs.geonorge.no/skwms1/wfs.tilfluktsrom_offentlige` gives GML in 4326). 556 shelters, 297 187 places on
-  2026-10-26; fields `romnr`, `plasser`, `adresse`, no municipality or opening status. Bundle a trimmed snapshot
-  (lat/lon, places, address) and find the nearest on the phone, so the location never leaves it; refresh it by
-  `eas update` or a first-party file. The app must say what DSB says: in peacetime the rooms may be used for other
-  things and «skal kunne ryddes og klargjøres i løpet av 72 timer». The ~20 000 private shelters (for the people in
-  that building) have no public data.
-  Meeting points are a different thing: **kommunale informasjonspunkter** (DSB's *Veileder om kommunale
-  informasjonspunkter ved bortfall av elektronisk kommunikasjon*), where the municipality gives information when
-  power, phone and internet are down, set up when its crisis management decides. No national dataset; each
-  municipality publishes its own (Oslo: schools per bydel, PDF map; Bergen: one per bydel). Start with a link to the
-  user's municipality's page; a typed-in list must be checked by a person first. Needs a map: check
-  `apps/mobile/AGENTS.md` (react-native-maps or similar is native, so a `version` bump) and offline tiles
 - Partner pages from a CMS (Mikkel asked 2026-10-26): `/for/<partner>` from one template, with name, logos, text and
   code kept in Sanity (or a typed list in the repo while there are few partners), built into static pages so the CSP
   stays `'self'` (logos copied into the build, not loaded from Sanity's CDN). The app's partner greeting should come

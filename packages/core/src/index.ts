@@ -11,4 +11,5 @@ export * from './guides';
 export * from './insurance';
 export * from './reminders';
 export * from './report';
+export * from './shelters';
 export type * from './types';

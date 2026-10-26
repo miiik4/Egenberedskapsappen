@@ -177,3 +177,11 @@ export function describeType(type: Pick<ChecklistType, 'items' | 'measure'>): st
   if (type.measure === 'litres') return `${count} · ${formatNumber(type.items.reduce((n, i) => n + (i.litres ?? 0), 0))} l`;
   return count;
 }
+
+/** «350 m», «1,2 km», «14 km»: rounded to what matters on foot. */
+export function formatDistance(meters: number): string {
+  const tens = Math.max(10, Math.round(meters / 10) * 10);
+  if (tens < 1000) return `${tens} m`;
+  if (meters < 10_000) return `${(Math.round(meters / 100) / 10).toFixed(1).replace('.', ',')} km`;
+  return `${Math.round(meters / 1000).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} km`;
+}
