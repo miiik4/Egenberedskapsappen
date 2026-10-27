@@ -117,7 +117,7 @@ export default function Tilfluktsrom() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Tilfluktsrom' }} />
+      <Stack.Screen options={{ title: 'Nærmest deg' }} />
       <Screen>
         {shelterMapAvailable && (
           <ShelterMap
@@ -150,7 +150,7 @@ export default function Tilfluktsrom() {
 
         {nearby.length > 0 && (
           <Section
-            header="Tilfluktsrom nærmest deg"
+            header="Tilfluktsrom"
             headerDetail={allWithinWalk ? `${nearby.length} innen ${SHELTER_WALK_METERS / 1000} km` : undefined}
             footer={
               nearby[0] && nearby[0].meters > FAR_M
@@ -185,7 +185,7 @@ export default function Tilfluktsrom() {
 
         {at && (
           <Section
-            header="Informasjonspunkter nærmest deg"
+            header="Informasjonspunkter"
             footer={
               points.length > 0
                 ? `Hvis strøm, mobil og internett er borte lenge, gir kommunen informasjon og hjelp her. Noen har folk på plass, andre har oppslag, og de åpner bare når kommunen trenger dem. Fra kommunens nettside ${formatDateWithYear(MEETING_POINTS_UPDATED)}; sjekk gjerne der.`
