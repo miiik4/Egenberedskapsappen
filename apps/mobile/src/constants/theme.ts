@@ -33,6 +33,12 @@ export const Colors = {
   /** The yellow banner, as the beredskapssjekk on Oversikt. */
   notice: color('#FFF6E5', '#2A2111'),
   noticeBorder: color('#F3DDB0', '#4A3A1A'),
+  /**
+   * The map markers and their rows: blue round shields for shelters, orange square «i» for the municipalities'
+   * information points. Blue and orange stay apart for colour-blind eyes, and the shapes differ too.
+   */
+  shelter: '#0E5FC0',
+  meetingPoint: '#C4520F',
   /** Text on a pale fill, for the second avatar and similar quiet badges. */
   indigo: '#5E5CE6',
   indigoSoft: color('#E3E0F5', '#2A2856'),

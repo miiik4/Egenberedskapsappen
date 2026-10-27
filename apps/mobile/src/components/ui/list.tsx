@@ -72,6 +72,7 @@ export function Row({
   onPress,
   titleColor,
   bold,
+  accessibilityLabel,
 }: {
   title: string;
   subtitle?: string;
@@ -83,6 +84,8 @@ export function Row({
   onPress?: () => void;
   titleColor?: ColorValue;
   bold?: boolean;
+  /** What VoiceOver and TalkBack read instead of the row's text, when the icon carries meaning too. */
+  accessibilityLabel?: string;
 }) {
   const content = (
     <View style={styles.row}>
@@ -102,7 +105,11 @@ export function Row({
   );
   if (!onPress) return content;
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => pressed && { backgroundColor: Colors.fill }}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={({ pressed }) => pressed && { backgroundColor: Colors.fill }}>
       {content}
     </Pressable>
   );

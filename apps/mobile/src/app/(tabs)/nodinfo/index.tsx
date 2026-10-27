@@ -121,10 +121,18 @@ export default function Nodinfo() {
           )}
         </Section>
 
-        <Section header="Tilfluktsrom" footer="Offentlige tilfluktsrom fra DSB. Listen virker uten nett.">
+        <Section
+          header="Tilfluktsrom og informasjonspunkter"
+          footer="Offentlige tilfluktsrom fra DSB og kommunenes informasjonspunkter. Listene virker uten nett.">
           <Row
             title="Nærmeste tilfluktsrom"
             leading={<Icon name={{ ios: 'shield.fill', android: 'shield' }} size={17} color={Colors.accent} />}
+            chevron
+            onPress={() => router.push('/nodinfo/tilfluktsrom')}
+          />
+          <Row
+            title="Nærmeste informasjonspunkt"
+            leading={<Icon name={{ ios: 'info.square.fill', android: 'info' }} size={17} color={Colors.meetingPoint} />}
             chevron
             onPress={() => router.push('/nodinfo/tilfluktsrom')}
           />

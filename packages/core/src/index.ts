@@ -12,5 +12,6 @@ export * from './insurance';
 export * from './partners';
 export * from './reminders';
 export * from './report';
+export * from './meeting-points';
 export * from './shelters';
 export type * from './types';

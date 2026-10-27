@@ -355,6 +355,17 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       *(2026-10-27: every municipality's own site read by AI agents, in `docs/informasjonspunkter/`: 237 of 357 name
       points (829 in all), 22 say they have or plan them without naming them, 98 had nothing found. Not checked by a
       person; most pages are from Egenberedskapsuka, so it needs a re-check before use)*
+- [ ] Informasjonspunkter in the app (Mikkel, 2026-10-27: show the points that pass an automatic check, labelled
+      as from the municipality's page, never as verified). `packages/core/scripts/update-meeting-points.mjs` keeps
+      a point only if its municipality's page still names it and Kartverket's address register finds its street
+      address in that municipality: 338 points in 123 municipalities (`meeting-points-data.ts`), with 13
+      municipalities left out by hand (planned, an exercise, or not from their own page). On «Tilfluktsrom»:
+      orange square «i» markers next to the blue round shields, a legend, and a list of its own (the five nearest
+      within 20 km, the municipality named near a border, a link to each municipality's page). JS and pictures
+      only, so it can go out with `eas update` onto 1.7.0. *(Seen in the iOS simulator at Porsgrunn; not on
+      Android, where the markers are pictures for the first time)* **(Mikkel)** read
+      `docs/informasjonspunkter/informasjonspunkter-2026-10-27.csv` for the kept points before it reaches
+      production
 
 ## 10. Partner pages from a CMS (Mikkel decided 2026-10-26 to build it now)
 

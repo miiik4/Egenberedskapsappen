@@ -1,16 +1,24 @@
-import { SHELTER_WALK_METERS, sheltersNear, SHELTERS_UPDATED, type LatLon, type Shelter } from '@egenberedskap/core';
+import {
+  MEETING_POINTS_UPDATED,
+  meetingPointsNear,
+  SHELTER_WALK_METERS,
+  sheltersNear,
+  SHELTERS_UPDATED,
+  type LatLon,
+  type Shelter,
+} from '@egenberedskap/core';
 import * as Location from 'expo-location';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Platform, StyleSheet, View } from 'react-native';
 
-import { ShelterMap, shelterMapAvailable } from '@/components/shelter-map';
+import { MarkerIcon, ShelterMap, shelterMapAvailable } from '@/components/shelter-map';
 import { PrimaryButton } from '@/components/ui/button';
-import { Row, Section } from '@/components/ui/list';
+import { EmptyRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
 import { Colors, Spacing } from '@/constants/theme';
-import { formatDate, formatDistance } from '@/lib/format';
+import { formatDateWithYear, formatDistance } from '@/lib/format';
 
 /** Rows before «Vis alle»; the map always shows every shelter in the list. */
 const FIRST_ROWS = 10;
@@ -38,9 +46,8 @@ async function findPosition(ask: boolean): Promise<Position> {
 const title = (shelter: Shelter) => shelter.address || `Tilfluktsrom ${shelter.room}`;
 
 /** Opens the phone's maps app with walking directions. The app itself never sends the position anywhere. */
-function directions(shelter: Shelter) {
-  const { latitude, longitude } = shelter;
-  const label = encodeURIComponent(title(shelter));
+function directions({ latitude, longitude }: LatLon, name: string) {
+  const label = encodeURIComponent(name);
   Linking.openURL(
     Platform.OS === 'ios'
       ? `maps://?daddr=${latitude},${longitude}&dirflg=w&q=${label}`
@@ -48,9 +55,13 @@ function directions(shelter: Shelter) {
   );
 }
 
+/** «Lundedalen 35, 3940 Porsgrunn» → «Lundedalen 35»: the municipality is in the link below the list. */
+const street = (address: string) => address.split(',')[0]!;
+
 /**
- * The public shelters nearest the phone, from DSB's list in the app: it works with no network,
- * and the position is never sent. The map needs a network for its tiles; the list doesn't.
+ * The public shelters nearest the phone, from DSB's list in the app, and the municipalities' information points
+ * as a list of their own: both work with no network, and the position is never sent. The map needs a network for
+ * its tiles; the lists don't.
  */
 export default function Tilfluktsrom() {
   const [position, setPosition] = useState<Position>({ status: 'loading' });
@@ -70,13 +81,21 @@ export default function Tilfluktsrom() {
   const nearby = at ? sheltersNear(at) : [];
   const rows = showAll ? nearby : nearby.slice(0, FIRST_ROWS);
   const allWithinWalk = nearby.length > 0 && nearby.every((n) => n.meters <= SHELTER_WALK_METERS);
+  const points = at ? meetingPointsNear(at) : [];
+  // One link per municipality listed, so the points near a border lead to both pages.
+  const sources = [...new Map(points.map(({ point }) => [point.municipality, point.source])).entries()];
 
   return (
     <>
       <Stack.Screen options={{ title: 'Tilfluktsrom' }} />
       <Screen>
         {shelterMapAvailable && (
-          <ShelterMap at={at} shelters={nearby.map((n) => n.shelter)} title={title} />
+          <ShelterMap
+            at={at}
+            shelters={nearby.map((n) => n.shelter)}
+            meetingPoints={points.map((n) => n.point)}
+            title={title}
+          />
         )}
 
         {position.status === 'loading' && (
@@ -101,30 +120,72 @@ export default function Tilfluktsrom() {
 
         {nearby.length > 0 && (
           <Section
-            header="Nærmest deg"
+            header="Tilfluktsrom nærmest deg"
             headerDetail={allWithinWalk ? `${nearby.length} innen ${SHELTER_WALK_METERS / 1000} km` : undefined}
             footer={
               nearby[0] && nearby[0].meters > FAR_M
                 ? 'Det er langt til nærmeste offentlige tilfluktsrom. Søk beskyttelse der du er.'
                 : 'Trykk på et rom for veibeskrivelse i Kart.'
             }>
-            {rows.map(({ shelter, meters, direction }) => (
-              <Row
-                key={shelter.id}
-                title={title(shelter)}
-                subtitle={[
-                  `${formatDistance(meters)} mot ${direction}`,
-                  shelter.places > 0 ? `${shelter.places} plasser` : null,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-                chevron
-                onPress={() => directions(shelter)}
-              />
-            ))}
+            {rows.map(({ shelter, meters, direction }) => {
+              const subtitle = [
+                `${formatDistance(meters)} mot ${direction}`,
+                shelter.places > 0 ? `${shelter.places} plasser` : null,
+              ]
+                .filter(Boolean)
+                .join(' · ');
+              return (
+                <Row
+                  key={shelter.id}
+                  leading={<MarkerIcon kind="shelter" />}
+                  title={title(shelter)}
+                  subtitle={subtitle}
+                  accessibilityLabel={`Tilfluktsrom, ${title(shelter)}, ${subtitle}. Veibeskrivelse i Kart.`}
+                  chevron
+                  onPress={() => directions(shelter, title(shelter))}
+                />
+              );
+            })}
             {rows.length < nearby.length && (
               <Row title={`Vis alle ${nearby.length}`} titleColor={Colors.accent} onPress={() => setShowAll(true)} />
             )}
+          </Section>
+        )}
+
+        {at && (
+          <Section
+            header="Informasjonspunkter nærmest deg"
+            footer={
+              points.length > 0
+                ? `Hvis strøm, mobil og internett er borte lenge, gir kommunen informasjon og hjelp her. Noen har folk på plass, andre har oppslag, og de åpner bare når kommunen trenger dem. Fra kommunens nettside ${formatDateWithYear(MEETING_POINTS_UPDATED)}; sjekk gjerne der.`
+                : 'Hvis strøm, mobil og internett er borte lenge, gir kommunen informasjon og hjelp på faste steder. Hvor de er, står på kommunens nettside. Sjekk det nå, mens nettet virker.'
+            }>
+            {points.length === 0 && <EmptyRow text="Appen har ingen informasjonspunkter nær deg ennå." />}
+            {points.map(({ point, meters, direction }) => {
+              // Near a border the list mixes municipalities; then each row says whose it is.
+              const where = sources.length > 1 ? `${street(point.address)}, ${point.municipality}` : street(point.address);
+              const subtitle = `${formatDistance(meters)} mot ${direction} · ${where}`;
+              return (
+                <Row
+                  key={point.id}
+                  leading={<MarkerIcon kind="meetingPoint" />}
+                  title={point.name}
+                  subtitle={subtitle}
+                  accessibilityLabel={`Informasjonspunkt, ${point.name}, ${subtitle}. Veibeskrivelse i Kart.`}
+                  chevron
+                  onPress={() => directions(point, point.name)}
+                />
+              );
+            })}
+            {sources.map(([municipality, source]) => (
+              <Row
+                key={source}
+                title={`${municipality} kommune om informasjonspunkter`}
+                titleColor={Colors.accent}
+                accessibilityLabel={`Åpne ${municipality} kommunes side om informasjonspunkter`}
+                onPress={() => Linking.openURL(source)}
+              />
+            ))}
           </Section>
         )}
 
@@ -138,20 +199,15 @@ export default function Tilfluktsrom() {
               Bor du i en blokk, kan bygget ha et eget tilfluktsrom. De er ikke med her. Er det langt til et rom, søk
               beskyttelse der du er.
             </Text>
-          </View>
-        </Section>
-
-        <Section
-          header="Informasjonspunkt"
-          footer={`Tilfluktsrom fra DSB, oppdatert ${formatDate(SHELTERS_UPDATED)} ${SHELTERS_UPDATED.slice(0, 4)}. Bare offentlige rom.`}>
-          <View style={styles.note}>
             <Text style={styles.noteText}>
-              Et informasjonspunkt er noe annet enn et tilfluktsrom. Hvis strøm, mobil og internett er borte, gir
-              kommunen informasjon og hjelp der. Hvor de er, finner du på kommunens nettside. Sjekk det nå, mens nettet
-              virker.
+              Et informasjonspunkt er noe annet enn et tilfluktsrom: der får du informasjon, ikke beskyttelse.
             </Text>
           </View>
         </Section>
+
+        <Text style={styles.credit}>
+          Tilfluktsrom fra DSB, oppdatert {formatDateWithYear(SHELTERS_UPDATED)}. Bare offentlige rom.
+        </Text>
       </Screen>
     </>
   );
@@ -163,4 +219,5 @@ const styles = StyleSheet.create({
   ask: { padding: 16 },
   note: { padding: 16, gap: 10 },
   noteText: { fontSize: 15, lineHeight: 21, color: Colors.label },
+  credit: { marginHorizontal: Spacing.screen + Spacing.rowInset, fontSize: 13, lineHeight: 18, color: Colors.secondaryLabel },
 });
