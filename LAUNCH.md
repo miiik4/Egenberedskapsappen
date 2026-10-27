@@ -352,6 +352,9 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
 - [ ] Informasjonspunkter: link to the user's municipality's page, once there's a way to know the municipality
       without sending the position anywhere (e.g. a bundled municipality list to choose from). A typed-in list of
       points must be checked by a person before it's shown
+      *(2026-10-27: every municipality's own site read by AI agents, in `docs/informasjonspunkter/`: 237 of 357 name
+      points (829 in all), 22 say they have or plan them without naming them, 98 had nothing found. Not checked by a
+      person; most pages are from Egenberedskapsuka, so it needs a re-check before use)*
 
 ## 10. Partner pages from a CMS (Mikkel decided 2026-10-26 to build it now)
 
