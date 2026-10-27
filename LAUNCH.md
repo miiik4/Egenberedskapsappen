@@ -312,7 +312,7 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       with the s serves, the other three redirect to it) and both sites deployed. Checked with curl: http and https on
       all four names end on https://egenberedskapsappen.no/personvern with 200; the old apex answers 301 with the
       path kept, so the partner JSON still reaches builds already out; canonical and holmtall.no links use the domain
-      with the s. Still to do: `eas update` for the app's URLs, re-render the posters, and change the privacy policy
+      with the s. Posters re-rendered with the new URL the same day. Still to do: `eas update` for the app's URLs and change the privacy policy
       and website URLs in Play Console)*
 - [ ] **(Mikkel)** At the registrar, change both `www` CNAMEs from the bare domain to **`egenberedskapsappen.web.app`**,
       as Hosting recommends, so the certificates keep renewing if the bare domains ever move. Not urgent: it works today
