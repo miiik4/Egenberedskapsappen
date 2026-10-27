@@ -28,8 +28,8 @@ const chrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 /** The launch date is planned, not certain (go/no-go 19 October). Change it here if it moves. */
 const RELEASE_LINE = 'Gratis på iPhone og Android fra 26. oktober';
-/** The domain we own today. If egenberedskapsappen.no (with the s) becomes the main one, change it here. */
-const URL = 'egenberedskapappen.no';
+/** The main domain, with the s as the app is named. egenberedskapappen.no redirects to it. */
+const URL = 'egenberedskapsappen.no';
 
 /** From apps/mobile/src/constants/theme.ts. */
 const C = {

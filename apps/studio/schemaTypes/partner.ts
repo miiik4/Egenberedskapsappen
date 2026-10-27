@@ -6,7 +6,7 @@ const CODE_PATTERN = /^[A-Z0-9]+(-[A-Z0-9]+)*$/;
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /**
- * A partner's landing page, egenberedskapappen.no/for/<slug>. The website is static: a page exists only after a
+ * A partner's landing page, egenberedskapsappen.no/for/<slug>. The website is static: a page exists only after a
  * new build, and only for published partners with «Avtale signert» on (AGENTS.md: never name a partner without a
  * signed agreement).
  */
@@ -33,7 +33,7 @@ export const partner = defineType({
       title: 'Adresse',
       type: 'slug',
       group: 'agreement',
-      description: 'Siden får adressen egenberedskapappen.no/for/<adresse>. Små bokstaver, tall og bindestrek.',
+      description: 'Siden får adressen egenberedskapsappen.no/for/<adresse>. Små bokstaver, tall og bindestrek.',
       options: { source: 'name', maxLength: 48 },
       validation: (rule) =>
         rule.required().custom((slug) => {

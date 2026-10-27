@@ -33,7 +33,7 @@ Each comes as `-a3.pdf` (vector, for print at any A size), `-a3.png` (preview), 
 
 - The release line «Gratis på iPhone og Android fra 26. oktober» assumes go/no-go on 19 October passes.
   `RELEASE_LINE` in `render.mjs`.
-- The URL is `egenberedskapappen.no` (without the s), the domain we own. `URL` in `render.mjs`.
+- The URL is `egenberedskapsappen.no` (with the s), the main domain. `URL` in `render.mjs`.
 - Claims are ones the website and store listing already make. No DSB slogans or DSB look, no partner names, no
   mention of Egenberedskapsuka (it's DSB's campaign).
 - No App Store or Google Play badges yet: add them, following Apple's and Google's badge rules, once the store links

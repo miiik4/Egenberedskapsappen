@@ -7,7 +7,7 @@ import { useActions, useData } from '@/data/data-provider';
 import { todayIso } from '@/lib/format';
 
 /** Our own site, built from Sanity (apps/web/src/pages/partnere). Nothing else is asked. */
-const GREETING_URL = (slug: string) => `https://egenberedskapappen.no/partnere/${slug}.json`;
+const GREETING_URL = (slug: string) => `https://egenberedskapsappen.no/partnere/${slug}.json`;
 
 /** Play's referrer service can hang; a first launch doesn't wait on it. */
 const REFERRER_TIMEOUT_MS = 10_000;
@@ -46,7 +46,7 @@ async function fetchGreeting(slug: string): Promise<{ greeting: PartnerGreeting 
 }
 
 /**
- * Android installs from a partner's page (egenberedskapappen.no/for/<slug>) show that partner's greeting on
+ * Android installs from a partner's page (egenberedskapsappen.no/for/<slug>) show that partner's greeting on
  * Oversikt, marked «Sponset», with nothing to type. The referrer is read once, on the phone; the only request
  * is for the partner's greeting from our own site, and nothing about the user goes with it. iPhone has no
  * install referrer, so this does nothing there.

@@ -96,11 +96,11 @@ The free plan covers updates for 1 000 monthly active users; above that Expo bil
 ## Websites
 
 Two Astro sites, two Hosting targets in `firebase.json` and `.firebaserc`: `app` is `apps/web` (the app's site,
-egenberedskapappen.no) and `firma` is `apps/firma` (the company's site, holmtall.no). Both build in the predeploy
+egenberedskapsappen.no) and `firma` is `apps/firma` (the company's site, holmtall.no). Both build in the predeploy
 step; a plain `--only hosting` deploys both.
 
 ```sh
-npx firebase-tools deploy --only hosting:app --project prod    # egenberedskapappen.no, indexed
+npx firebase-tools deploy --only hosting:app --project prod    # egenberedskapsappen.no, indexed
 npx firebase-tools deploy --only hosting:app --project test    # egenberedskapsappen-test.web.app, noindex
 npx firebase-tools deploy --only hosting:firma --project prod  # the company site
 ```

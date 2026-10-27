@@ -306,6 +306,12 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       answered with its `*.firebaseapp.com` certificate. Both added in prod Hosting as redirects to
       `egenberedskapappen.no` through the Hosting API (2026-10-26); checked with curl the same evening: http and https
       on both `www` names end on https://egenberedskapappen.no/ with 200
+- [ ] Make `egenberedskapsappen.no` (with the s) the main domain, as we name it everywhere, with
+      `egenberedskapappen.no` and both `www` names redirecting to it *(2026-10-27: code and docs point at the domain
+      with the s: website `site`, the app's privacy and partner-greeting URLs, firma, Studio, posters. Still to do:
+      flip the custom domains in prod Hosting, deploy both sites, `eas update` for the app, re-render the posters,
+      and change the privacy policy and website URLs in Play Console. Builds already out keep working through the
+      redirect)*
 - [ ] **(Mikkel)** At the registrar, change both `www` CNAMEs from the bare domain to **`egenberedskapsappen.web.app`**,
       as Hosting recommends, so the certificates keep renewing if the bare domains ever move. Not urgent: it works today
 

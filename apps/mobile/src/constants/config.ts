@@ -14,4 +14,4 @@ export const EGENBEREDSKAP_PLUS_ENABLED = false;
 export const CONTACT_EMAIL = 'kontakt@holmtall.no';
 
 /** The privacy policy on the website. Google Play requires a link to it inside the app, not only in the listing. */
-export const PRIVACY_POLICY_URL = 'https://egenberedskapappen.no/personvern';
+export const PRIVACY_POLICY_URL = 'https://egenberedskapsappen.no/personvern';

@@ -98,7 +98,7 @@ What changes:
   metadata (device model, OS, SDK version), the IP address, a pseudonymous SDK identifier, crash traces, and map
   interactions (panning, zooming). Google counts SDK-collected data as the app's to declare.
 - **Partner greeting**: the Play install referrer is read on the phone; the app then fetches
-  `egenberedskapappen.no/partnere/<slug>.json`. That request carries only the partner's name in the URL (and the IP,
+  `egenberedskapsappen.no/partnere/<slug>.json`. That request carries only the partner's name in the URL (and the IP,
   as every request does); Firebase Hosting serves it and we don't log or store it. Nothing new to declare.
 
 Suggested additions to the Data safety form (on top of the 1.0 table):
