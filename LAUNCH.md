@@ -408,7 +408,8 @@ public: anyone can read published documents, never drafts).
       to production, then deploy the site again *(done 2026-10-26)*
 - [ ] An app keeps the greeting it fetched first and never asks again, so the OnePlus still shows the test text and a
       later change in Sanity won't reach phones that already have one. Refresh it now and then (e.g. once a day)
-- [ ] 1.7.0 (version code 6) to production (Mikkel's go, 2026-10-26 ~23:25): release saved in Play with the 1.7.0
+- [x] 1.7.0 (version code 6) is live in production (seen 2026-10-27: production track «Nyeste utgave: 6 (1.7.0)»,
+      the public Play page lists 1.7.0, publishing overview «Sist publisert 27. oktober 2026»). Was: release saved in Play with the 1.7.0
       notes, together with the updated Data safety form (as drafted in `docs/store/privacy-answers.md`: app
       interactions, crash logs and diagnostics collected, not shared, optional; device IDs gain «Analyse»; Location not
       declared). Both wait in the publishing overview as «Send 2 endringer til gjennomgang»; managed publishing is on,
@@ -416,6 +417,13 @@ public: anyone can read published documents, never drafts).
       framing (b7bc778) follows as an update to 1.7.0; GPS-optional (`plugins/optional-location-hardware.js`) with the
       next native release. Play also flags «Optimaliseringen av DEX-koden er under terskelen» (no R8 minification),
       to fix by Feb 2027
+- [ ] New Nødinfo store screenshot with the shelter row (`docs/store/skjermbilder/3-nodinfo.png`, a8c032e) is in the
+      default listing and saved (2026-10-27); it waits in the publishing overview as «Send 1 endring til gjennomgang».
+      The listing's «Erklæring om AI-elementer» is set to «Merk elementer som laget eller redigert med AI», from before;
+      **(Mikkel)** check that's what you want
+- [ ] **(Mikkel)** Publish the map-framing fix (b7bc778, JS only) to 1.7.0:
+      `npm run publish-update -- --channel production --environment production --message "Kartet viser alle tilfluktsrom"`
+      in `apps/mobile` (preview channel first if you like)
 - [x] 1.7.0 (version code 6) is on Play's internal testing track (2026-10-26 22:56). Play warns that 8 devices (2
       phones, 6 tablets, ~0 %) lose support: the location permission makes GPS a required feature. Before production,
       declare `android.hardware.location.gps` (and `.network`) as not required, so they keep the app and get the list
