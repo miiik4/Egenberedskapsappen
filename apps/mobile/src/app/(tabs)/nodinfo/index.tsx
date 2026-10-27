@@ -1,11 +1,12 @@
 import { router, Stack } from 'expo-router';
 import { Linking, Platform, Pressable, StyleSheet, View } from 'react-native';
 
+import { MarkerIcon } from '@/components/map-markers';
 import { Icon } from '@/components/ui/icon';
 import { AddRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { ToolbarIcons } from '@/components/toolbar-icons';
-import { Colors, Fonts, Spacing } from '@/constants/theme';
+import { Colors, Fonts, Radius, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
 import { initials } from '@/lib/format';
 import { Text } from '@/components/ui/text';
@@ -71,6 +72,23 @@ export default function Nodinfo() {
           ))}
         </View>
 
+        {/* Right under the numbers: where to go is the next thing to look for, and it must not blend in. */}
+        <Pressable
+          onPress={() => router.push('/nodinfo/tilfluktsrom')}
+          accessibilityRole="button"
+          accessibilityLabel="Tilfluktsrom og informasjonspunkter. Kart og liste over de nærmeste, virker uten nett."
+          style={({ pressed }) => [styles.places, pressed && { opacity: 0.7 }]}>
+          <View style={styles.placesIcons}>
+            <MarkerIcon kind="shelter" size={30} />
+            <MarkerIcon kind="meetingPoint" size={30} />
+          </View>
+          <View style={styles.placesText}>
+            <Text style={styles.placesTitle}>Tilfluktsrom og informasjonspunkter</Text>
+            <Text style={styles.placesSubtitle}>Kart og liste over de nærmeste. Virker uten nett.</Text>
+          </View>
+          <Icon name={{ ios: 'chevron.right', android: 'chevron_right' }} size={13} color={Colors.tertiaryLabel} />
+        </Pressable>
+
         <Section header="Nødkontakter" separatorInset={68}>
           {contacts.map((c, i) => (
             <Row
@@ -119,17 +137,6 @@ export default function Nodinfo() {
           ) : (
             <AddRow title="Legg til møtested" onPress={() => router.push('/motested')} />
           )}
-        </Section>
-
-        <Section
-          header="Tilfluktsrom og informasjonspunkter"
-          footer="Offentlige tilfluktsrom fra DSB og kommunenes informasjonspunkter. Listene virker uten nett.">
-          <Row
-            title="Nærmest deg"
-            leading={<Icon name={{ ios: 'map.fill', android: 'map' }} size={17} color={Colors.accent} />}
-            chevron
-            onPress={() => router.push('/nodinfo/tilfluktsrom')}
-          />
         </Section>
 
         <Section header="Dokumenter" footer="Pass, resepter og skjøte lagres på telefonen og kan åpnes uten nett.">
@@ -186,4 +193,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accentSoft,
   },
   map: { fontSize: 17, color: Colors.accent },
+  places: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginHorizontal: Spacing.screen,
+    paddingVertical: 16,
+    paddingHorizontal: Spacing.rowInset,
+    borderRadius: Radius.card,
+    borderCurve: 'continuous',
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
+    backgroundColor: Colors.card,
+  },
+  placesIcons: { gap: 4 },
+  placesText: { flex: 1, gap: 3 },
+  placesTitle: { fontFamily: Fonts.displaySemibold, fontSize: 18, lineHeight: 23, color: Colors.label },
+  placesSubtitle: { fontSize: 15, lineHeight: 20, color: Colors.secondaryLabel },
 });

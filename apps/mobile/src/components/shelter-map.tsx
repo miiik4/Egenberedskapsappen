@@ -1,10 +1,11 @@
 import { cameraFor, type LatLon, type MeetingPoint, type Shelter } from '@egenberedskap/core';
 import { requireOptionalNativeModule } from 'expo';
 import Constants from 'expo-constants';
-import { Image, useImage } from 'expo-image';
+import { useImage } from 'expo-image';
 import { useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 
+import { MARKERS, MarkerIcon } from '@/components/map-markers';
 import { Text } from '@/components/ui/text';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 
@@ -23,20 +24,6 @@ const maps: typeof import('expo-maps') | null =
     : null;
 
 export const shelterMapAvailable = maps !== null;
-
-/**
- * The two kinds of place differ in shape as well as colour (a square with the civil-defence triangle, a round «i»),
- * so they can be told apart without seeing colour. The list rows and the legend use the same pictures as the map.
- */
-export const MARKERS = {
-  shelter: { image: require('@/assets/images/map/shelter.png'), color: Colors.shelter, symbol: 'triangle.fill' },
-  meetingPoint: { image: require('@/assets/images/map/info-point.png'), color: Colors.meetingPoint, symbol: 'info' },
-} as const;
-
-/** The marker picture at list size, for the row it belongs to. */
-export function MarkerIcon({ kind }: { kind: keyof typeof MARKERS }) {
-  return <Image source={MARKERS[kind].image} style={styles.icon} accessible={false} />;
-}
 
 const HEIGHT = 280;
 const CENTER = { x: 0.5, y: 0.5 };
@@ -134,5 +121,4 @@ const styles = StyleSheet.create({
   legend: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 20, rowGap: 6, paddingHorizontal: Spacing.rowInset },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   legendText: { fontSize: 15, color: Colors.secondaryLabel },
-  icon: { width: 24, height: 24 },
 });

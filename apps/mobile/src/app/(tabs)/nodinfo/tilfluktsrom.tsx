@@ -12,7 +12,8 @@ import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Platform, StyleSheet, View } from 'react-native';
 
-import { MarkerIcon, ShelterMap, shelterMapAvailable } from '@/components/shelter-map';
+import { MarkerIcon } from '@/components/map-markers';
+import { ShelterMap, shelterMapAvailable } from '@/components/shelter-map';
 import { PrimaryButton } from '@/components/ui/button';
 import { EmptyRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
@@ -117,7 +118,8 @@ export default function Tilfluktsrom() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Nærmest deg' }} />
+      {/* Too long for a large title, which would cut it off; a normal one fits the whole name. */}
+      <Stack.Screen options={{ title: 'Tilfluktsrom og informasjonspunkter', headerLargeTitleEnabled: false }} />
       <Screen>
         {shelterMapAvailable && (
           <ShelterMap
@@ -150,7 +152,7 @@ export default function Tilfluktsrom() {
 
         {nearby.length > 0 && (
           <Section
-            header="Tilfluktsrom"
+            header="Tilfluktsrom nærmest deg"
             headerDetail={allWithinWalk ? `${nearby.length} innen ${SHELTER_WALK_METERS / 1000} km` : undefined}
             footer={
               nearby[0] && nearby[0].meters > FAR_M
@@ -185,7 +187,7 @@ export default function Tilfluktsrom() {
 
         {at && (
           <Section
-            header="Informasjonspunkter"
+            header="Informasjonspunkter nærmest deg"
             footer={
               points.length > 0
                 ? `Hvis strøm, mobil og internett er borte lenge, gir kommunen informasjon og hjelp her. Noen har folk på plass, andre har oppslag, og de åpner bare når kommunen trenger dem. Fra kommunens nettside ${formatDateWithYear(MEETING_POINTS_UPDATED)}; sjekk gjerne der.`
