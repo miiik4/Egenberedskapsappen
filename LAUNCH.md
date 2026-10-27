@@ -258,7 +258,12 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       the change before it shows). iOS still waits for the Apple account.
       2026-10-23: the padded phone screenshots replaced with six composed ones (`docs/store/skjermbilder/`, built by
       `docs/store/render-screenshots.mjs`); Mikkel picked the files, Claude sent the change for review. When Google
-      approves it: Publiseringsoversikt → «Publiser endringene».***
+      approves it: Publiseringsoversikt → «Publiser endringene».
+      2026-10-27: a Play search for «egenberedskap» didn't show the app (the exact name did), since the word never
+      stood alone in the Play text and Play doesn't split compounds. Claude, on Mikkel's go, put it in the short
+      description («Egenberedskap: se hvor mange døgn …») and as the first line of the full description
+      (`docs/store/listing.md`) and sent both for review. When Google approves: «Publiser endringene», then search
+      again.***
 
 ## 7. Insurers and Egenberedskap+
 

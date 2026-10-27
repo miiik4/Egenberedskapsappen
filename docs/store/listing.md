@@ -44,13 +44,19 @@ beredskap,egenberedskap,strømbrudd,nødlager,vann,krise,nødnummer,innbo,forsik
 
 ## Google Play
 
-**Short description (61):** Se hvor mange døgn husstanden klarer seg, og hva som mangler.
+**Short description (76):** Egenberedskap: se hvor mange døgn husstanden klarer seg, og hva som mangler.
+
+«egenberedskap» stands alone in the short description and the first line of the full description
+(2026-10-27): Play has no keyword field and doesn't split compounds, so «Egenberedskapsappen» alone never matched a
+search for «egenberedskap».
 
 ## Full description
 
 (About 1 760 characters; limit 4 000.) On Google Play two lines differ, as entered 2026-10-18: «låst med
 fingeravtrykk, ansikt eller kode» instead of «låst med Face ID eller kode», and the sentence «På iPhone kan ingenting
 leses mens telefonen er låst» is left out.
+
+Egenberedskap for hele husstanden.
 
 Hvor lenge klarer husstanden seg hvis strømmen og vannet blir borte? Egenberedskapsappen regner det ut, viser
 hva som mangler, og minner dere på det som snart går ut. Appen er gratis, og alt dere legger inn blir på
