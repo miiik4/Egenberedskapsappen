@@ -368,7 +368,9 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       list aren't seen on Android yet; Android 11 can't take a test position over adb. The cause: the screen asked
       only for a «balanced» position, which on Android is Wi-Fi and cell towers, never GPS, and finds nothing with no
       SIM or on a phone's hotspot. Now it asks for high accuracy and waits up to two minutes (preview update
-      `3627a5dd`); GPS switched on but saw too weak a signal where the phone lay)* **(Mikkel)** read
+      `3627a5dd`); GPS switched on but saw too weak a signal where the phone lay. By a window it ran two more
+      minutes with no fix, and Google Maps on the phone found no position in two minutes either, so it's the phone's
+      reception there, not the app. Next: outside for a few minutes)* **(Mikkel)** read
       `docs/informasjonspunkter/informasjonspunkter-2026-10-27.csv` for the kept points before it reaches
       production
 
