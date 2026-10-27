@@ -136,3 +136,13 @@ Nytt: Kommunenes informasjonspunkter.
 Informasjonspunktene er hentet fra kommunenes nettsider.
 </no-NO>
 ```
+
+1.7.2 (2026-10-27, written by Claude when Mikkel asked for the release; R8 and the new domain):
+
+```
+<no-NO>
+Tekniske forbedringer.
+• Appen er optimalisert for Google Play.
+• Personvernerklæringen åpnes nå på egenberedskapsappen.no.
+</no-NO>
+```
