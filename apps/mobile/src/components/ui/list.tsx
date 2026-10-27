@@ -73,6 +73,7 @@ export function Row({
   titleColor,
   bold,
   accessibilityLabel,
+  titleLines = 1,
 }: {
   title: string;
   subtitle?: string;
@@ -86,13 +87,15 @@ export function Row({
   bold?: boolean;
   /** What VoiceOver and TalkBack read instead of the row's text, when the icon carries meaning too. */
   accessibilityLabel?: string;
+  /** Lines before the title is cut off; more for names that must be read in full. */
+  titleLines?: number;
 }) {
   const content = (
     <View style={styles.row}>
       {leading}
       <View style={styles.rowText}>
         <Text
-          numberOfLines={1}
+          numberOfLines={titleLines}
           style={[styles.title, titleColor ? { color: titleColor } : null, bold && styles.bold]}>
           {title}
         </Text>

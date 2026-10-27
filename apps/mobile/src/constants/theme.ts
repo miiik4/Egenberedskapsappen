@@ -34,11 +34,12 @@ export const Colors = {
   notice: color('#FFF6E5', '#2A2111'),
   noticeBorder: color('#F3DDB0', '#4A3A1A'),
   /**
-   * The map markers and their rows: blue round shields for shelters, orange square «i» for the municipalities'
-   * information points. Blue and orange stay apart for colour-blind eyes, and the shapes differ too.
+   * The map markers and their rows. Shelters are orange squares with a blue triangle, the civil-defence sign on the
+   * building; information points are blue circles with «i», as information signs are. Blue and orange stay apart for
+   * colour-blind eyes, and the shapes differ too.
    */
-  shelter: '#0E5FC0',
-  meetingPoint: '#C4520F',
+  shelter: '#E8650F',
+  meetingPoint: '#0E5FC0',
   /** Text on a pale fill, for the second avatar and similar quiet badges. */
   indigo: '#5E5CE6',
   indigoSoft: color('#E3E0F5', '#2A2856'),

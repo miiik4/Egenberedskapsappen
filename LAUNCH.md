@@ -360,7 +360,8 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       a point only if its municipality's page still names it and Kartverket's address register finds its street
       address in that municipality: 338 points in 123 municipalities (`meeting-points-data.ts`), with 13
       municipalities left out by hand (planned, an exercise, or not from their own page). On «Tilfluktsrom»:
-      orange square «i» markers next to the blue round shields, a legend, and a list of its own (the five nearest
+      blue round «i» markers next to shelters as orange squares with the blue civil-defence triangle (Mikkel,
+      2026-10-27: colours as people know the signs; DSB's guide sets none), a legend, and a list of its own (the five nearest
       within 20 km, the municipality named near a border, a link to each municipality's page). JS and pictures
       only, so it can go out with `eas update` onto 1.7.0. *(Seen in the iOS simulator at Porsgrunn. 2026-10-27:
       preview update `26ca4bcc` arrived on the OnePlus 6 (preview build 1.7.0): Google Maps draws the map, and Nødinfo
@@ -370,7 +371,10 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       SIM or on a phone's hotspot. Now it asks for high accuracy and waits up to two minutes (preview update
       `3627a5dd`); GPS switched on but saw too weak a signal where the phone lay. By a window it ran two more
       minutes with no fix, and Google Maps on the phone found no position in two minutes either, so it's the phone's
-      reception there, not the app. Next: outside for a few minutes)* **(Mikkel)** read
+      reception there, not the app. Then checked with a test position at Porsgrunn in a preview update that never
+      reached git, since replaced by `6bfd7200`: markers and legend on Google Maps, the list with the municipality
+      named near the border (Skien), directions open in Google Maps, the municipality link opens the browser, and
+      TalkBack labels start with the kind of place)* **(Mikkel)** read
       `docs/informasjonspunkter/informasjonspunkter-2026-10-27.csv` for the kept points before it reaches
       production
 

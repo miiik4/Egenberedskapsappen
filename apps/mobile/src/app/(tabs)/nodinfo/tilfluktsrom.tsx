@@ -169,6 +169,7 @@ export default function Tilfluktsrom() {
                   key={shelter.id}
                   leading={<MarkerIcon kind="shelter" />}
                   title={title(shelter)}
+                  titleLines={2}
                   subtitle={subtitle}
                   accessibilityLabel={`Tilfluktsrom, ${title(shelter)}, ${subtitle}. Veibeskrivelse i Kart.`}
                   chevron
@@ -200,6 +201,7 @@ export default function Tilfluktsrom() {
                   key={point.id}
                   leading={<MarkerIcon kind="meetingPoint" />}
                   title={point.name}
+                  titleLines={2}
                   subtitle={subtitle}
                   accessibilityLabel={`Informasjonspunkt, ${point.name}, ${subtitle}. Veibeskrivelse i Kart.`}
                   chevron
@@ -210,7 +212,7 @@ export default function Tilfluktsrom() {
             {sources.map(([municipality, source]) => (
               <Row
                 key={source}
-                title={`${municipality} kommune om informasjonspunkter`}
+                title={`Les mer hos ${municipality} kommune`}
                 titleColor={Colors.accent}
                 accessibilityLabel={`Åpne ${municipality} kommunes side om informasjonspunkter`}
                 onPress={() => Linking.openURL(source)}

@@ -25,11 +25,11 @@ const maps: typeof import('expo-maps') | null =
 export const shelterMapAvailable = maps !== null;
 
 /**
- * The two kinds of place differ in shape as well as colour (a round shield, a square «i»), so they can be told
- * apart without seeing colour. The list rows and the legend use the same pictures as the map.
+ * The two kinds of place differ in shape as well as colour (a square with the civil-defence triangle, a round «i»),
+ * so they can be told apart without seeing colour. The list rows and the legend use the same pictures as the map.
  */
 export const MARKERS = {
-  shelter: { image: require('@/assets/images/map/shelter.png'), color: Colors.shelter, symbol: 'shield.fill' },
+  shelter: { image: require('@/assets/images/map/shelter.png'), color: Colors.shelter, symbol: 'triangle.fill' },
   meetingPoint: { image: require('@/assets/images/map/info-point.png'), color: Colors.meetingPoint, symbol: 'info' },
 } as const;
 
@@ -108,7 +108,7 @@ export function ShelterMap({
         )}
       </View>
       {meetingPoints.length > 0 && (
-        <View style={styles.legend} accessible accessibilityLabel="Tegnforklaring: skjold er tilfluktsrom, i er informasjonspunkt">
+        <View style={styles.legend} accessible accessibilityLabel="Tegnforklaring: trekant er tilfluktsrom, i er informasjonspunkt">
           <View style={styles.legendItem}>
             <MarkerIcon kind="shelter" />
             <Text style={styles.legendText}>Tilfluktsrom</Text>

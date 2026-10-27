@@ -126,13 +126,13 @@ export default function Nodinfo() {
           footer="Offentlige tilfluktsrom fra DSB og kommunenes informasjonspunkter. Listene virker uten nett.">
           <Row
             title="Nærmeste tilfluktsrom"
-            leading={<Icon name={{ ios: 'shield.fill', android: 'shield' }} size={17} color={Colors.accent} />}
+            leading={<Icon name={{ ios: 'triangle.fill', android: 'change_history' }} size={17} color={Colors.shelter} />}
             chevron
             onPress={() => router.push('/nodinfo/tilfluktsrom')}
           />
           <Row
             title="Nærmeste informasjonspunkt"
-            leading={<Icon name={{ ios: 'info.square.fill', android: 'info' }} size={17} color={Colors.meetingPoint} />}
+            leading={<Icon name={{ ios: 'info.circle.fill', android: 'info' }} size={17} color={Colors.meetingPoint} />}
             chevron
             onPress={() => router.push('/nodinfo/tilfluktsrom')}
           />
