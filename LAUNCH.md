@@ -365,7 +365,10 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       only, so it can go out with `eas update` onto 1.7.0. *(Seen in the iOS simulator at Porsgrunn. 2026-10-27:
       preview update `26ca4bcc` arrived on the OnePlus 6 (preview build 1.7.0): Google Maps draws the map, and Nødinfo
       has the new «Nærmeste informasjonspunkt» row. The phone found no position indoors, so the markers, legend and
-      list aren't seen on Android yet; Android 11 can't take a test position over adb)* **(Mikkel)** read
+      list aren't seen on Android yet; Android 11 can't take a test position over adb. The cause: the screen asked
+      only for a «balanced» position, which on Android is Wi-Fi and cell towers, never GPS, and finds nothing with no
+      SIM or on a phone's hotspot. Now it asks for high accuracy and waits up to two minutes (preview update
+      `3627a5dd`); GPS switched on but saw too weak a signal where the phone lay)* **(Mikkel)** read
       `docs/informasjonspunkter/informasjonspunkter-2026-10-27.csv` for the kept points before it reaches
       production
 

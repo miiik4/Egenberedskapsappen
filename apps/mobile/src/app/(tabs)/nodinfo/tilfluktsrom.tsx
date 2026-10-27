@@ -34,13 +34,43 @@ async function findPosition(ask: boolean): Promise<Position> {
     : await Location.getForegroundPermissionsAsync();
   if (permission.status !== 'granted') return { status: 'denied' };
   try {
-    // GPS works without a network. A recent fix is good enough to start with.
+    // A recent fix is good enough to start with.
     const last = await Location.getLastKnownPositionAsync({ maxAge: 5 * 60_000, requiredAccuracy: 500 });
-    const fix = last ?? (await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }));
-    return { status: 'found', at: { latitude: fix.coords.latitude, longitude: fix.coords.longitude } };
+    if (last) return { status: 'found', at: { latitude: last.coords.latitude, longitude: last.coords.longitude } };
+    return await firstFix();
   } catch {
     return { status: 'unknown' };
   }
+}
+
+/** GPS from cold, indoors and with no mobile network to help it, can need a minute or two. */
+const FIX_TIMEOUT_MS = 120_000;
+
+/**
+ * The first position the phone finds. High accuracy turns GPS on: Android's balanced mode uses only Wi-Fi and cell
+ * towers, which find nothing without a SIM or on a phone's hotspot, and that's how it may be when the network is
+ * down. Whatever comes first wins, Wi-Fi in seconds or GPS later.
+ */
+function firstFix(): Promise<Position> {
+  return new Promise((resolve) => {
+    let subscription: Location.LocationSubscription | null = null;
+    let done = false;
+    const finish = (position: Position) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      subscription?.remove();
+      resolve(position);
+    };
+    const timer = setTimeout(() => finish({ status: 'unknown' }), FIX_TIMEOUT_MS);
+    Location.watchPositionAsync(
+      { accuracy: Location.Accuracy.High },
+      (fix) => finish({ status: 'found', at: { latitude: fix.coords.latitude, longitude: fix.coords.longitude } }),
+      () => finish({ status: 'unknown' }),
+    )
+      .then((s) => (done ? s.remove() : (subscription = s)))
+      .catch(() => finish({ status: 'unknown' }));
+  });
 }
 
 const title = (shelter: Shelter) => shelter.address || `Tilfluktsrom ${shelter.room}`;
@@ -101,7 +131,7 @@ export default function Tilfluktsrom() {
         {position.status === 'loading' && (
           <View style={styles.loading}>
             <ActivityIndicator color={Colors.secondaryLabel} />
-            <Text style={styles.muted}>Finner posisjonen din …</Text>
+            <Text style={[styles.muted, styles.shrink]}>Finner posisjonen din … Innendørs kan det ta et par minutter.</Text>
           </View>
         )}
 
@@ -216,6 +246,7 @@ export default function Tilfluktsrom() {
 const styles = StyleSheet.create({
   loading: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: Spacing.screen + 4 },
   muted: { fontSize: 15, color: Colors.secondaryLabel },
+  shrink: { flexShrink: 1 },
   ask: { padding: 16 },
   note: { padding: 16, gap: 10 },
   noteText: { fontSize: 15, lineHeight: 21, color: Colors.label },
