@@ -374,9 +374,8 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       reception there, not the app. Then checked with a test position at Porsgrunn in a preview update that never
       reached git, since replaced by `6bfd7200`: markers and legend on Google Maps, the list with the municipality
       named near the border (Skien), directions open in Google Maps, the municipality link opens the browser, and
-      TalkBack labels start with the kind of place)* **(Mikkel)** read
-      `docs/informasjonspunkter/informasjonspunkter-2026-10-27.csv` for the kept points before it reaches
-      production
+      TalkBack labels start with the kind of place)* Quality-checked by Mikkel's team
+      on 2026-10-27 («they look good»), before production
 
 ## 10. Partner pages from a CMS (Mikkel decided 2026-10-26 to build it now)
 
