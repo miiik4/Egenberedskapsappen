@@ -118,3 +118,15 @@ Nytt: Nærmeste tilfluktsrom under Nødinfo.
 Rommene er fra DSBs oversikt over offentlige tilfluktsrom.
 </no-NO>
 ```
+
+1.7.1 (2026-10-27, approved by Mikkel, under 500 characters):
+
+```
+<no-NO>
+Nytt: Kommunenes informasjonspunkter.
+• Se hvor kommunen gir informasjon og hjelp hvis strøm, mobil og internett er borte, på kart og i en egen liste ved tilfluktsrommene.
+• Tilfluktsrom og informasjonspunkter ligger nå rett under nødnumrene i Nødinfo.
+• Appen finner posisjonen med GPS også uten mobilnett.
+Informasjonspunktene er hentet fra kommunenes nettsider.
+</no-NO>
+```
