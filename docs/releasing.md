@@ -29,6 +29,10 @@ npx eas-cli build --profile production --platform ios       # needs the Apple De
 npx eas-cli build --profile production --platform android   # first AAB is uploaded to Play Console by hand
 ```
 
+`eas submit` can't upload to Play yet: there's no Google service account key, so the AAB is downloaded from the build
+page and uploaded by hand to a release in Play Console (as 1.7.1 was on 2026-10-27). Run `eas submit` with
+`APP_VARIANT=production`, or it looks up the `.dev` app.
+
 Run the first production build of each platform in your own terminal: EAS asks for the Apple login and creates the
 signing credentials interactively.
 

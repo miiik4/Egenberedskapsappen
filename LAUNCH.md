@@ -442,14 +442,18 @@ public: anyone can read published documents, never drafts).
       framing (b7bc778) follows as an update to 1.7.0; GPS-optional (`plugins/optional-location-hardware.js`) with the
       next native release. Play also flags «Optimaliseringen av DEX-koden er under terskelen» (no R8 minification),
       to fix by Feb 2027
-- [ ] New Nødinfo store screenshot with the shelter row (`docs/store/skjermbilder/3-nodinfo.png`, a8c032e) is in the
-      default listing and saved (2026-10-27); it waits in the publishing overview as «Send 1 endring til gjennomgang».
+- [x] New Nødinfo store screenshot, now with the «Tilfluktsrom og informasjonspunkter» card (2687b82, captured from
+      the Play app after the 1.7.0 update; Mikkel uploaded it), sent to review with 1.7.1 on 2026-10-27.
       The listing's «Erklæring om AI-elementer» is set to «Merk elementer som laget eller redigert med AI», from before;
       **(Mikkel)** check that's what you want
-- [ ] **Next build, on hold** (Mikkel, 2026-10-27: more changes are coming first). Then: bump `version` to 1.7.1
-      (GPS-optional is native config), production build, internal testing, into the Play batch. The new Nødinfo
-      screenshot already waits in the publishing overview, unsent, so it can go to review with the rest
-- [ ] **(Mikkel)** Publish the map-framing fix (b7bc778) and the greeting refresh (6b3c483), JS only, to 1.7.0 **before**
+- [ ] **1.7.1 (version code 7) is in Google's review** (sent 2026-10-27 on Mikkel's go, with the new Nødinfo
+      screenshot): EAS build `8103fd0f`, uploaded by hand to a production release (no service account for `eas
+      submit`), 100 % rollout, the approved notes in `docs/store/listing.md`. Play's only warning is the missing
+      deobfuscation file (no R8, as above); no device loses support, and the manifest has the three location features
+      as `required="false"`. **(Mikkel)** Managed publishing is on: press «Publiser» once Google approves
+- [x] Published to 1.7.0 before the bump (Mikkel's go, 2026-10-27): production update `e33dc414` with the map
+      framing, the greeting refresh, the information points and the GPS fix; seen arriving in the Play app on the
+      OnePlus. Was: publish the map-framing fix (b7bc778) and the greeting refresh (6b3c483), JS only, to 1.7.0 **before**
       `version` is bumped (an update from 1.7.1 won't reach 1.7.0):
       `npm run publish-update -- --channel production --environment production --message "Kartet viser alle tilfluktsrom"`
       in `apps/mobile` (preview channel first if you like)
