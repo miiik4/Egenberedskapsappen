@@ -29,9 +29,19 @@ npx eas-cli build --profile production --platform ios       # needs the Apple De
 npx eas-cli build --profile production --platform android   # first AAB is uploaded to Play Console by hand
 ```
 
-`eas submit` can't upload to Play yet: there's no Google service account key, so the AAB is downloaded from the build
-page and uploaded by hand to a release in Play Console (as 1.7.1 was on 2026-10-27). The submit profile names the app
-(`applicationId` in `eas.json`), so `eas submit` finds the production app's key once there is one.
+Android builds go to Play's internal testing track by themselves (since 2026-10-27):
+
+```sh
+npx eas-cli build --profile production --platform android --auto-submit   # build, then upload to internal testing
+npx eas-cli submit --platform android --profile production --id <build id>  # upload a build that's already made
+```
+
+Then, in Play Console, add the bundle to a production release (Produksjon → Opprett ny utgave → Legg til fra
+biblioteket), write the release notes from `docs/store/listing.md`, and send it to review in the publishing overview.
+The upload uses the service account `eas-submit@egenberedskapsappen.iam.gserviceaccount.com` in the prod Cloud project
+(Google Play Android Developer API on). Its key is stored on EAS (Credentials → Android → `no.htas.egenberedskap`) and in
+Mikkel's password manager, never in the repo. In Play it may only release to testing tracks, so production stays a step
+a person takes. The submit profile names the app (`applicationId` in `eas.json`).
 
 Run the first production build of each platform in your own terminal: EAS asks for the Apple login and creates the
 signing credentials interactively.
