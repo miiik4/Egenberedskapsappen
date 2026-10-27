@@ -49,7 +49,8 @@
   "submit": {
     "production": {
       "android": {
-        "track": "internal"
+        "track": "internal",
+        "applicationId": "no.htas.egenberedskap"
       }
     }
   }
