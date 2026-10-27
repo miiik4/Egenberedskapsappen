@@ -362,8 +362,10 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       municipalities left out by hand (planned, an exercise, or not from their own page). On «Tilfluktsrom»:
       orange square «i» markers next to the blue round shields, a legend, and a list of its own (the five nearest
       within 20 km, the municipality named near a border, a link to each municipality's page). JS and pictures
-      only, so it can go out with `eas update` onto 1.7.0. *(Seen in the iOS simulator at Porsgrunn; not on
-      Android, where the markers are pictures for the first time)* **(Mikkel)** read
+      only, so it can go out with `eas update` onto 1.7.0. *(Seen in the iOS simulator at Porsgrunn. 2026-10-27:
+      preview update `26ca4bcc` arrived on the OnePlus 6 (preview build 1.7.0): Google Maps draws the map, and Nødinfo
+      has the new «Nærmeste informasjonspunkt» row. The phone found no position indoors, so the markers, legend and
+      list aren't seen on Android yet; Android 11 can't take a test position over adb)* **(Mikkel)** read
       `docs/informasjonspunkter/informasjonspunkter-2026-10-27.csv` for the kept points before it reaches
       production
 
