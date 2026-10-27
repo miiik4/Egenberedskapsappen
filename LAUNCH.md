@@ -451,6 +451,15 @@ public: anyone can read published documents, never drafts).
       submit`), 100 % rollout, the approved notes in `docs/store/listing.md`. Play's only warning is the missing
       deobfuscation file (no R8, as above); no device loses support, and the manifest has the three location features
       as `required="false"`. **(Mikkel)** Managed publishing is on: press «Publiser» once Google approves
+- [ ] **1.7.2: R8 on for Android release builds**, for Play's «Optimaliseringen av DEX-koden er under terskelen»
+      (Obfuskering 2 %, to fix by Feb 2027): `enableMinifyInReleaseBuilds` and `enableShrinkResourcesInReleaseBuilds`
+      in `expo-build-properties`, `version` 1.7.2. Preview build `e6de012f` on the OnePlus (2026-10-27, phone offline):
+      ~17 000 classes renamed; starts, Oversikt/Lager/Eiendeler/Nødinfo/Innstillinger show the data, Firebase App
+      Check starts, the camera opens from «Ta bilde», no crashes or missing-class errors. Not checked: anything over
+      the network (backup, room analysis, update download, map tiles; the shelter screen found no position, the same
+      as the Play build without R8). The AAB carries the mapping file, so Play's deobfuscation warning should go.
+      JS updates from now on target 1.7.2, so publish anything meant for 1.7.1 from the commit before. Next: a
+      production build and release once 1.7.1 is out; **(Mikkel)** check backup and room analysis online on that build
 - [x] Published to 1.7.0 before the bump (Mikkel's go, 2026-10-27): production update `e33dc414` with the map
       framing, the greeting refresh, the information points and the GPS fix; seen arriving in the Play app on the
       OnePlus. Was: publish the map-framing fix (b7bc778) and the greeting refresh (6b3c483), JS only, to 1.7.0 **before**
