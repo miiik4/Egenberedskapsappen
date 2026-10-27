@@ -136,27 +136,6 @@ export const partner = defineType({
           ),
     }),
     defineField({
-      name: 'showDiscount',
-      title: 'Vis rabatt på Egenberedskap+',
-      type: 'boolean',
-      group: 'page',
-      initialValue: true,
-    }),
-    defineField({
-      name: 'discountText',
-      title: 'Tekst om rabatten',
-      type: 'string',
-      group: 'page',
-      description: 'Setningen etter beskrivelsen av Egenberedskap+, for eksempel «Som kunde får du rabatt når det lanseres.»',
-      hidden: ({ parent }) => parent?.showDiscount === false,
-      validation: (rule) =>
-        rule
-          .max(160)
-          .custom((text, context) =>
-            context.document?.showDiscount !== false && !text?.trim() ? 'Skriv teksten, eller slå av rabatten' : true,
-          ),
-    }),
-    defineField({
       name: 'privacyLine',
       title: 'Hva partneren får vite',
       type: 'text',

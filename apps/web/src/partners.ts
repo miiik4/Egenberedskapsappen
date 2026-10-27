@@ -28,8 +28,6 @@ const PARTNERS_QUERY = /* groq */ `
     description,
     appGreeting,
     code,
-    "showDiscount": showDiscount != false,
-    discountText,
     privacyLine
   }
 `;
@@ -51,8 +49,6 @@ interface PartnerDoc {
   description: string | null;
   appGreeting: string | null;
   code: string | null;
-  showDiscount: boolean;
-  discountText: string | null;
   privacyLine: string | null;
 }
 
@@ -75,8 +71,6 @@ export interface Partner {
   /** The sentence in the app's «Sponset» card; no card without it. */
   appGreeting?: string;
   code?: string;
-  /** Undefined when the Egenberedskap+ discount section is switched off. */
-  discountText?: string;
   privacyLine: string;
 }
 
@@ -131,7 +125,6 @@ export async function getPartners(): Promise<Partner[]> {
         description: required(doc.description, 'Beskrivelse ved deling', doc.slug),
         appGreeting: doc.appGreeting?.trim() || undefined,
         code: doc.code?.trim() || undefined,
-        discountText: doc.showDiscount ? required(doc.discountText, 'Tekst om rabatten', doc.slug) : undefined,
         privacyLine: required(doc.privacyLine, 'Hva partneren får vite', doc.slug),
       };
     }),

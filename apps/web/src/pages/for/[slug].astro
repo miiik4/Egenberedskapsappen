@@ -1,8 +1,6 @@
 ---
 import { partnerReferrer } from '@egenberedskap/core';
 import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
-import analyse from '../../assets/skjermbilder/analyse.webp';
-import eiendeler from '../../assets/skjermbilder/eiendeler.webp';
 import oversikt from '../../assets/skjermbilder/oversikt.webp';
 import Phone from '../../components/Phone.astro';
 import Base from '../../layouts/Base.astro';
@@ -37,16 +35,14 @@ const STEPS = [
   },
   {
     title: 'Skriv inn koden',
-    text: `Så vises hilsenen fra ${partner.name} i appen${
-      partner.discountText ? ', og rabatten på Egenberedskap+ er knyttet til deg' : ''
-    }.`,
+    text: `Så vises hilsenen fra ${partner.name} i appen.`,
   },
 ];
 ---
 
 <Base
   title={
-    partner.code || partner.discountText
+    partner.code
       ? `Et tilbud fra ${partner.name} – Egenberedskapsappen`
       : `Egenberedskapsappen i samarbeid med ${partner.name}`
   }
@@ -108,30 +104,6 @@ const STEPS = [
           </div>
           <button class="copy" id="copy" type="button" data-code={partner.code}>Kopier</button>
         </div>
-      </section>
-    )
-  }
-
-  {
-    partner.discountText && (
-      <section class="plus wrap" aria-labelledby="plus-head">
-        <div class="plus-head">
-          <p class="tab">Kommer</p>
-          <h2 id="plus-head">Rabatt på Egenberedskap+</h2>
-          <p>
-            Egenberedskap+ er ikke i appen ennå. Når det kommer, kan du filme et rom eller ta bilder, så foreslår appen
-            gjenstandene og hva de er verdt. Alt krypteres på telefonen før det sikkerhetskopieres, så bare du kan åpne det.
-            {partner.discountText}
-          </p>
-        </div>
-        <ul class="plus-phones">
-          <li>
-            <Phone src={analyse} alt="Analyse av kjøkkenet: bildene lastes opp, og appen ser etter gjenstander og verdier." />
-          </li>
-          <li>
-            <Phone src={eiendeler} alt="Eiendeler med samlet verdi og rommene stue, kjøkken, gang, soverom og bod." />
-          </li>
-        </ul>
       </section>
     )
   }
@@ -380,37 +352,6 @@ const STEPS = [
     font: inherit;
     font-weight: 700;
     cursor: pointer;
-  }
-
-  .plus {
-    border-top: 1px solid var(--separator);
-  }
-  .tab {
-    margin-bottom: 10px;
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 1.0625rem;
-  }
-  .plus-head {
-    max-width: 720px;
-    margin-inline: auto;
-    text-align: center;
-  }
-  .plus-head > p:not(.tab) {
-    margin-top: 18px;
-    font-size: 1.1875rem;
-  }
-  .plus-phones {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: clamp(24px, 4vw, 48px);
-    margin: clamp(40px, 6vw, 64px) 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .plus-phones li {
-    width: min(260px, 100%);
   }
 
   .privacy {

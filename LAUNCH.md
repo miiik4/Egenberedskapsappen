@@ -16,7 +16,8 @@ How to use it:
   insurer has signed. They come in a new version through store review (never with `eas update`; Apple guidelines
   2.3.1, 2.5.2), and on iPhone only together with the in-app purchase, even if an insurer signs first (3.1.1,
   3.1.3(b)).
-  The website keeps Egenberedskap+, clearly marked «Kommer» with the planned price, so nobody feels misled later.
+  *(Changed 2026-10-27: it's unsure whether Egenberedskap+ will launch, and not soon, so customers aren't told about it
+  anywhere: not on the website, the partner pages, the privacy policy or the company site.)*
 - **Free is what stays on the phone; Egenberedskap+ is what needs our servers** (backup, AI analysis). Entering innbo
   by hand, receipts and the PDF report are free. (To be confirmed with Tarjei.)
 - **A way to hear users without tracking:** a «Gi tilbakemelding» row that opens an email, and counts the server

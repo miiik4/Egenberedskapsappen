@@ -7,9 +7,9 @@ affiliation.
 
 **Check before submitting**
 
-- 1.0 is free and has no in-app purchases. Nothing here mentions Egenberedskap+; the website shows it as «Kommer»,
-  the stores don't. When Egenberedskap+ is switched on (an `eas update`, no new build), update this listing in the
-  same go. On the App Store only the promotional text can change without submitting a new version.
+- 1.0 is free and has no in-app purchases. Nothing here mentions Egenberedskap+, and neither does the website
+  (removed 2026-10-27, since it's unsure whether it will launch). When Egenberedskap+ is switched on (an `eas
+  update`, no new build), update this listing in the same go. On the App Store only the promotional text can change without submitting a new version.
 - «forsikring» in the text means the household's own contents insurance (the insurance-sum warning and the PDF
   report the user sends themselves), not a partnership. Keep it that way.
 - «Innboet: free and local» is still to be confirmed with Tarjei (LAUNCH.md section 7). If that changes, the
