@@ -406,8 +406,9 @@ public: anyone can read published documents, never drafts).
       `egenberedskapappen.no/partnere/ctc-bilpartner.json` answers (cached an hour) and the CTC page's Play link carries
       the referrer. The deploy also published the privacy page drafts. **(Mikkel)** Replace the text before 1.7.0 goes
       to production, then deploy the site again *(done 2026-10-26)*
-- [ ] An app keeps the greeting it fetched first and never asks again, so the OnePlus still shows the test text and a
-      later change in Sanity won't reach phones that already have one. Refresh it now and then (e.g. once a day)
+- [x] Greetings are fetched again once a day, and dropped when the site no longer has one (404); offline the last one
+      stays (6b3c483, 2026-10-27; seen in the iOS simulator against the live site: CTC's real greeting arrived, an
+      unknown partner showed no card). JS only
 - [x] 1.7.0 (version code 6) is live in production (seen 2026-10-27: production track «Nyeste utgave: 6 (1.7.0)»,
       the public Play page lists 1.7.0, publishing overview «Sist publisert 27. oktober 2026»). Was: release saved in Play with the 1.7.0
       notes, together with the updated Data safety form (as drafted in `docs/store/privacy-answers.md`: app
@@ -421,7 +422,11 @@ public: anyone can read published documents, never drafts).
       default listing and saved (2026-10-27); it waits in the publishing overview as «Send 1 endring til gjennomgang».
       The listing's «Erklæring om AI-elementer» is set to «Merk elementer som laget eller redigert med AI», from before;
       **(Mikkel)** check that's what you want
-- [ ] **(Mikkel)** Publish the map-framing fix (b7bc778, JS only) to 1.7.0:
+- [ ] **Next build, on hold** (Mikkel, 2026-10-27: more changes are coming first). Then: bump `version` to 1.7.1
+      (GPS-optional is native config), production build, internal testing, into the Play batch. The new Nødinfo
+      screenshot already waits in the publishing overview, unsent, so it can go to review with the rest
+- [ ] **(Mikkel)** Publish the map-framing fix (b7bc778) and the greeting refresh (6b3c483), JS only, to 1.7.0 **before**
+      `version` is bumped (an update from 1.7.1 won't reach 1.7.0):
       `npm run publish-update -- --channel production --environment production --message "Kartet viser alle tilfluktsrom"`
       in `apps/mobile` (preview channel first if you like)
 - [x] 1.7.0 (version code 6) is on Play's internal testing track (2026-10-26 22:56). Play warns that 8 devices (2
