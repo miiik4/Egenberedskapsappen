@@ -9,7 +9,7 @@ that turns Egenberedskap+ on.
 
 | Task | Answer | Why |
 | --- | --- | --- |
-| Angi personvernregler | `https://egenberedskapappen.no/personvern`, set 2026-10-18 after the website went live on prod hosting | Play also requires the link inside the app: Innstillinger has a «Personvernerklæring» row from 304d8ad |
+| Angi personvernregler | `https://egenberedskapsappen.no/personvern`, changed 2026-10-27 when the domain with the s became the main one and sent for review (first set 2026-10-18 to the domain without the s) | Play also requires the link inside the app: Innstillinger has a «Personvernerklæring» row from 304d8ad |
 | Påloggingsinformasjon (app access) | «Nei», no part of the app is restricted | No accounts or login. Google lists device biometrics under «Ja», but that path demands a username and password, which don't exist; the document gate is the phone's own screen lock, which a reviewer's device has too |
 | Annonser | «Nei, appen inneholder ikke annonser» | No ad SDK (AGENTS.md) |
 | Innholdsvurdering (IARC) | Category: Utility, productivity, communication or other. Every content question «Nei»: no violence, sexuality, language, controlled substances, gambling; no user interaction or sharing of user content or location; no digital purchases; no personal info shared with third parties online | Gives PEGI 3 / Everyone |
@@ -36,7 +36,7 @@ the questionnaire, with kontakt@holmtall.no as the contact address.
 | Phone screenshots | `skjermbilder/1-oversikt.png` … `6-guide.png` (1080×1920): a Norwegian headline over the app screen on navy, composed by `render-screenshots.mjs` from the raw OnePlus 6 captures in `skjermbilder/kilde/` (demo household). Replaced the first set, which was the captures padded with navy side bars, on 2026-10-23 |
 | Category | Livsstil (alternative: Verktøy) |
 | Contact email | kontakt@holmtall.no |
-| Website | https://egenberedskapappen.no |
+| Website | https://holmtall.no (what Store settings showed on 2026-10-27; this table said egenberedskapappen.no before) |
 | Tags | Beredskap, Husholdning |
 
 ## Priser og distribusjon
