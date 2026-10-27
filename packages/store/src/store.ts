@@ -109,17 +109,21 @@ export type AppData = {
   partnerReferrerRead: boolean;
 };
 
-/** `greeting` is null until it has been fetched from our site; `hidden` once the user put the card away. */
-export type StoredPartner = { slug: string; greeting: PartnerGreeting | null; hidden: boolean };
+/**
+ * `greeting` is null until it has been fetched from our site, or once the partner has none any more; `fetchedOn` is
+ * the day it was last asked for (the app asks again on a new day); `hidden` once the user put the card away.
+ */
+export type StoredPartner = { slug: string; greeting: PartnerGreeting | null; fetchedOn: IsoDate | null; hidden: boolean };
 
 function toStoredPartner(json: string | null): StoredPartner | null {
   if (!json) return null;
   try {
-    const value = JSON.parse(json) as { slug?: unknown; greeting?: unknown; hidden?: unknown };
+    const value = JSON.parse(json) as { slug?: unknown; greeting?: unknown; fetchedOn?: unknown; hidden?: unknown };
     if (typeof value.slug !== 'string') return null;
     return {
       slug: value.slug,
       greeting: value.greeting ? parsePartnerGreeting(value.slug, value.greeting) : null,
+      fetchedOn: typeof value.fetchedOn === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value.fetchedOn) ? value.fetchedOn : null,
       hidden: value.hidden === true,
     };
   } catch {

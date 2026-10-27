@@ -9,6 +9,7 @@ import { expoCrypto } from '@/backup/crypto';
 import { useActions } from '@/data/data-provider';
 import { deleteEverything } from '@/data/delete-everything';
 import { seedDemoData } from '@/lib/demo-data';
+import { todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 /**
@@ -50,7 +51,8 @@ export default function Utvikling() {
           }
           case 'partner': {
             const greeting = kode && hilsen ? { slug: kode, name: 'Testpartner', greeting: hilsen, logo: TEST_LOGO, logoDark: TEST_LOGO } : null;
-            await actions.setPartner(kode ? { slug: kode, greeting, hidden: false } : null);
+            // A made-up greeting counts as fetched today, so the live site doesn't replace it straight away.
+            await actions.setPartner(kode ? { slug: kode, greeting, fetchedOn: greeting ? todayIso() : null, hidden: false } : null);
             report([kode ? `PARTNER ${kode}` : 'PARTNER GLEMT']);
             break;
           }

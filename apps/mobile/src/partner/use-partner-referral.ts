@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { AppState, Platform } from 'react-native';
 
 import { useActions, useData } from '@/data/data-provider';
+import { todayIso } from '@/lib/format';
 
 /** Our own site, built from Sanity (apps/web/src/pages/partnere). Nothing else is asked. */
 const GREETING_URL = (slug: string) => `https://egenberedskapappen.no/partnere/${slug}.json`;
@@ -29,12 +30,16 @@ async function readReferrer(): Promise<string | null | undefined> {
   }
 }
 
-/** Null when the partner has no greeting (yet), or anything else is off; the card then just isn't shown. */
-async function fetchGreeting(slug: string): Promise<PartnerGreeting | null> {
+/**
+ * What our site says about the partner's greeting today: the greeting, or `greeting: null` when it has none any more
+ * (no page, or something off in it; the card then goes). Null when the site couldn't be reached: keep what we have.
+ */
+async function fetchGreeting(slug: string): Promise<{ greeting: PartnerGreeting | null } | null> {
   try {
     const response = await fetch(GREETING_URL(slug), { headers: { Accept: 'application/json' } });
+    if (response.status === 404) return { greeting: null };
     if (!response.ok) return null;
-    return parsePartnerGreeting(slug, await response.json());
+    return { greeting: parsePartnerGreeting(slug, await response.json()) };
   } catch {
     return null;
   }
@@ -56,7 +61,7 @@ export function usePartnerReferral() {
     (async () => {
       const slug = await readReferrer();
       if (!live || slug === undefined) return;
-      if (slug) await setPartner({ slug, greeting: null, hidden: false });
+      if (slug) await setPartner({ slug, greeting: null, fetchedOn: null, hidden: false });
       await markPartnerReferrerRead();
     })();
     return () => {
@@ -64,16 +69,18 @@ export function usePartnerReferral() {
     };
   }, [partnerReferrerRead, setPartner, markPartnerReferrerRead]);
 
-  // The greeting comes from the network, so try again whenever the app comes back until it's there.
+  // Ask once a day, so a new text from the partner reaches phones that already have one, and a greeting taken down
+  // goes away. Offline, try again when the app comes back; the last greeting stays meanwhile.
   const slug = partner?.slug;
-  const missing = partner !== null && partner.greeting === null;
+  const fetchedOn = partner?.fetchedOn ?? null;
   const hidden = partner?.hidden ?? false;
   useEffect(() => {
-    if (!slug || !missing) return;
+    if (!slug) return;
     let live = true;
     const load = async () => {
-      const greeting = await fetchGreeting(slug);
-      if (live && greeting) await setPartner({ slug, greeting, hidden });
+      if (fetchedOn === todayIso()) return;
+      const result = await fetchGreeting(slug);
+      if (live && result) await setPartner({ slug, greeting: result.greeting, fetchedOn: todayIso(), hidden });
     };
     load();
     const subscription = AppState.addEventListener('change', (state) => state === 'active' && load());
@@ -81,5 +88,5 @@ export function usePartnerReferral() {
       live = false;
       subscription.remove();
     };
-  }, [slug, missing, hidden, setPartner]);
+  }, [slug, fetchedOn, hidden, setPartner]);
 }

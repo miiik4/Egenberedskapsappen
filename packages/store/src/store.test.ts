@@ -533,10 +533,10 @@ describe('insurance and beredskapssjekk', () => {
     expect(empty.partnerReferrerRead).toBe(false);
 
     await store.markPartnerReferrerRead();
-    await store.setPartner({ slug: 'ctc-bilpartner', greeting: null, hidden: false });
+    await store.setPartner({ slug: 'ctc-bilpartner', greeting: null, fetchedOn: null, hidden: false });
     let data = await store.load();
     expect(data.partnerReferrerRead).toBe(true);
-    expect(data.partner).toEqual({ slug: 'ctc-bilpartner', greeting: null, hidden: false });
+    expect(data.partner).toEqual({ slug: 'ctc-bilpartner', greeting: null, fetchedOn: null, hidden: false });
 
     const greeting = {
       slug: 'ctc-bilpartner',
@@ -545,9 +545,9 @@ describe('insurance and beredskapssjekk', () => {
       logo: 'data:image/svg+xml;base64,PHN2Zy8+',
       logoDark: 'data:image/svg+xml;base64,PHN2Zy8+',
     };
-    await store.setPartner({ slug: 'ctc-bilpartner', greeting, hidden: true });
+    await store.setPartner({ slug: 'ctc-bilpartner', greeting, fetchedOn: '2026-10-27', hidden: true });
     data = await store.load();
-    expect(data.partner).toEqual({ slug: 'ctc-bilpartner', greeting, hidden: true });
+    expect(data.partner).toEqual({ slug: 'ctc-bilpartner', greeting, fetchedOn: '2026-10-27', hidden: true });
 
     await store.setPartner(null);
     expect((await store.load()).partner).toBeNull();
