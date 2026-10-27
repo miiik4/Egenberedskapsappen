@@ -446,11 +446,12 @@ public: anyone can read published documents, never drafts).
       the Play app after the 1.7.0 update; Mikkel uploaded it), sent to review with 1.7.1 on 2026-10-27.
       The listing's «Erklæring om AI-elementer» is set to «Merk elementer som laget eller redigert med AI», from before;
       **(Mikkel)** check that's what you want
-- [ ] **1.7.1 (version code 7) is in Google's review** (sent 2026-10-27 on Mikkel's go, with the new Nødinfo
-      screenshot): EAS build `8103fd0f`, uploaded by hand to a production release (no service account for `eas
+- [x] **1.7.1 (version code 7) is live in production** (approved the same day; published 2026-10-27 on Mikkel's go,
+      with the new Nødinfo screenshot; production track «Aktiv, Nyeste utgave: 7 (1.7.1)»; Play says the store can
+      take up to an hour to show it). Was: sent to review 2026-10-27: EAS build `8103fd0f`, uploaded by hand to a production release (no service account for `eas
       submit`), 100 % rollout, the approved notes in `docs/store/listing.md`. Play's only warning is the missing
       deobfuscation file (no R8, as above); no device loses support, and the manifest has the three location features
-      as `required="false"`. **(Mikkel)** Managed publishing is on: press «Publiser» once Google approves
+      as `required="false"`
 - [ ] **1.7.2: R8 on for Android release builds**, for Play's «Optimaliseringen av DEX-koden er under terskelen»
       (Obfuskering 2 %, to fix by Feb 2027): `enableMinifyInReleaseBuilds` and `enableShrinkResourcesInReleaseBuilds`
       in `expo-build-properties`, `version` 1.7.2. Preview build `e6de012f` on the OnePlus (2026-10-27, phone offline):
