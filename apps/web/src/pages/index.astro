@@ -1,5 +1,5 @@
 ---
-import { MEALS_PER_PERSON_PER_DAY, TARGET_DAYS, WATER_LITRES_PER_PERSON_PER_DAY } from '@egenberedskap/core';
+import { MEALS_PER_PERSON_PER_DAY, SHELTERS, TARGET_DAYS, WATER_LITRES_PER_PERSON_PER_DAY } from '@egenberedskap/core';
 
 import analyse from '../assets/skjermbilder/analyse.webp';
 import eiendeler from '../assets/skjermbilder/eiendeler.webp';
@@ -10,6 +10,7 @@ import resultat from '../assets/skjermbilder/kom-i-gang-resultat.webp';
 import beredskapssjekk from '../assets/skjermbilder/beredskapssjekk.webp';
 import lager from '../assets/skjermbilder/lager.webp';
 import nodinfo from '../assets/skjermbilder/nodinfo.webp';
+import tilfluktsrom from '../assets/skjermbilder/tilfluktsrom.webp';
 
 /** The app on Google Play. The App Store link comes when the Apple account is approved (LAUNCH.md). */
 const PLAY_URL = 'https://play.google.com/store/apps/details?id=no.htas.egenberedskap';
@@ -52,7 +53,7 @@ const FAQ = [
   },
   {
     q: 'Virker appen uten nett?',
-    a: 'Ja. Lageret, nødkontaktene, møtestedet og dokumentene ligger på telefonen og kan åpnes uten mobildekning. Nødkontaktene kan ringes uten mobildata.',
+    a: 'Ja. Lageret, nødkontaktene, møtestedet, listen over tilfluktsrom og dokumentene ligger på telefonen og kan åpnes uten mobildekning. Nødkontaktene kan ringes uten mobildata.',
   },
   {
     q: 'Hvor kommer tallene fra?',
@@ -94,7 +95,7 @@ const FAQ = [
       src={oversikt}
       eager
       class="hero-phone"
-      alt="Oversikt i appen: «Uten strøm og vann klarer husstanden seg i 4 døgn», med vann, mat og varme hver for seg, og «Kjøp mat for 3 døgn til» under."
+      alt="Oversikt i appen: «Uten strøm og vann klarer husstanden seg i 5 døgn», med vann, mat og varme hver for seg, og «Kjøp 20 liter vann til» under."
     />
   </section>
 
@@ -149,7 +150,7 @@ const FAQ = [
       </div>
       <Phone
         src={lager}
-        alt="Lager: vann for 7 av 7 døgn og mat for 4, med «Kjøp mat for 3 døgn» og hvor mye som mangler. Det som er på plass er huket av, det som er halvveis er halvfullt."
+        alt="Lager: vann for 5 av 7 døgn med «Kjøp 20 liter vann», og mat for 7 av 7 døgn. Det som er på plass er huket av, det som er halvveis er halvfullt."
       />
     </section>
 
@@ -169,7 +170,7 @@ const FAQ = [
       </div>
       <Phone
         src={beredskapssjekk}
-        alt="Beredskapssjekk med fire spørsmål. Det andre viser varene som går ut før neste sjekk, med en avhuking for hver."
+        alt="Beredskapssjekk med fire spørsmål. Det første er «Er dere fortsatt 3 personer og 1 hund?», med Ja og Nei, endre."
       />
     </section>
 
@@ -192,11 +193,36 @@ const FAQ = [
       </div>
       <Phone
         src={nodinfo}
-        alt="Nødinfo med nødnumrene 110, 112, 113 og 116 117, to nødkontakter, møtested og dokumenter."
+        alt="Nødinfo med nødnumrene 110, 112, 113 og 116 117, raden «Tilfluktsrom og informasjonspunkter», en nødkontakt og møtestedet."
       />
     </section>
 
-    <section class="feature feature-flip wrap" aria-labelledby="f-eiendeler">
+    <section class="feature feature-flip wrap" aria-labelledby="f-tilflukt">
+      <div class="feature-text">
+        <p class="tab">Nytt: Tilfluktsrom og informasjonspunkter</p>
+        <h2 id="f-tilflukt">Vit hvor dere skal, før det skjer</h2>
+        <p>
+          Under Nødinfo ser dere de nærmeste offentlige tilfluktsrommene og kommunens informasjonspunkter, på kart og i
+          en liste. Et informasjonspunkt er der kommunen gir informasjon og hjelp hvis strøm, mobil og internett er borte
+          lenge.
+        </p>
+        <ul class="points">
+          <li>
+            Alle {SHELTERS.length} offentlige tilfluktsrom fra DSBs oversikt ligger i appen, med avstand, retning og antall
+            plasser. Listen virker uten nett.
+          </li>
+          <li>Ett trykk gir veibeskrivelse i kartappen.</li>
+          <li>Informasjonspunktene er hentet fra kommunenes egne nettsider, og appen lenker til siden.</li>
+          <li>Posisjonen brukes bare på telefonen og sendes ikke til oss.</li>
+        </ul>
+      </div>
+      <Phone
+        src={tilfluktsrom}
+        alt="Tilfluktsrom og informasjonspunkter i Porsgrunn: kart med tilfluktsrom og informasjonspunkter, og listen over tilfluktsrom nærmest deg med avstand, retning og antall plasser."
+      />
+    </section>
+
+    <section class="feature wrap" aria-labelledby="f-eiendeler">
       <div class="feature-text">
         <p class="tab">Eiendeler</p>
         <h2 id="f-eiendeler">Klar når dere må melde en skade</h2>
