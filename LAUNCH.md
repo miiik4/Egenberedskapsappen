@@ -313,8 +313,8 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       all four names end on https://egenberedskapsappen.no/personvern with 200; the old apex answers 301 with the
       path kept, so the partner JSON still reaches builds already out; canonical and holmtall.no links use the domain
       with the s. Posters re-rendered with the new URL the same day. Play Console's privacy policy URL changed to
-      the domain with the s and sent for review the same day; Store settings' website was already
-      https://holmtall.no. Still to do: `eas update` for the app's URLs, and publish the privacy change from
+      the domain with the s and sent for review the same day; the listing website changed from
+      https://holmtall.no to the app's site, published at once. Still to do: `eas update` for the app's URLs, and publish the privacy change from
       Publiseringsoversikt once Google approves it (managed publishing is on))*
 - [ ] **(Mikkel)** At the registrar, change both `www` CNAMEs from the bare domain to **`egenberedskapsappen.web.app`**,
       as Hosting recommends, so the certificates keep renewing if the bare domains ever move. Not urgent: it works today

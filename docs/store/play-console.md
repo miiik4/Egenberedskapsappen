@@ -36,7 +36,7 @@ the questionnaire, with kontakt@holmtall.no as the contact address.
 | Phone screenshots | `skjermbilder/1-oversikt.png` … `6-guide.png` (1080×1920): a Norwegian headline over the app screen on navy, composed by `render-screenshots.mjs` from the raw OnePlus 6 captures in `skjermbilder/kilde/` (demo household). Replaced the first set, which was the captures padded with navy side bars, on 2026-10-23 |
 | Category | Livsstil (alternative: Verktøy) |
 | Contact email | kontakt@holmtall.no |
-| Website | https://holmtall.no (what Store settings showed on 2026-10-27; this table said egenberedskapappen.no before) |
+| Website | https://egenberedskapsappen.no, set 2026-10-27 (was https://holmtall.no): people on the listing want the app's site, and the developer name already shows the company. Store settings publish at once, no review |
 | Tags | Beredskap, Husholdning |
 
 ## Priser og distribusjon
