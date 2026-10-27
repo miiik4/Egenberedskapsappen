@@ -492,6 +492,9 @@ public: anyone can read published documents, never drafts).
       (an adb install has none; check the CTC link on the production build), picking a file or photo from the
       system pickers (adb can't drive them), and the contact picker with access granted. The dev app's test data on
       the OnePlus is gone (wiped for the welcome flow, on Mikkel's go)
+      Production build `75196090` (1.7.2, version code 8, from 6d4edb4, so with the egenberedskapsappen.no links)
+      submitted to internal testing 2026-10-27. Left for Mikkel: release it to production in Play Console once
+      1.7.1 is out, then check the R8 warning is gone, the CTC link's referrer and the map tiles outdoors.
 - [x] Published to 1.7.0 before the bump (Mikkel's go, 2026-10-27): production update `e33dc414` with the map
       framing, the greeting refresh, the information points and the GPS fix; seen arriving in the Play app on the
       OnePlus. Was: publish the map-framing fix (b7bc778) and the greeting refresh (6b3c483), JS only, to 1.7.0 **before**
