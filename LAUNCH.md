@@ -454,13 +454,16 @@ public: anyone can read published documents, never drafts).
       as `required="false"`
 - [ ] **1.7.2: R8 on for Android release builds**, for Play's «Optimaliseringen av DEX-koden er under terskelen»
       (Obfuskering 2 %, to fix by Feb 2027): `enableMinifyInReleaseBuilds` and `enableShrinkResourcesInReleaseBuilds`
-      in `expo-build-properties`, `version` 1.7.2. Preview build `e6de012f` on the OnePlus (2026-10-27, phone offline):
+      in `expo-build-properties`, `version` 1.7.2. Preview build `e6de012f` on the OnePlus (2026-10-27):
       ~17 000 classes renamed; starts, Oversikt/Lager/Eiendeler/Nødinfo/Innstillinger show the data, Firebase App
-      Check starts, the camera opens from «Ta bilde», no crashes or missing-class errors. Not checked: anything over
-      the network (backup, room analysis, update download, map tiles; the shelter screen found no position, the same
-      as the Play build without R8). The AAB carries the mapping file, so Play's deobfuscation warning should go.
-      JS updates from now on target 1.7.2, so publish anything meant for 1.7.1 from the commit before. Next: a
-      production build and release once 1.7.1 is out; **(Mikkel)** check backup and room analysis online on that build
+      Check starts, the camera opens from «Ta bilde», no crashes or missing-class errors. Online, the update check
+      reaches EAS («No update available», right for 1.7.2). The shelter screen's position request reaches Google's
+      fused provider, but the phone gets no fix indoors (same with the Play build without R8), so the map tiles are
+      unseen: check them outdoors on the production build. Backup and room analysis are off (`EGENBEREDSKAP_PLUS_ENABLED`),
+      and the WebView is iOS only, so nothing more to test. The AAB carries the mapping file, so Play's deobfuscation
+      warning should go. JS updates from now on target 1.7.2, so publish anything meant for 1.7.1 from the commit
+      before. Next: a production build and release once 1.7.1 is out; turn Plus on later only after testing backup
+      under R8
 - [x] Published to 1.7.0 before the bump (Mikkel's go, 2026-10-27): production update `e33dc414` with the map
       framing, the greeting refresh, the information points and the GPS fix; seen arriving in the Play app on the
       OnePlus. Was: publish the map-framing fix (b7bc778) and the greeting refresh (6b3c483), JS only, to 1.7.0 **before**
