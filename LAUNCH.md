@@ -468,7 +468,19 @@ public: anyone can read published documents, never drafts).
       and the WebView is iOS only, so nothing more to test. The AAB carries the mapping file, so Play's deobfuscation
       warning should go. JS updates from now on target 1.7.2, so publish anything meant for 1.7.1 from the commit
       before. Next: a production build and release once 1.7.1 is out; turn Plus on later only after testing backup
-      under R8
+      under R8.
+      Full pass on the same build (2026-10-27, online): Lager (new item, Compose category menu and date picker,
+      litres, swipe-delete, reminder on/off schedules and cancels alarms); Eiendeler (camera photo and receipt, the
+      viewer's double-tap zoom and pan, share sheet, «Lag PDF og del» makes a correct 2-page PDF with thumbnail and
+      receipt); Nødinfo (110 opens the dialer without calling, meeting place opens Google Maps, the contact picker
+      asks for permission and handles a no, a document with a camera photo: FLAG_SECURE on, viewer, deleting the
+      file and the document through the Compose header menu); Innstillinger (check interval menu, privacy page opens
+      Chrome, feedback opens Gmail, «Slett alle data» wipes and cancels every alarm); then the welcome flow on the
+      clean install through to Oversikt. No crashes; the only app error in the log is one React Native
+      «view already removed» line when «Slett alle data» swaps the screen. Not covered: the Play install referrer
+      (an adb install has none; check the CTC link on the production build), picking a file or photo from the
+      system pickers (adb can't drive them), and the contact picker with access granted. The dev app's test data on
+      the OnePlus is gone (wiped for the welcome flow, on Mikkel's go)
 - [x] Published to 1.7.0 before the bump (Mikkel's go, 2026-10-27): production update `e33dc414` with the map
       framing, the greeting refresh, the information points and the GPS fix; seen arriving in the Play app on the
       OnePlus. Was: publish the map-framing fix (b7bc778) and the greeting refresh (6b3c483), JS only, to 1.7.0 **before**
