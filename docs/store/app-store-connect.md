@@ -108,5 +108,8 @@ Mikkel answered «standard/exempt encryption: yes» in the first `eas build` (20
 backup encryption (`packages/sync`, standard algorithms, hidden while Egenberedskap+ is off). EAS couldn't write the
 answer to the dynamic config, so `ios.config.usesNonExemptEncryption: false` was added to `app.json` by hand
 afterwards; it sets `ITSAppUsesNonExemptEncryption` in Info.plist. The first iOS build (1.7.2) went up without it,
-so its encryption question is answered once in TestFlight. No `version` bump: it's a declaration only, and no
+so its encryption question was answered in TestFlight (Claude, 2026-10-29, on Mikkel's «exempt» answer):
+«Standard encryption algorithms instead of, or in addition to, Apple's», since besides expo-crypto (the system's
+AES-GCM) the app ships `@noble/curves` and `@noble/hashes`, JavaScript implementations of standard algorithms; not
+distributed in France. Apple asked for no documentation, and the build went to «Ready to Submit». No `version` bump: it's a declaration only, and no
 earlier iOS build exists for an update to reach.

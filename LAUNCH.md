@@ -239,8 +239,8 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       URLs, copyright, review contact and notes, manual release), subtitle, categories, content rights, age rating 4+,
       free in Norway only (Mac and Vision Pro off) and the privacy policy URL. The six screenshots (1206×2622, from
       `docs/store/skjermbilder/ios/`) uploaded by Mikkel the same day; 6 of 10 seen saved after a reload. Build 1
-      (1.7.2) is in TestFlight with «Missing Compliance» until the encryption question is answered, then it can be
-      attached to the version. Details in
+      (1.7.2): encryption question answered in TestFlight, status «Ready to Submit», in the internal group «Team (Expo)»
+      where Mikkel is invited as tester. Not yet installed or tested on a phone. Details in
       `docs/store/app-store-connect.md`)*
 - [ ] Privacy labels (App Store) and Data safety (Play) that match the privacy policy, including the room photos
       sent for AI analysis. *(App Store, 2026-10-29: privacy policy URL set; the data-type questionnaire is
