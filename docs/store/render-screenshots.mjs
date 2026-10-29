@@ -53,6 +53,12 @@ const copy = {
 /** Pixels to cut from the top (status bar) and bottom (system navigation) of the capture. */
 const STATUS_BAR = ios ? 186 : 72;
 const NAV_BAR = ios ? 0 : 92;
+/**
+ * iOS only: cutting the whole status bar leaves the top buttons against the frame, so the status bar is painted
+ * over in the screen's own background (sampled beside the Dynamic Island) and only this much is cut, keeping
+ * about 30 pt of air above the first row.
+ */
+const TOP_CUT = ios ? 96 : STATUS_BAR;
 
 /** The navy padding, if any: columns where three sample rows are all navy. */
 const screenBounds = async (file) => {
@@ -121,8 +127,15 @@ for (const name of readdirSync(source).filter((f) => f.endsWith('.png')).sort())
   const file = join(source, name);
   const { left, width, height } = await screenBounds(file);
   const cropped = join(work, name);
-  const h = height - STATUS_BAR - NAV_BAR;
-  await sharp(file).extract({ left, top: STATUS_BAR, width, height: h }).png().toFile(cropped);
+  const h = height - TOP_CUT - NAV_BAR;
+  let capture = sharp(file);
+  if (ios) {
+    const { data } = await sharp(file).extract({ left: 4, top: 170, width: 1, height: 1 }).raw().toBuffer({ resolveWithObject: true });
+    const background = { r: data[0], g: data[1], b: data[2] };
+    const cover = await sharp({ create: { width, height: STATUS_BAR, channels: 3, background } }).png().toBuffer();
+    capture = sharp(await capture.composite([{ input: cover, left: 0, top: 0 }]).png().toBuffer());
+  }
+  await capture.extract({ left, top: TOP_CUT, width, height: h }).png().toFile(cropped);
   const html = join(work, `${base}.html`);
   writeFileSync(html, page(cropped, `${width} / ${h}`, copy[base]));
   execFileSync(
