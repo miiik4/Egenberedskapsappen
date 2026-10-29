@@ -530,6 +530,12 @@ public: anyone can read published documents, never drafts).
   `entitledUntil`, and Mikkel's paid-apps agreements with bank and tax details in both stores.
 - Open PDFs in a viewer on Android (expo-intent-launcher with `ACTION_VIEW`, a native package, so a `version` bump)
   instead of the share sheet, so a passport PDF isn't one tap from mail apps (`fil.tsx`, `docs/android-review.md` 3.4)
+- Play Console's four recommendations for 1.7.2 (seen 2026-10-29; none blocks review). **Large screens** is the
+  only one in our hands: Android 16 ignores `orientation: portrait` on screens ≥ 600 dp (`docs/android-review.md`),
+  so check the layout on a tablet or foldable emulator, or limit devices in Play Console. The rest wait on
+  upstream: the deprecated status bar calls come from React Native's `StatusBarModule` and Material's bottom sheet,
+  the bitmap download is inside a library (obfuscated; our images go through React Native's Image or expo-image, which use their own loaders), and
+  R8 already minifies and shrinks resources, while «optimize» and AGP 9 come with React Native and Expo upgrades
 - Server counts for insurers (codes redeemed, active backups, analyses per month), without tracking users
 - «Meld en skade» guide on top of the damage claims already stored on the phone
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
