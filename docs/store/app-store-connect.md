@@ -71,6 +71,8 @@ From `privacy-answers.md`, «Apple: App Privacy», 1.0 set, unchanged by 1.7:
 | Field | Value |
 | --- | --- |
 | Screenshots, iPhone | `skjermbilder/ios/1-oversikt.png` … `6-guide.png` (1206×2622, the size App Store Connect's required «iPhone with Dynamic Island (medium display)» slot takes; it rejected 1320×2868), composed by `render-screenshots.mjs --ios` from simulator captures in `skjermbilder/ios/kilde/` (demo household). Re-rendered 2026-10-29 with more space above the screen and a new Lager capture (the first still had Expo's dev tools button). Apple scales them down for the smaller iPhones. No iPad set: `supportsTablet` is false |
+| Header (optional) | `skjermbilder/ios/header.png`, 3840×1646 (21:9): headline and three phones, composed by `render-creative.mjs` |
+| Search results (optional) | `skjermbilder/ios/sokeresultat.png`, 3840×2560 (3:2): headline, one line under it and three phones. Without it the screenshots show in search |
 | Promotional text | `listing.md`, «Promotional text» |
 | Description | `listing.md`, «Full description» (the iPhone wording: «låst med Face ID eller kode» and the line about the locked phone) |
 | Keywords | `listing.md`, «Keywords» |
