@@ -14,8 +14,7 @@ categories, content rights, age rating 4+), pricing and availability, and the pr
   (answers under «App Privacy» below) and presses «Publish»
 - ~~Screenshots~~: uploaded by Mikkel 2026-10-29 into «iPhone with Dynamic Island (medium display)», the slot
   shown only when the window is wide (in a narrow window the section is missing)
-- **Build**: still processing at Apple; attach it on the version page once it shows, after answering its encryption
-  question in TestFlight
+- ~~Build~~: build 1 attached to 1.7.2 on 2026-10-29, after Mikkel tested it from TestFlight
 - **Add for Review**: Mikkel's step, after testing the build from TestFlight on a real iPhone
 
 ## Account
