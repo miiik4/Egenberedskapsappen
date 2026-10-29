@@ -4,6 +4,20 @@ Written 2026-10-29, the day Apple approved the developer account, for the first 
 later, Egenberedskap+ off). It follows `listing.md`, `privacy-answers.md` and the Play answers in
 `play-console.md`; where Apple asks something Play didn't, the answer is marked **(Mikkel)** until he has decided.
 
+## Status 2026-10-29
+
+Filled in by Claude in App Store Connect on Mikkel's go and saved as drafts, with the values below: the version page
+(text, URLs, copyright, version 1.7.2, review contact and notes, manual release), App Information (subtitle,
+categories, content rights, age rating 4+), pricing and availability, and the privacy policy URL. Not done:
+
+- **App Privacy** data types: the questionnaire publishes the answers on the product page, so Mikkel fills it in
+  (answers under «App Privacy» below) and presses «Publish»
+- **Screenshots**: the browser pane can't upload files; drag `skjermbilder/ios/1-oversikt.png` … `6-guide.png` into
+  the iPhone 6.9″ slot on the version page
+- **Build**: still processing at Apple; attach it on the version page once it shows, after answering its encryption
+  question in TestFlight
+- **Add for Review**: Mikkel's step, after testing the build from TestFlight on a real iPhone
+
 ## Account
 
 | What | Value |
@@ -31,14 +45,15 @@ later, Egenberedskap+ off). It follows `listing.md`, `privacy-answers.md` and th
 | --- | --- |
 | Subtitle | Beredskapslager og nødinfo (`listing.md`) |
 | Category | Lifestyle; secondary Utilities |
-| Content rights | Doesn't contain, show or access third-party content. DSB's shelter list is open data (NLOD) shown inside the app with credit, which Apple doesn't count as third-party content |
-| Age rating | Every question «None» / «No»: no violence, sexual content, profanity, drugs, gambling, horror, medical treatment information, user-generated content, messaging or unrestricted web access. The guides are general preparedness advice, not medical treatment. Gives 4+ |
-| Privacy policy URL | https://egenberedskapsappen.no/personvern |
-| Copyright | 2026 Holm & Tall AS |
+| Content rights | «Yes, it contains, shows, or accesses third-party content, and I have the necessary rights»: DSB's shelter list is open data under NLOD, shown with credit |
+| Age rating | Every question «None» / «No» in all six steps (in-app controls and capabilities, mature themes, medical or wellness, sexuality, violence, chance-based activities), no override. Calculated 4+. Judgment calls: the guides are preparedness advice, so «Medical or Treatment Information» None and «Health or Wellness Topics» No; shelters and crises are factual civil-protection information, so «Mature or Suggestive Themes» None |
+| Privacy policy URL | https://egenberedskapsappen.no/personvern (set on the App Privacy page) |
 
 ## Pricing and availability
 
-Free, Norway only (the app is Norwegian only, as on Play). EU storefronts need a trader status under the Digital
+Free (base USD 0.00), Norway only (the app is Norwegian only, as on Play). Apple silicon Mac and Apple Vision Pro
+availability are switched off: the app was never tested there and leans on the camera, Face ID and location. Public
+distribution. EU storefronts need a trader status under the Digital
 Services Act (Business → trader status); with Norway only it isn't required, but it has to be done before any EU
 country is added.
 
@@ -52,7 +67,7 @@ From `privacy-answers.md`, «Apple: App Privacy», 1.0 set, unchanged by 1.7:
   shelter list and is never sent. The map fetches tiles from Apple. Whether Apple wants MapKit's own requests
   declared hasn't been checked against Apple's guidance; Mikkel decides, as for the Maps SDK on Play.
 
-## Version page (1.0 for the App Store)
+## Version page (1.7.2, the first App Store version)
 
 | Field | Value |
 | --- | --- |
@@ -63,6 +78,8 @@ From `privacy-answers.md`, «Apple: App Privacy», 1.0 set, unchanged by 1.7:
 | Support URL | https://egenberedskapsappen.no/kontakt |
 | Marketing URL | https://egenberedskapsappen.no |
 | Build | The production build from EAS, once it has processed in TestFlight |
+| Version string | 1.7.2, to match the build (App Store Connect proposed 1.0) |
+| Copyright | 2026 Holm & Tall AS |
 | Version release | «Manually release this version» |
 
 ## App Review information

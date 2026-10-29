@@ -223,7 +223,7 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       License Agreement accepted, 2026-10-29 (Team ID `979DRPJKZL`, organisation, seen in the developer account)
 - [x] **(Mikkel)** Google Play Console account for Holm & Tall AS, as an organisation (uses the same D-U-N-S number)
       (2026-10-14: set up and phone number verified, Mikkel)
-- [ ] App records for `no.htas.egenberedskap` in both stores, and `submit.production` filled in in
+- [x] App records for `no.htas.egenberedskap` in both stores, and `submit.production` filled in in
       `apps/mobile/eas.json`
       *(2026-10-29: Play done. On Mikkel's go, Claude registered the bundle ID in the developer account and created the
       App Store Connect app «Egenberedskapsappen» (Norwegian, SKU `egenberedskapsappen`, Apple ID `6828561866`);
@@ -234,8 +234,15 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       Livsstil, tag Hus og hjem, contact e-mail, phone and website set; the privacy policy URL is set to
       https://egenberedskapappen.no/personvern. Icon, feature graphic and the six screenshots uploaded by Mikkel the same
       day. Play's side is complete and sent for review; the App Store listing remains)*
+      *(App Store, 2026-10-29: the first iOS build (1.7.2) uploaded to App Store Connect by Mikkel with `eas build
+      --auto-submit`. Claude filled in and saved, in App Store Connect: the 1.7.2 version page (text from `listing.md`,
+      URLs, copyright, review contact and notes, manual release), subtitle, categories, content rights, age rating 4+,
+      free in Norway only (Mac and Vision Pro off) and the privacy policy URL. Left for Mikkel: drag in the six
+      screenshots from `docs/store/skjermbilder/ios/`, attach the build once Apple has processed it. Details in
+      `docs/store/app-store-connect.md`)*
 - [ ] Privacy labels (App Store) and Data safety (Play) that match the privacy policy, including the room photos
-      sent for AI analysis. *(Play, 2026-10-18: Data safety answered per `docs/store/privacy-answers.md` and saved as a
+      sent for AI analysis. *(App Store, 2026-10-29: privacy policy URL set; the data-type questionnaire is
+      Mikkel's to fill in and publish, answers in `docs/store/app-store-connect.md`, «App Privacy»)* *(Play, 2026-10-18: Data safety answered per `docs/store/privacy-answers.md` and saved as a
       saved once the privacy policy URL was in place. The other eight content declarations are
       saved: app access, ads, advertising ID, content rating PEGI 3, target audience 18+, government, financial,
       health; answers in `docs/store/play-console.md`)*
