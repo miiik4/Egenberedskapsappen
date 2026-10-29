@@ -18,6 +18,9 @@
       "supportsTablet": false,
       "entitlements": {
         "com.apple.developer.default-data-protection": "NSFileProtectionComplete"
+      },
+      "config": {
+        "usesNonExemptEncryption": false
       }
     },
     "android": {

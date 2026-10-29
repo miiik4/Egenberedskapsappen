@@ -85,11 +85,11 @@ From `privacy-answers.md`, «Apple: App Privacy», 1.0 set, unchanged by 1.7:
 > - Documents (for example a passport photo) are protected with Face ID or the device passcode.
 > - The app has no ads, no tracking and no in-app purchases.
 
-## Export compliance **(Mikkel)**
+## Export compliance
 
-App Store Connect asks about encryption for every build until `ios.config.usesNonExemptEncryption` is set in
-`app.json` (that sets `ITSAppUsesNonExemptEncryption`; native config, so a `version` bump). 1.0 uses HTTPS, and it
-also contains the end-to-end encryption for backup (`packages/sync`, standard algorithms), hidden
-while Egenberedskap+ is off. Encryption that only protects the user's own data with standard algorithms is likely
-exempt, but this is Mikkel's answer to give, not a fact checked here. Until then, answer the question by hand on
-each build in TestFlight.
+Mikkel answered «standard/exempt encryption: yes» in the first `eas build` (2026-10-29): HTTPS, plus the end-to-end
+backup encryption (`packages/sync`, standard algorithms, hidden while Egenberedskap+ is off). EAS couldn't write the
+answer to the dynamic config, so `ios.config.usesNonExemptEncryption: false` was added to `app.json` by hand
+afterwards; it sets `ITSAppUsesNonExemptEncryption` in Info.plist. The first iOS build (1.7.2) went up without it,
+so its encryption question is answered once in TestFlight. No `version` bump: it's a declaration only, and no
+earlier iOS build exists for an update to reach.
