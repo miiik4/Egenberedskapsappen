@@ -219,13 +219,16 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 
 - [x] Drafts of the listing text and the privacy-label answers: `docs/store/` (2026-10-08; check before use)
 - [x] D-U-N-S number for Holm & Tall AS (from Tarjei; used for the Apple enrolment)
-- [ ] **(Mikkel)** Apple Developer account for Holm & Tall AS: enrolment sent 2026-10-05, waiting for Apple to verify
-      that Mikkel can sign for the company (Apple may contact Tarjei, whose address is the work email). No news as of
-      2026-10-14; not blocking, Android launches alone if needed
+- [x] **(Mikkel)** Apple Developer account for Holm & Tall AS: enrolment sent 2026-10-05; approved, and the Program
+      License Agreement accepted, 2026-10-29 (Team ID `979DRPJKZL`, organisation, seen in the developer account)
 - [x] **(Mikkel)** Google Play Console account for Holm & Tall AS, as an organisation (uses the same D-U-N-S number)
       (2026-10-14: set up and phone number verified, Mikkel)
 - [ ] App records for `no.htas.egenberedskap` in both stores, and `submit.production` filled in in
       `apps/mobile/eas.json`
+      *(2026-10-29: Play done. App Store Connect has no app yet and the bundle ID isn't registered. `submit.production.ios`
+      has the Team ID, name, language and SKU, so `eas submit` can create the record; `ascAppId` goes in once it
+      exists. Every App Store Connect answer is drafted in `docs/store/app-store-connect.md`; the iPhone 6.9″
+      screenshots are in `docs/store/skjermbilder/ios/`, from the iOS simulator with the demo household)*
 - [ ] Store listings in Norwegian: text, real screenshots, the privacy policy URL. *(2026-10-18, Claude in Play Console:
       app name corrected to «Egenberedskapsappen», short and full description entered and saved as a draft; category
       Livsstil, tag Hus og hjem, contact e-mail, phone and website set; the privacy policy URL is set to

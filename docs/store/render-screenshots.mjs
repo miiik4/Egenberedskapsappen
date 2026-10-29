@@ -2,11 +2,17 @@
  * Composes the Google Play phone screenshots: a Norwegian headline over the app screen, 1080×1920.
  *
  *   node docs/store/render-screenshots.mjs
+ *   node docs/store/render-screenshots.mjs --ios   # App Store, 6.9-inch iPhone: 1320×2868
  *
  * Sources in skjermbilder/kilde/ are raw captures from the OnePlus 6 with the demo household (1080×2280, here
  * scaled to 1920 high and padded with navy to 9:16, the most Play accepts). The script trims the padding, crops
  * the Android status bar and the system navigation bar, and prints each page with headless Chrome to
  * skjermbilder/<n>-<name>.png. Fonts come from the website's packages, as for the posters in docs/marketing.
+ *
+ * With --ios the sources are skjermbilder/ios/kilde/, captured in the iOS simulator (iPhone 17 Pro Max) from the dev
+ * build with the same demo household, status bar set to 09:41 with `xcrun simctl status_bar`, and the dev tools
+ * button off. The page is laid out at the same 1080 CSS pixels wide and scaled up, so the text keeps its size relative
+ * to the picture; it's written to skjermbilder/ios/.
  *
  * Every headline is a claim the listing (listing.md) already makes. No DSB slogans, no partner names.
  */
@@ -21,11 +27,15 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..', '..');
 const fonts = join(root, 'node_modules', '@fontsource-variable');
 const chrome = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const source = join(here, 'skjermbilder', 'kilde');
-const out = join(here, 'skjermbilder');
+const ios = process.argv.includes('--ios');
+const out = join(here, 'skjermbilder', ...(ios ? ['ios'] : []));
+const source = join(out, 'kilde');
 
+/** The picture the store wants, and the CSS page it's drawn from (1080 wide in both). */
+const [OUT_W, OUT_H] = ios ? [1320, 2868] : [1080, 1920];
 const W = 1080;
-const H = 1920;
+const SCALE = OUT_W / W;
+const H = Math.round(OUT_H / SCALE);
 /** From apps/mobile/src/constants/theme.ts. */
 const NAVY = '#0B2B4A';
 const MUTED = '#BBD6F2';
@@ -40,9 +50,9 @@ const copy = {
   '6-guide': ['Korte guider for når det skjer', 'Strømbrudd om vinteren, vann, barn og dyr.'],
 };
 
-/** Pixels to cut from the top (status bar) and bottom (system navigation) of the 1920-high capture. */
-const STATUS_BAR = 72;
-const NAV_BAR = 92;
+/** Pixels to cut from the top (status bar) and bottom (system navigation) of the capture. */
+const STATUS_BAR = ios ? 186 : 72;
+const NAV_BAR = ios ? 0 : 92;
 
 /** The navy padding, if any: columns where three sample rows are all navy. */
 const screenBounds = async (file) => {
@@ -100,7 +110,7 @@ p { font-size: 36px; line-height: 1.3; color: ${MUTED}; text-wrap: balance; }
 <div class="visual"><figure class="phone"><img src="${pathToFileURL(screen).href}" alt=""></figure></div>
 </body></html>`;
 
-const work = join(tmpdir(), 'egenberedskap-play-screenshots');
+const work = join(tmpdir(), `egenberedskap-${ios ? 'ios' : 'play'}-screenshots`);
 rmSync(work, { recursive: true, force: true });
 mkdirSync(work, { recursive: true });
 mkdirSync(out, { recursive: true });
@@ -118,9 +128,12 @@ for (const name of readdirSync(source).filter((f) => f.endsWith('.png')).sort())
   execFileSync(
     chrome,
     ['--headless=new', '--hide-scrollbars', '--allow-file-access-from-files', `--window-size=${W},${H}`,
-      '--force-device-scale-factor=1', '--virtual-time-budget=3000', `--screenshot=${join(out, name)}`, pathToFileURL(html).href],
+      `--force-device-scale-factor=${SCALE}`, '--virtual-time-budget=3000', `--screenshot=${join(work, `${base}-shot.png`)}`,
+      pathToFileURL(html).href],
     { stdio: 'pipe' },
   );
+  // Chrome rounds the scaled window; the stores want the exact size.
+  await sharp(join(work, `${base}-shot.png`)).resize(OUT_W, OUT_H, { fit: 'cover', position: 'top' }).png().toFile(join(out, name));
   console.log('Wrote', join(out, name));
 }
 rmSync(work, { recursive: true, force: true });

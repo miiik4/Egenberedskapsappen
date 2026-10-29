@@ -9,7 +9,8 @@ company Expo account; updates were code-signed from then until 2026-10-17 (see Â
 | --- | --- |
 | Expo project | `@holm-and-tall-as/egenberedskapsappen` (project ID `b92cddc0-f00c-4701-b7f9-99dfcf4a2ccc`), `owner` in `apps/mobile/app.json` |
 | Firebase | `egenberedskapsappen-test` (alias `test`) and `egenberedskapsappen` (`prod`), see README |
-| Apple / Google | Not set up yet (LAUNCH.md section 6) |
+| Apple | Holm & Tall AS, Team ID `979DRPJKZL` (approved 2026-10-29); App Store Connect answers in `docs/store/app-store-connect.md` |
+| Google Play | Holm & Tall AS; answers in `docs/store/play-console.md` |
 
 The project was transferred from the personal account `mkl96`; its ID and update URL stayed the same.
 

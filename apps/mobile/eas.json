@@ -51,6 +51,13 @@
       "android": {
         "track": "internal",
         "applicationId": "no.htas.egenberedskap"
+      },
+      "ios": {
+        "appleTeamId": "979DRPJKZL",
+        "bundleIdentifier": "no.htas.egenberedskap",
+        "appName": "Egenberedskapsappen",
+        "language": "no",
+        "sku": "egenberedskapsappen"
       }
     }
   }

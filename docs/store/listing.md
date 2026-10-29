@@ -26,8 +26,8 @@ Google Play title 30, short description 80, full description 4000.
 - **Category:** Lifestyle (Apple: Livsstil; Play: Livsstil). Alternative: Utilities / Verktøy.
 - **Price:** Free. No in-app purchases.
 - **Age rating:** 4+ / PEGI 3 (nothing shared between users, no web browsing beyond opening links).
-- **Privacy policy URL:** https://<real domain>/personvern (the domain is still open, LAUNCH.md section 8)
-- **Support URL:** https://<real domain>/kontakt
+- **Privacy policy URL:** https://egenberedskapsappen.no/personvern
+- **Support URL:** https://egenberedskapsappen.no/kontakt
 
 ## App Store
 
