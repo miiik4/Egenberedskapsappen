@@ -10,7 +10,8 @@ later, Egenberedskap+ off). It follows `listing.md`, `privacy-answers.md` and th
 | --- | --- |
 | Team | Holm & Tall AS, Team ID `979DRPJKZL`, enrolled as an organisation (Account Holder: Mikkel) |
 | Bundle ID | `no.htas.egenberedskap` (production builds; the dev build is `no.htas.egenberedskap.dev`) |
-| Capabilities | Data Protection (Complete, from `ios.entitlements` in `app.json`), App Attest for App Check (LAUNCH.md section 3) |
+| Capabilities | Registered 2026-10-29 with none ticked; EAS turns on what the entitlements in `app.json` ask for (Data Protection, Complete) on the first build. App Attest for App Check is still open (LAUNCH.md section 3) |
+| App Store Connect app | Apple ID `6828561866` (`ascAppId` in `apps/mobile/eas.json`), created 2026-10-29 by Claude on Mikkel's go, with the values under «New app»; company name «Holm & Tall AS» |
 | Agreements | Apple Developer Program License Agreement accepted 2026-10-29. The Paid Applications Agreement isn't needed while the app is free with no in-app purchases |
 
 ## New app

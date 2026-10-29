@@ -53,11 +53,9 @@
         "applicationId": "no.htas.egenberedskap"
       },
       "ios": {
+        "ascAppId": "6828561866",
         "appleTeamId": "979DRPJKZL",
-        "bundleIdentifier": "no.htas.egenberedskap",
-        "appName": "Egenberedskapsappen",
-        "language": "no",
-        "sku": "egenberedskapsappen"
+        "bundleIdentifier": "no.htas.egenberedskap"
       }
     }
   }
