@@ -237,8 +237,10 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       *(App Store, 2026-10-29: the first iOS build (1.7.2) uploaded to App Store Connect by Mikkel with `eas build
       --auto-submit`. Claude filled in and saved, in App Store Connect: the 1.7.2 version page (text from `listing.md`,
       URLs, copyright, review contact and notes, manual release), subtitle, categories, content rights, age rating 4+,
-      free in Norway only (Mac and Vision Pro off) and the privacy policy URL. Left for Mikkel: drag in the six
-      screenshots from `docs/store/skjermbilder/ios/`, attach the build once Apple has processed it. Details in
+      free in Norway only (Mac and Vision Pro off) and the privacy policy URL. The six screenshots (1206×2622, from
+      `docs/store/skjermbilder/ios/`) uploaded by Mikkel the same day; 6 of 10 seen saved after a reload. Build 1
+      (1.7.2) is in TestFlight with «Missing Compliance» until the encryption question is answered, then it can be
+      attached to the version. Details in
       `docs/store/app-store-connect.md`)*
 - [ ] Privacy labels (App Store) and Data safety (Play) that match the privacy policy, including the room photos
       sent for AI analysis. *(App Store, 2026-10-29: privacy policy URL set; the data-type questionnaire is

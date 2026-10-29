@@ -12,8 +12,8 @@ categories, content rights, age rating 4+), pricing and availability, and the pr
 
 - **App Privacy** data types: the questionnaire publishes the answers on the product page, so Mikkel fills it in
   (answers under «App Privacy» below) and presses «Publish»
-- **Screenshots**: the browser pane can't upload files; drag `skjermbilder/ios/1-oversikt.png` … `6-guide.png` into
-  the «iPhone with Dynamic Island» slot on the version page (shown only when the window is wide; in a narrow window the section is missing)
+- ~~Screenshots~~: uploaded by Mikkel 2026-10-29 into «iPhone with Dynamic Island (medium display)», the slot
+  shown only when the window is wide (in a narrow window the section is missing)
 - **Build**: still processing at Apple; attach it on the version page once it shows, after answering its encryption
   question in TestFlight
 - **Add for Review**: Mikkel's step, after testing the build from TestFlight on a real iPhone
