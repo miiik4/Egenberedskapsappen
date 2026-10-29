@@ -227,7 +227,7 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
       `apps/mobile/eas.json`
       *(2026-10-29: Play done. On Mikkel's go, Claude registered the bundle ID in the developer account and created the
       App Store Connect app «Egenberedskapsappen» (Norwegian, SKU `egenberedskapsappen`, Apple ID `6828561866`);
-      `submit.production.ios` has the `ascAppId` and Team ID. Every App Store Connect answer is drafted in `docs/store/app-store-connect.md`; the iPhone 6.9″
+      `submit.production.ios` has the `ascAppId` and Team ID. Every App Store Connect answer is drafted in `docs/store/app-store-connect.md`; the iPhone
       screenshots are in `docs/store/skjermbilder/ios/`, from the iOS simulator with the demo household)*
 - [ ] Store listings in Norwegian: text, real screenshots, the privacy policy URL. *(2026-10-18, Claude in Play Console:
       app name corrected to «Egenberedskapsappen», short and full description entered and saved as a draft; category

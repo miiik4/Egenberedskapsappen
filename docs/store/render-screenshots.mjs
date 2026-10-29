@@ -2,7 +2,7 @@
  * Composes the Google Play phone screenshots: a Norwegian headline over the app screen, 1080×1920.
  *
  *   node docs/store/render-screenshots.mjs
- *   node docs/store/render-screenshots.mjs --ios   # App Store, 6.9-inch iPhone: 1320×2868
+ *   node docs/store/render-screenshots.mjs --ios   # App Store, 6.1/6.3-inch iPhone slot: 1206×2622
  *
  * Sources in skjermbilder/kilde/ are raw captures from the OnePlus 6 with the demo household (1080×2280, here
  * scaled to 1920 high and padded with navy to 9:16, the most Play accepts). The script trims the padding, crops
@@ -32,7 +32,8 @@ const out = join(here, 'skjermbilder', ...(ios ? ['ios'] : []));
 const source = join(out, 'kilde');
 
 /** The picture the store wants, and the CSS page it's drawn from (1080 wide in both). */
-const [OUT_W, OUT_H] = ios ? [1320, 2868] : [1080, 1920];
+// App Store Connect's required iPhone slot (October 2026) is the 6.1/6.3-inch display; it scales them for the rest.
+const [OUT_W, OUT_H] = ios ? [1206, 2622] : [1080, 1920];
 const W = 1080;
 const SCALE = OUT_W / W;
 const H = Math.round(OUT_H / SCALE);

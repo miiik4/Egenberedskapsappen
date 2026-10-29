@@ -13,7 +13,7 @@ categories, content rights, age rating 4+), pricing and availability, and the pr
 - **App Privacy** data types: the questionnaire publishes the answers on the product page, so Mikkel fills it in
   (answers under «App Privacy» below) and presses «Publish»
 - **Screenshots**: the browser pane can't upload files; drag `skjermbilder/ios/1-oversikt.png` … `6-guide.png` into
-  the iPhone 6.9″ slot on the version page
+  the «iPhone with Dynamic Island» slot on the version page (shown only when the window is wide; in a narrow window the section is missing)
 - **Build**: still processing at Apple; attach it on the version page once it shows, after answering its encryption
   question in TestFlight
 - **Add for Review**: Mikkel's step, after testing the build from TestFlight on a real iPhone
@@ -71,7 +71,7 @@ From `privacy-answers.md`, «Apple: App Privacy», 1.0 set, unchanged by 1.7:
 
 | Field | Value |
 | --- | --- |
-| Screenshots, iPhone 6.9″ | `skjermbilder/ios/1-oversikt.png` … `6-guide.png` (1320×2868), composed by `render-screenshots.mjs --ios` from simulator captures in `skjermbilder/ios/kilde/` (demo household). Re-rendered 2026-10-29 with more space above the screen and a new Lager capture (the first still had Expo's dev tools button). Apple scales them down for the smaller iPhones. No iPad set: `supportsTablet` is false |
+| Screenshots, iPhone | `skjermbilder/ios/1-oversikt.png` … `6-guide.png` (1206×2622, the size App Store Connect's required «iPhone with Dynamic Island (medium display)» slot takes; it rejected 1320×2868), composed by `render-screenshots.mjs --ios` from simulator captures in `skjermbilder/ios/kilde/` (demo household). Re-rendered 2026-10-29 with more space above the screen and a new Lager capture (the first still had Expo's dev tools button). Apple scales them down for the smaller iPhones. No iPad set: `supportsTablet` is false |
 | Promotional text | `listing.md`, «Promotional text» |
 | Description | `listing.md`, «Full description» (the iPhone wording: «låst med Face ID eller kode» and the line about the locked phone) |
 | Keywords | `listing.md`, «Keywords» |
