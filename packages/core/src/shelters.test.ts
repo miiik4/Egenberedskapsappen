@@ -70,25 +70,22 @@ describe('shelters', () => {
     const points = [phone, { latitude: 59.1156, longitude: 9.6533 }, { latitude: 59.135, longitude: 9.66 }];
     const camera = cameraFor(points, { width: 360, height: 280 })!;
     expect(camera.center.latitude).toBeCloseTo(59.1175, 3);
-    // Every point is inside the visible map, margin included.
+    // Every point is inside the visible map, with room for its balloon above the top one.
     const metersPerPoint = (156_543.03392 * Math.cos((camera.center.latitude * Math.PI) / 180)) / 2 ** camera.zoom;
     for (const p of points) {
-      expect(Math.abs(p.latitude - camera.center.latitude) * 111_320).toBeLessThan((280 / 2) * metersPerPoint);
+      expect(Math.abs(p.latitude - camera.center.latitude) * 111_320).toBeLessThan((280 / 2 - 50) * metersPerPoint);
     }
     expect(camera.zoom).toBeGreaterThanOrEqual(11);
     expect(camera.zoom).toBeLessThanOrEqual(13);
 
-    // The points fill the map: a tenth of a zoom level closer would push one past the margin.
-    const closer = cameraFor(points, {
-      width: 360,
-      height: 280,
-      margin: 0,
-    })!.zoom;
-    expect(closer - camera.zoom).toBeLessThan(0.5);
+    // The points fill the map: without the padding, it would be less than a level closer.
+    const closer = cameraFor(points, { width: 360, height: 280, padding: { x: 0, y: 0 } })!.zoom;
+    expect(closer - camera.zoom).toBeLessThan(1);
 
     // One point, or none, doesn't zoom to infinity or fail.
     expect(cameraFor([phone], { width: 360, height: 280 })?.zoom).toBe(15);
     expect(cameraFor([], { width: 360, height: 280 })).toBeNull();
+    expect(cameraFor(points, { width: 60, height: 280 })).toBeNull();
   });
 
   it('tells Apple Maps a zoom that shows what was meant', () => {

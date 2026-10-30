@@ -424,8 +424,8 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       (Bærum among them) can't be read without a browser
 - [x] The map zoomed too far out (Mikkel, 2026-10-30): the camera fitted every informasjonspunkt within 20 km, so
       one across the fjord shrank the shelters to a cluster; it now fits the phone, the shelters and the points
-      among them (`placesToFit` in core; the rest stay as markers off the edge), with a 15 % margin and the zoom in
-      tenths instead of halves. And expo-maps on iOS reads the zoom as a square region in degrees that MapKit fits
+      among them (`placesToFit` in core; the rest stay as markers off the edge), with 40 × 56 points kept clear inside
+      the edges so a balloon never touches the frame, and the zoom in tenths instead of halves. And expo-maps on iOS reads the zoom as a square region in degrees that MapKit fits
       whole, about a level farther out than Google Maps shows for the same number at our latitudes, so the Apple
       map gets its own number (`appleMapsZoom`). Seen in the simulator at Skien: the markers fill three quarters of
       the map instead of its middle. Google Maps reads the zoom the usual way, so Android is unchanged there

@@ -83,17 +83,27 @@ export function placesToFit(from: LatLon, shelters: readonly LatLon[], points: r
   return [from, ...shelters, ...points.filter((p) => distanceMeters(from, p) <= reach)];
 }
 
+/** Room kept clear inside the map's edges, in points: a marker balloon stands about 44 points above its place. */
+export const MAP_PADDING = { x: 40, y: 56 };
+
 /**
- * The map camera that shows every point (the phone and the places to fit), with a margin round the edge so
- * markers aren't cut off: the middle of the points, and the closest zoom at which they all fit in a map of
- * `width` × `height` points, in tenths so the points fill the map rather than its middle. One point alone, or
- * points very close together, stop at `maxZoom`.
+ * The map camera that shows every point (the phone and the places to fit), with `padding` kept clear inside the
+ * edges so no marker touches the frame: the middle of the points, and the closest zoom at which they all fit in a
+ * map of `width` × `height` points, in tenths so the points fill the map rather than its middle. One point
+ * alone, or points very close together, stop at `maxZoom`.
  */
 export function cameraFor(
   points: readonly LatLon[],
-  { width, height, margin = 0.15, maxZoom = 15 }: { width: number; height: number; margin?: number; maxZoom?: number },
+  {
+    width,
+    height,
+    padding = MAP_PADDING,
+    maxZoom = 15,
+  }: { width: number; height: number; padding?: { x: number; y: number }; maxZoom?: number },
 ): { center: LatLon; zoom: number } | null {
-  if (points.length === 0 || width <= 0 || height <= 0) return null;
+  const innerWidth = width - 2 * padding.x;
+  const innerHeight = height - 2 * padding.y;
+  if (points.length === 0 || innerWidth <= 0 || innerHeight <= 0) return null;
   const lats = points.map((p) => p.latitude);
   const lons = points.map((p) => p.longitude);
   const center = {
@@ -103,7 +113,7 @@ export function cameraFor(
   const cos = Math.cos(rad(center.latitude));
   const metersNorth = (Math.max(...lats) - Math.min(...lats)) * 111_320;
   const metersEast = (Math.max(...lons) - Math.min(...lons)) * 111_320 * cos;
-  const metersPerPoint = Math.max(metersEast / width, metersNorth / height) * (1 + 2 * margin);
+  const metersPerPoint = Math.max(metersEast / innerWidth, metersNorth / innerHeight);
   if (metersPerPoint === 0) return { center, zoom: maxZoom };
   const zoom = Math.log2((METERS_PER_POINT_AT_ZOOM_0 * cos) / metersPerPoint);
   return {
