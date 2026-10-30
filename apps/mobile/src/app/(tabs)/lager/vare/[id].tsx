@@ -99,11 +99,20 @@ export default function Vare() {
           header="Holdbarhet"
           footer={
             type.id === 'drinkingWater'
-              ? `DSB anbefaler å bytte lagret vann hver ${STORED_WATER_SHELF_LIFE_MONTHS}. måned.`
+              ? `«Fylt» er sist vannet ble byttet, «Bytt innen» når det bør byttes neste gang. DSB anbefaler hver ${STORED_WATER_SHELF_LIFE_MONTHS}. måned.`
               : undefined
           }>
-          <DateField label="Kjøpt" value={item.boughtOn} onChange={(boughtOn) => update({ boughtOn })} suggest={0} />
-          <DateField label="Går ut" value={item.expiresOn} onChange={(expiresOn) => update({ expiresOn })} />
+          <DateField
+            label={type.id === 'drinkingWater' ? 'Fylt' : 'Kjøpt'}
+            value={item.boughtOn}
+            onChange={(boughtOn) => update({ boughtOn })}
+            suggest={0}
+          />
+          <DateField
+            label={type.id === 'drinkingWater' ? 'Bytt innen' : 'Går ut'}
+            value={item.expiresOn}
+            onChange={(expiresOn) => update({ expiresOn })}
+          />
           <Row
             title="Påminnelse"
             trailing={

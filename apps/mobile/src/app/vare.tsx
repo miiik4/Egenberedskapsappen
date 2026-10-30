@@ -133,8 +133,14 @@ export default function Vare() {
         )}
       </Section>
 
-      <Section header="Holdbarhet" footer="Varen slutter å telle dagen etter at den har gått ut.">
-        <DateField label="Går ut" value={expiresOn} onChange={setExpiresOn} />
+      <Section
+        header="Holdbarhet"
+        footer={
+          type === 'drinkingWater'
+            ? 'Når vannet bør byttes, ikke når det ble fylt. Det slutter å telle dagen etter.'
+            : 'Varen slutter å telle dagen etter at den har gått ut.'
+        }>
+        <DateField label={type === 'drinkingWater' ? 'Bytt innen' : 'Går ut'} value={expiresOn} onChange={setExpiresOn} />
         <Row
           title="Påminnelse"
           trailing={

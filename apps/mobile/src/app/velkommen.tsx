@@ -208,11 +208,13 @@ export default function Velkommen() {
               <Section
                 header="Hold tallet riktig"
                 footer={
-                  permission === 'undetermined'
+                  // The date is when to change the water, not when it was filled: one user read it the other way.
+                  (hasWater ? 'Vannet regnes som fylt i dag; datoen er når det bør byttes. ' : '') +
+                  (permission === 'undetermined'
                     ? `Vi sier fra ${hasWater ? 'før vannet bør byttes, og ' : ''}når det er tid for beredskapssjekk.`
-                    : 'Dette kan dere endre senere under Innstillinger.'
+                    : 'Dette kan dere endre senere under Innstillinger.')
                 }>
-                {hasWater && <DateField label="Bytt vannet" value={waterSwapOn} onChange={setWaterSwapOn} />}
+                {hasWater && <DateField label="Bytt vannet innen" value={waterSwapOn} onChange={setWaterSwapOn} />}
                 <MenuField
                   label="Beredskapssjekk"
                   value={String(checkEvery)}
