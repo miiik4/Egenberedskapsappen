@@ -368,6 +368,12 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       Onboarding: «Bytt vannet innen», with «Vannet regnes som fylt i dag; datoen er når det bør byttes» in the
       footer. Ny vare: «Bytt innen» for water, footer «Når vannet bør byttes, ikke når det ble fylt». The item's
       page: «Fylt» and «Bytt innen» for water instead of «Kjøpt» and «Går ut», with the footer spelling both out
+- [x] Lager without the Alle/Mangler switch (Mikkel, 2026-10-30: it confused people, and the whole list was
+      overwhelming). Everything is always shown: «Viktigst å skaffe» on top with the three tasks that give the most
+      days (`nextActions`, minus the Nødinfo ones, in the same `Task` row as Oversikt, now shared in
+      `components/preparedness/task-row.tsx`), then «Hele listen» with one row per category, «Mat · 4 av 7 døgn» with
+      a check or a part-filled circle, that folds out to its types when pressed; vann, mat and varme keep a «Mer om»
+      row to their page. «Se hele listen» on Oversikt just opens Lager. Seen in the iOS simulator; not on Android
 - [x] The app works out when to change the water (Mikkel, 2026-10-30: users couldn't know). «Bytt innen» is set
       12 months after «Fylt» (`shelfLifeEnd` in core, DSB's figure) until the user sets a date of their own: Ny
       vare has a «Fylt» field (today for a new item), onboarding «Vannet fylt», and on the item's page «Bytt innen»
