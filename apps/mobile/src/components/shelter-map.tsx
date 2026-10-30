@@ -1,4 +1,13 @@
-import { appleMapsZoom, cameraFor, placesToFit, type LatLon, type MeetingPoint, type Shelter } from '@egenberedskap/core';
+import {
+  appleMapsZoom,
+  cameraFor,
+  MEETING_POINTS,
+  placesToFit,
+  SHELTERS,
+  type LatLon,
+  type MeetingPoint,
+  type Shelter,
+} from '@egenberedskap/core';
 import { requireOptionalNativeModule } from 'expo';
 import Constants from 'expo-constants';
 import { useImage } from 'expo-image';
@@ -39,6 +48,7 @@ export function ShelterMap({
   at: LatLon | null;
   /** Whether to draw the phone's own position: only when `at` is where the phone is now, not a remembered place. */
   myLocation?: boolean;
+  /** The shelters and points the map opens on. Every one in the country is drawn, so zooming out shows the rest. */
   shelters: readonly Shelter[];
   meetingPoints: readonly MeetingPoint[];
   title: (s: Shelter) => string;
@@ -56,12 +66,12 @@ export function ShelterMap({
     ? { coordinates: camera.center, zoom: Platform.OS === 'ios' ? appleMapsZoom(camera, size) : camera.zoom }
     : { coordinates: NORWAY, zoom: 4 };
   const coordinates = (p: LatLon) => ({ latitude: p.latitude, longitude: p.longitude });
-  const shelterMarkers = shelters.map((shelter) => ({
+  const shelterMarkers = SHELTERS.map((shelter) => ({
     id: shelter.id,
     coordinates: coordinates(shelter),
     title: title(shelter),
   }));
-  const meetingPointMarkers = meetingPoints.map((point) => ({
+  const meetingPointMarkers = MEETING_POINTS.map((point) => ({
     id: point.id,
     coordinates: coordinates(point),
     title: point.name,

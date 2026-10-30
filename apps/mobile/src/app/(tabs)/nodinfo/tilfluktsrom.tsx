@@ -1,9 +1,7 @@
 import {
-  MEETING_POINTS,
   MEETING_POINTS_UPDATED,
   meetingPointsNear,
   SHELTER_WALK_METERS,
-  SHELTERS,
   sheltersNear,
   SHELTERS_UPDATED,
   type LatLon,
@@ -112,8 +110,9 @@ function formatFoundAt(at: string) {
  * its tiles; the lists don't.
  *
  * The position found is kept on the phone, so next time the screen shows at once and nobody waits for GPS: then
- * only a fix the phone already has replaces it on its own, and GPS runs again when the user asks. With no
- * position at all, the map shows every shelter and information point in the country.
+ * only a fix the phone already has replaces it on its own, and GPS runs again when the user asks. The map draws
+ * every shelter and information point in the country, opened on the nearby ones; with no position at all, on
+ * all of Norway.
  */
 export default function Tilfluktsrom() {
   const { lastPosition } = useData();
@@ -158,9 +157,8 @@ export default function Tilfluktsrom() {
           <ShelterMap
             at={at}
             myLocation={live !== null}
-            // With nothing to measure from, the whole country, for the user to find their own town on.
-            shelters={at ? nearby.map((n) => n.shelter) : SHELTERS}
-            meetingPoints={at ? points.map((n) => n.point) : MEETING_POINTS}
+            shelters={nearby.map((n) => n.shelter)}
+            meetingPoints={points.map((n) => n.point)}
             title={title}
           />
         )}

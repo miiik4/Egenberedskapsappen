@@ -409,9 +409,10 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
 - [x] The position is kept on the phone (Mikkel, 2026-10-30): the screen shows the last position's lists at once, as
       «Posisjon fra 30. oktober kl. 08.50» with «Finn posisjonen på nytt», instead of waiting for GPS each time. On
       opening, only a fix the phone already has replaces it; GPS runs again when the user asks. The `lastPosition`
-      setting stays on this phone, never synced (`packages/store`). With no position at all, the map shows every
-      shelter and informasjonspunkt in the country, for the user to find their own town on (a pile at that zoom; the
-      map still needs a network for tiles). JS only, so `eas update` onto 1.7.x. *(Seen in the iOS simulator:
+      setting stays on this phone, never synced (`packages/store`). The map always draws every shelter and
+      informasjonspunkt in the country, opened on the nearby ones, so zooming out shows the rest (Mikkel,
+      2026-10-30); with no position at all it opens on all of Norway (a pile at that zoom; the map still needs a
+      network for tiles). JS only, so `eas update` onto 1.7.x. *(Seen in the iOS simulator:
       Skien, then moved to Kongsberg and found anew, then reopened with no fix: Kongsberg's list from the saved
       position. Not on Android yet)*
 - [x] Kongsberg and seven other municipalities had no informasjonspunkter in the app although their pages name them
