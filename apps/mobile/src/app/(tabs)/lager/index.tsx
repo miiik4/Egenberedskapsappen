@@ -103,6 +103,7 @@ function categoryRows({
     <Row
       key={`${category}-header`}
       title={name}
+      tall
       detail={complete ? undefined : detail}
       leading={complete ? <CheckCircle on /> : share > 0 ? <PartialCircle share={share} /> : <CheckCircle on={false} />}
       trailing={

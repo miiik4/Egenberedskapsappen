@@ -72,6 +72,7 @@ export function Row({
   onPress,
   titleColor,
   bold,
+  tall,
   accessibilityLabel,
   titleLines = 1,
 }: {
@@ -85,13 +86,15 @@ export function Row({
   onPress?: () => void;
   titleColor?: ColorValue;
   bold?: boolean;
+  /** A row with more air round it, for a short list of headings that each open something. */
+  tall?: boolean;
   /** What VoiceOver and TalkBack read instead of the row's text, when the icon carries meaning too. */
   accessibilityLabel?: string;
   /** Lines before the title is cut off; more for names that must be read in full. */
   titleLines?: number;
 }) {
   const content = (
-    <View style={styles.row}>
+    <View style={[styles.row, tall && styles.tall]}>
       {leading}
       <View style={styles.rowText}>
         <Text
@@ -168,6 +171,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: Spacing.rowInset,
   },
+  tall: { minHeight: 60, paddingVertical: 15 },
   rowText: { flex: 1, gap: 1 },
   title: { fontSize: 17, color: Colors.label },
   bold: { fontWeight: '600' },
