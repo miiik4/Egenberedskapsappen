@@ -6,6 +6,7 @@ import {
   isExpired,
   isExpiringSoon,
   renewedDates,
+  shelfLifeEnd,
   stockType,
   STORED_WATER_SHELF_LIFE_MONTHS,
   type StockItem,
@@ -53,6 +54,12 @@ export default function Vare() {
     if (!next.boughtOn) delete next.boughtOn;
     await saveStockItem(next);
   };
+  // «Bytt innen» follows «Fylt» while it's empty or where the filling date put it; a date of the user's own stays.
+  const filled = (boughtOn: string | undefined) => {
+    const follows = !item.expiresOn || (item.boughtOn && item.expiresOn === shelfLifeEnd(item.type, item.boughtOn));
+    const expiresOn = boughtOn && follows ? shelfLifeEnd(item.type, boughtOn) : undefined;
+    return update({ boughtOn, ...(expiresOn && { expiresOn }) });
+  };
   const replaced = () => {
     const dates = renewedDates(item, today);
     if (dates) update(dates);
@@ -98,18 +105,18 @@ export default function Vare() {
         <Section
           header="Holdbarhet"
           footer={
-            type.id === 'drinkingWater'
-              ? `«Fylt» er sist vannet ble byttet, «Bytt innen» når det bør byttes neste gang. DSB anbefaler hver ${STORED_WATER_SHELF_LIFE_MONTHS}. måned.`
+            type.shelfLifeMonths
+              ? `«Fylt» er sist vannet ble byttet. «Bytt innen» følger ${STORED_WATER_SHELF_LIFE_MONTHS} måneder etter, som DSB anbefaler, til dere setter en egen dato. Vann på flaske: bruk datoen på flasken.`
               : undefined
           }>
           <DateField
-            label={type.id === 'drinkingWater' ? 'Fylt' : 'Kjøpt'}
+            label={type.shelfLifeMonths ? 'Fylt' : 'Kjøpt'}
             value={item.boughtOn}
-            onChange={(boughtOn) => update({ boughtOn })}
+            onChange={type.shelfLifeMonths ? filled : (boughtOn) => update({ boughtOn })}
             suggest={0}
           />
           <DateField
-            label={type.id === 'drinkingWater' ? 'Bytt innen' : 'Går ut'}
+            label={type.shelfLifeMonths ? 'Bytt innen' : 'Går ut'}
             value={item.expiresOn}
             onChange={(expiresOn) => update({ expiresOn })}
           />

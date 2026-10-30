@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { renewedDates, STOCK_TYPES, suggestType, typesFor } from './catalogue';
+import { renewedDates, shelfLifeEnd, STOCK_TYPES, suggestType, typesFor } from './catalogue';
 import { computeCoverage } from './coverage';
 import { item } from './test-items';
 import { addMonths } from './dates';
@@ -41,6 +41,13 @@ describe('catalogue', () => {
     const one = { adults: 1, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 };
     const stove = item('s', { type: 'cookingStove' });
     expect(computeCoverage(one, [stove], '2026-10-08').heatDays).toBe(0);
+  });
+});
+
+describe('shelfLifeEnd', () => {
+  it('puts the change of stored water a year after filling, and knows nothing about tins', () => {
+    expect(shelfLifeEnd('drinkingWater', '2026-10-30')).toBe('2027-10-30');
+    expect(shelfLifeEnd('cannedMeals', '2026-10-30')).toBeUndefined();
   });
 });
 

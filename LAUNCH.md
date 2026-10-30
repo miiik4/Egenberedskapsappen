@@ -368,6 +368,12 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       Onboarding: «Bytt vannet innen», with «Vannet regnes som fylt i dag; datoen er når det bør byttes» in the
       footer. Ny vare: «Bytt innen» for water, footer «Når vannet bør byttes, ikke når det ble fylt». The item's
       page: «Fylt» and «Bytt innen» for water instead of «Kjøpt» and «Går ut», with the footer spelling both out
+- [x] The app works out when to change the water (Mikkel, 2026-10-30: users couldn't know). «Bytt innen» is set
+      12 months after «Fylt» (`shelfLifeEnd` in core, DSB's figure) until the user sets a date of their own: Ny
+      vare has a «Fylt» field (today for a new item), onboarding «Vannet fylt», and on the item's page «Bytt innen»
+      follows a changed «Fylt» while it still matches the derived date. Footers say so and that bottled water
+      follows the date on the bottle. Before, water added through Ny vare had no date and no reminder unless the
+      user picked one. Seen in the iOS simulator on Ny vare; not on Android
 - [x] Onboarding: on iPhone the number pad covered «Neste» (Mikkel, 2026-10-30). The button bar sat under the scroll
       view, which looked after its own fields with keyboard insets but not what was below it; the bar now lifts
       above the keyboard (`AboveKeyboard` in `keyboard-avoiding.tsx`) and the scroll view drops its own inset, which

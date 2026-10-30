@@ -169,6 +169,15 @@ export function suggestType(name: string): StockType | undefined {
 }
 
 /**
+ * When something bought or filled on `from` should be replaced, by its type's usual shelf life: stored tap water a
+ * year on, as DSB advises. Undefined for types without one, where only the packaging can say.
+ */
+export function shelfLifeEnd(type: StockType, from: IsoDate): IsoDate | undefined {
+  const months = stockType(type).shelfLifeMonths;
+  return months ? addMonths(from, months) : undefined;
+}
+
+/**
  * «Merk som byttet»: bought today, and good for as long as the last one was, or for the
  * type's usual shelf life. Undefined when there's nothing to go by, so the user picks a date.
  */
@@ -177,6 +186,6 @@ export function renewedDates(item: StockItem, today: IsoDate): { boughtOn: IsoDa
     const lasted = daysBetween(item.boughtOn, item.expiresOn);
     if (lasted > 0) return { boughtOn: today, expiresOn: addDays(today, lasted) };
   }
-  const months = stockType(item.type).shelfLifeMonths;
-  return months ? { boughtOn: today, expiresOn: addMonths(today, months) } : undefined;
+  const expiresOn = shelfLifeEnd(item.type, today);
+  return expiresOn ? { boughtOn: today, expiresOn } : undefined;
 }

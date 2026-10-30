@@ -3,10 +3,13 @@ import {
   CATEGORY_NAMES,
   isStockType,
   MEALS_PER_PERSON_PER_DAY,
+  shelfLifeEnd,
   stockType,
+  STORED_WATER_SHELF_LIFE_MONTHS,
   suggestType,
   typesFor,
   WATER_LITRES_PER_PERSON_PER_DAY,
+  type IsoDate,
   type StockCategory,
   type StockType,
 } from '@egenberedskap/core';
@@ -20,6 +23,7 @@ import { FormSheet } from '@/components/form/sheet';
 import { Row, Section } from '@/components/ui/list';
 import { Switch } from '@/components/ui/switch';
 import { useActions, useData } from '@/data/data-provider';
+import { todayIso } from '@/lib/format';
 
 type Params = { id?: string; type?: string; litres?: string; meals?: string };
 
@@ -46,12 +50,22 @@ export default function Vare() {
   const [quantity, setQuantity] = useState(existing?.quantity ?? 1);
   const [litres, setLitres] = useState(existing?.litres !== undefined ? String(existing.litres) : (params.litres ?? ''));
   const [meals, setMeals] = useState(existing?.meals !== undefined ? String(existing.meals) : (params.meals ?? ''));
+  // Water is dated from when it was filled, today unless said otherwise, and «Bytt innen» follows from that until
+  // the user sets it themselves; other things have no filling date, only the date on the packaging.
+  const [boughtOn, setBoughtOn] = useState(existing?.boughtOn ?? (existing ? undefined : todayIso()));
   const [expiresOn, setExpiresOn] = useState(existing?.expiresOn);
+  const [expiresChosen, setExpiresChosen] = useState(existing?.expiresOn !== undefined);
   const [remind, setRemind] = useState(existing?.remind ?? true);
   const [location, setLocation] = useState(existing?.location ?? '');
 
   const info = stockType(type);
   const category = info.category;
+  const filled = info.shelfLifeMonths !== undefined;
+  const expires = !expiresChosen && filled && boughtOn ? shelfLifeEnd(type, boughtOn) : expiresOn;
+  const chooseExpires = (date: IsoDate | undefined) => {
+    setExpiresOn(date);
+    setExpiresChosen(true);
+  };
   // Types the household doesn't list (baby food without small children) stay pickable for an item that has one.
   const typeOptions = typesFor(household, category).some((t) => t.id === type)
     ? typesFor(household, category)
@@ -82,8 +96,8 @@ export default function Vare() {
       quantity,
       ...(info.measure === 'litres' && { litres: parseNumber(litres)! }),
       ...(info.measure === 'meals' && { meals: parseNumber(meals)! }),
-      ...(expiresOn && { expiresOn }),
-      ...(existing?.boughtOn && { boughtOn: existing.boughtOn }),
+      ...(expires && { expiresOn: expires }),
+      ...(filled ? boughtOn && { boughtOn } : existing?.boughtOn && { boughtOn: existing.boughtOn }),
       remind,
       location,
     };
@@ -136,11 +150,12 @@ export default function Vare() {
       <Section
         header="Holdbarhet"
         footer={
-          type === 'drinkingWater'
-            ? 'Når vannet bør byttes, ikke når det ble fylt. Det slutter å telle dagen etter.'
+          filled
+            ? `«Bytt innen» settes ${STORED_WATER_SHELF_LIFE_MONTHS} måneder etter «Fylt», som DSB anbefaler for lagret vann. Vann på flaske: bruk datoen på flasken. Det slutter å telle dagen etter.`
             : 'Varen slutter å telle dagen etter at den har gått ut.'
         }>
-        <DateField label={type === 'drinkingWater' ? 'Bytt innen' : 'Går ut'} value={expiresOn} onChange={setExpiresOn} />
+        {filled && <DateField label="Fylt" value={boughtOn} onChange={setBoughtOn} suggest={0} />}
+        <DateField label={filled ? 'Bytt innen' : 'Går ut'} value={expires} onChange={chooseExpires} />
         <Row
           title="Påminnelse"
           trailing={

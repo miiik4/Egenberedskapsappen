@@ -61,7 +61,17 @@ export default function Velkommen() {
   const [meals, setMeals] = useState('');
   const [saving, setSaving] = useState(false);
   const today = todayIso();
-  const [waterSwapOn, setWaterSwapOn] = useState<IsoDate | undefined>(() => addMonths(today, STORED_WATER_SHELF_LIFE_MONTHS));
+  // The water counts as filled today unless said otherwise; the change date follows until the user sets one.
+  const [waterFilledOn, setWaterFilledOn] = useState<IsoDate | undefined>(today);
+  const [waterSwapChosen, setWaterSwapChosen] = useState<IsoDate | undefined>();
+  const [waterSwapCleared, setWaterSwapCleared] = useState(false);
+  const waterSwapOn = waterSwapCleared
+    ? undefined
+    : (waterSwapChosen ?? (waterFilledOn ? addMonths(waterFilledOn, STORED_WATER_SHELF_LIFE_MONTHS) : undefined));
+  const chooseWaterSwap = (date: IsoDate | undefined) => {
+    setWaterSwapChosen(date);
+    setWaterSwapCleared(date === undefined);
+  };
   const [checkEvery, setCheckEvery] = useState<CheckIntervalMonths>(DEFAULT_CHECK_INTERVAL_MONTHS);
 
   // Android's back button or gesture goes back a step, as the chevron does, instead of leaving the app.
@@ -80,7 +90,9 @@ export default function Velkommen() {
     if (measure === 'litres') {
       const l = parseNumber(litres);
       // Dated from the start, so the first reminder to swap it can come.
-      return l ? [{ ...base, litres: l, boughtOn: today, ...(waterSwapOn && { expiresOn: waterSwapOn }) }] : [];
+      return l
+        ? [{ ...base, litres: l, ...(waterFilledOn && { boughtOn: waterFilledOn }), ...(waterSwapOn && { expiresOn: waterSwapOn }) }]
+        : [];
     }
     if (measure === 'meals') {
       const m = parseNumber(meals);
@@ -208,13 +220,16 @@ export default function Velkommen() {
               <Section
                 header="Hold tallet riktig"
                 footer={
-                  // The date is when to change the water, not when it was filled: one user read it the other way.
-                  (hasWater ? 'Vannet regnes som fylt i dag; datoen er når det bør byttes. ' : '') +
+                  // Which date is which: one user read «Bytt vannet» as when it was last changed.
+                  (hasWater
+                    ? `«Bytt innen» settes ${STORED_WATER_SHELF_LIFE_MONTHS} måneder etter «Fylt», som DSB anbefaler for lagret vann. Vann på flaske: bruk datoen på flasken. `
+                    : '') +
                   (permission === 'undetermined'
                     ? `Vi sier fra ${hasWater ? 'før vannet bør byttes, og ' : ''}når det er tid for beredskapssjekk.`
                     : 'Dette kan dere endre senere under Innstillinger.')
                 }>
-                {hasWater && <DateField label="Bytt vannet innen" value={waterSwapOn} onChange={setWaterSwapOn} />}
+                {hasWater && <DateField label="Vannet fylt" value={waterFilledOn} onChange={setWaterFilledOn} suggest={0} />}
+                {hasWater && <DateField label="Bytt innen" value={waterSwapOn} onChange={chooseWaterSwap} />}
                 <MenuField
                   label="Beredskapssjekk"
                   value={String(checkEvery)}
