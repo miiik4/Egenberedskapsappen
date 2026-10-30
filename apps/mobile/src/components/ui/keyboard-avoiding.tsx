@@ -18,6 +18,16 @@ export function AndroidKeyboardAvoiding({ children }: { children: ReactNode }) {
 }
 
 /**
+ * Keeps a bar under a scroll view (a «Neste» button, say) above the keyboard on iOS, where the scroll view's
+ * `automaticallyAdjustKeyboardInsets` looks after its own fields but not what's below it. On Android the
+ * AndroidKeyboardAvoiding round the screen already lifts it, so the children render as they are.
+ */
+export function AboveKeyboard({ children }: { children: ReactNode }) {
+  if (Platform.OS !== 'ios') return children;
+  return <KeyboardAvoidingView behavior="padding">{children}</KeyboardAvoidingView>;
+}
+
+/**
  * On Android the Back button hides the keyboard but leaves the field focused, and pressing a
  * field that's still focused doesn't always bring the keyboard back (seen on a OnePlus 6).
  * Blurring it as the keyboard goes makes the next press a fresh focus. On iOS the keyboard

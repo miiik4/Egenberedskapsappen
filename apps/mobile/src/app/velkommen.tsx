@@ -25,7 +25,7 @@ import { PrimaryButton } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CheckCircle } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
-import { AndroidKeyboardAvoiding } from '@/components/ui/keyboard-avoiding';
+import { AboveKeyboard, AndroidKeyboardAvoiding } from '@/components/ui/keyboard-avoiding';
 import { Row, Section } from '@/components/ui/list';
 import { EGENBEREDSKAP_PLUS_ENABLED } from '@/constants/config';
 import { Colors, Fonts, Spacing } from '@/constants/theme';
@@ -146,10 +146,8 @@ export default function Velkommen() {
       </View>
 
       <AndroidKeyboardAvoiding>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-          automaticallyAdjustKeyboardInsets>
+        {/* No keyboard insets of its own: the bar below shrinks it above the keyboard, and the fields are at the top. */}
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           {step === 0 && (
             <>
               <Intro title="Hvem bor hjemme?" lead="Vi bruker dette til å regne ut hvor mye dere trenger." />
@@ -226,20 +224,22 @@ export default function Velkommen() {
           )}
         </ScrollView>
 
-        <View style={styles.bottom}>
-          {step < STEPS - 1 ? (
-            <PrimaryButton label="Neste" onPress={() => setStep(step + 1)} />
-          ) : permission === 'undetermined' ? (
-            <>
-              <PrimaryButton label="Slå på påminnelser" onPress={() => finish(items, true)} disabled={saving} />
-              <Pressable onPress={() => finish(items)} disabled={saving} accessibilityRole="button" hitSlop={8} style={styles.notNow}>
-                <Text style={styles.notNowText}>Ikke nå</Text>
-              </Pressable>
-            </>
-          ) : (
-            <PrimaryButton label="Gå til oversikten" onPress={() => finish(items)} disabled={saving} />
-          )}
-        </View>
+        <AboveKeyboard>
+          <View style={styles.bottom}>
+            {step < STEPS - 1 ? (
+              <PrimaryButton label="Neste" onPress={() => setStep(step + 1)} />
+            ) : permission === 'undetermined' ? (
+              <>
+                <PrimaryButton label="Slå på påminnelser" onPress={() => finish(items, true)} disabled={saving} />
+                <Pressable onPress={() => finish(items)} disabled={saving} accessibilityRole="button" hitSlop={8} style={styles.notNow}>
+                  <Text style={styles.notNowText}>Ikke nå</Text>
+                </Pressable>
+              </>
+            ) : (
+              <PrimaryButton label="Gå til oversikten" onPress={() => finish(items)} disabled={saving} />
+            )}
+          </View>
+        </AboveKeyboard>
       </AndroidKeyboardAvoiding>
     </SafeAreaView>
   );

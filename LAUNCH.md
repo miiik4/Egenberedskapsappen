@@ -364,6 +364,11 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
 - [x] Back to Nødinfo: a link straight to the shelters or a document opened with nothing underneath, so Android had
       no back arrow and the tab did nothing; the Nødinfo stack now always has its list underneath
       (`unstable_settings`, as Lager has). Opened from the row it already worked (checked on the OnePlus)
+- [x] Onboarding: on iPhone the number pad covered «Neste» (Mikkel, 2026-10-30). The button bar sat under the scroll
+      view, which looked after its own fields with keyboard insets but not what was below it; the bar now lifts
+      above the keyboard (`AboveKeyboard` in `keyboard-avoiding.tsx`) and the scroll view drops its own inset, which
+      with the lifted bar left a keyboard-high gap under the list. Android already lifted the whole screen. Seen in
+      the iOS simulator on «Hva har dere allerede?» with the litres field focused; not on Android
 - [ ] Native code (expo-location, expo-maps), so `version` is 1.7.0 and it needs new store builds; never `eas update`
       it onto 1.6.0
 - [ ] Google Maps key for Android. *(2026-10-26: «Maps SDK for Android» enabled in the prod Cloud project, with the
