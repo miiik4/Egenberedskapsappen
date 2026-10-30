@@ -1,7 +1,9 @@
 import {
+  MEETING_POINTS,
   MEETING_POINTS_UPDATED,
   meetingPointsNear,
   SHELTER_WALK_METERS,
+  SHELTERS,
   sheltersNear,
   SHELTERS_UPDATED,
   type LatLon,
@@ -13,23 +15,32 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Platform, StyleSheet, View } from 'react-native';
 
 import { MarkerIcon } from '@/components/map-markers';
+import { useActions, useData } from '@/data/data-provider';
 import { ShelterMap, shelterMapAvailable } from '@/components/shelter-map';
 import { PrimaryButton } from '@/components/ui/button';
 import { EmptyRow, Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
 import { Text } from '@/components/ui/text';
 import { Colors, Spacing } from '@/constants/theme';
-import { formatDateWithYear, formatDistance } from '@/lib/format';
+import { formatDate, formatDateWithYear, formatDistance, formatTime, todayIso } from '@/lib/format';
 
 /** Rows before «Vis alle»; the map always shows every shelter in the list. */
 const FIRST_ROWS = 10;
 /** Farther than this, the list can't help: say so, and give DSB's advice. */
 const FAR_M = 50_000;
 
-type Position = { status: 'loading' } | { status: 'denied' } | { status: 'unknown' } | { status: 'found'; at: LatLon };
+/** `wait` is whether GPS was (or is being) waited for; without it, only a recent fix was looked for. */
+type Position =
+  | { status: 'loading'; wait: boolean }
+  | { status: 'denied' }
+  | { status: 'unknown'; wait: boolean }
+  | { status: 'found'; at: LatLon };
 
-/** Asks for the position only while the screen is open, and only to sort the list on the phone. */
-async function findPosition(ask: boolean): Promise<Position> {
+/**
+ * Asks for the position only while the screen is open, and only to sort the list on the phone. A fix the phone
+ * already has is taken as is; GPS is turned on and waited for only with `wait`.
+ */
+async function findPosition({ ask, wait }: { ask: boolean; wait: boolean }): Promise<Position> {
   const permission = ask
     ? await Location.requestForegroundPermissionsAsync()
     : await Location.getForegroundPermissionsAsync();
@@ -38,9 +49,9 @@ async function findPosition(ask: boolean): Promise<Position> {
     // A recent fix is good enough to start with.
     const last = await Location.getLastKnownPositionAsync({ maxAge: 5 * 60_000, requiredAccuracy: 500 });
     if (last) return { status: 'found', at: { latitude: last.coords.latitude, longitude: last.coords.longitude } };
-    return await firstFix();
+    return wait ? await firstFix() : { status: 'unknown', wait: false };
   } catch {
-    return { status: 'unknown' };
+    return { status: 'unknown', wait };
   }
 }
 
@@ -63,14 +74,14 @@ function firstFix(): Promise<Position> {
       subscription?.remove();
       resolve(position);
     };
-    const timer = setTimeout(() => finish({ status: 'unknown' }), FIX_TIMEOUT_MS);
+    const timer = setTimeout(() => finish({ status: 'unknown', wait: true }), FIX_TIMEOUT_MS);
     Location.watchPositionAsync(
       { accuracy: Location.Accuracy.High },
       (fix) => finish({ status: 'found', at: { latitude: fix.coords.latitude, longitude: fix.coords.longitude } }),
-      () => finish({ status: 'unknown' }),
+      () => finish({ status: 'unknown', wait: true }),
     )
       .then((s) => (done ? s.remove() : (subscription = s)))
-      .catch(() => finish({ status: 'unknown' }));
+      .catch(() => finish({ status: 'unknown', wait: true }));
   });
 }
 
@@ -89,25 +100,47 @@ function directions({ latitude, longitude }: LatLon, name: string) {
 /** «Lundedalen 35, 3940 Porsgrunn» → «Lundedalen 35»: the municipality is in the link below the list. */
 const street = (address: string) => address.split(',')[0]!;
 
+/** «28. oktober kl. 14.03», in the phone's time zone. */
+function formatFoundAt(at: string) {
+  const date = new Date(at);
+  return `${formatDate(todayIso(date))} ${formatTime(date)}`;
+}
+
 /**
  * The public shelters nearest the phone, from DSB's list in the app, and the municipalities' information points
  * as a list of their own: both work with no network, and the position is never sent. The map needs a network for
  * its tiles; the lists don't.
+ *
+ * The position found is kept on the phone, so next time the screen shows at once and nobody waits for GPS: then
+ * only a fix the phone already has replaces it on its own, and GPS runs again when the user asks. With no
+ * position at all, the map shows every shelter and information point in the country.
  */
 export default function Tilfluktsrom() {
-  const [position, setPosition] = useState<Position>({ status: 'loading' });
+  const { lastPosition } = useData();
+  const { setLastPosition } = useActions();
+  const [position, setPosition] = useState<Position>({ status: 'loading', wait: lastPosition === null });
   const [showAll, setShowAll] = useState(false);
 
+  const settle = async (found: Position) => {
+    setPosition(found);
+    if (found.status === 'found') await setLastPosition(found.at);
+  };
+
   useEffect(() => {
-    findPosition(false).then(setPosition);
+    // Once, when the screen opens; whether to wait for GPS depends on what was saved then, not on what gets saved.
+    findPosition({ ask: false, wait: lastPosition === null }).then(settle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const ask = async () => {
-    setPosition({ status: 'loading' });
-    setPosition(await findPosition(true));
+    setPosition({ status: 'loading', wait: true });
+    await settle(await findPosition({ ask: true, wait: true }));
   };
 
-  const at = position.status === 'found' ? position.at : null;
+  const live = position.status === 'found' ? position.at : null;
+  // Until the phone finds itself, the last position it found: the lists are from there, and the status row says so.
+  const at = live ?? (lastPosition && { latitude: lastPosition.latitude, longitude: lastPosition.longitude });
+  const remembered = live === null && lastPosition !== null;
   // Every shelter within walking distance, so Oslo lists many and Porsgrunn a few; at least the nearest three.
   const nearby = at ? sheltersNear(at) : [];
   const rows = showAll ? nearby : nearby.slice(0, FIRST_ROWS);
@@ -124,25 +157,48 @@ export default function Tilfluktsrom() {
         {shelterMapAvailable && (
           <ShelterMap
             at={at}
-            shelters={nearby.map((n) => n.shelter)}
-            meetingPoints={points.map((n) => n.point)}
+            myLocation={live !== null}
+            // With nothing to measure from, the whole country, for the user to find their own town on.
+            shelters={at ? nearby.map((n) => n.shelter) : SHELTERS}
+            meetingPoints={at ? points.map((n) => n.point) : MEETING_POINTS}
             title={title}
           />
         )}
 
-        {position.status === 'loading' && (
+        {position.status === 'loading' && position.wait && (
           <View style={styles.loading}>
             <ActivityIndicator color={Colors.secondaryLabel} />
             <Text style={[styles.muted, styles.shrink]}>Finner posisjonen din … Innendørs kan det ta et par minutter.</Text>
           </View>
         )}
 
-        {(position.status === 'denied' || position.status === 'unknown') && (
+        {remembered && lastPosition && position.status !== 'loading' && (
           <Section
             footer={
               position.status === 'denied'
                 ? 'Appen bruker posisjonen bare på telefonen for å finne de nærmeste rommene. Den sendes ikke noe sted.'
-                : 'Fant ikke posisjonen. Gå gjerne ut eller nær et vindu, og prøv igjen.'
+                : position.status === 'unknown' && position.wait
+                  ? 'Fant ikke posisjonen nå. Gå gjerne ut eller nær et vindu, og prøv igjen.'
+                  : 'Har du flyttet deg, finn posisjonen på nytt.'
+            }>
+            <Row
+              title={`Posisjon fra ${formatFoundAt(lastPosition.at)}`}
+              subtitle="Stedene under er nær der du var da."
+            />
+            <Row
+              title={position.status === 'denied' ? 'Bruk posisjonen min' : 'Finn posisjonen på nytt'}
+              titleColor={Colors.accent}
+              onPress={ask}
+            />
+          </Section>
+        )}
+
+        {!remembered && (position.status === 'denied' || position.status === 'unknown') && (
+          <Section
+            footer={
+              position.status === 'denied'
+                ? 'Appen bruker posisjonen bare på telefonen for å finne de nærmeste rommene. Den sendes ikke noe sted.'
+                : 'Fant ikke posisjonen. Gå gjerne ut eller nær et vindu, og prøv igjen. Kartet viser alle rommene i landet.'
             }>
             <View style={styles.ask}>
               <PrimaryButton label={position.status === 'denied' ? 'Bruk posisjonen min' : 'Prøv igjen'} onPress={ask} />

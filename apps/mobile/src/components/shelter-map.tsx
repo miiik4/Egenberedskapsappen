@@ -30,13 +30,17 @@ const CENTER = { x: 0.5, y: 0.5 };
 
 export function ShelterMap({
   at,
+  myLocation = at !== null,
   shelters,
   meetingPoints,
   title,
 }: {
+  /** Where the map is centred; null shows all of Norway. */
   at: LatLon | null;
-  shelters: Shelter[];
-  meetingPoints: MeetingPoint[];
+  /** Whether to draw the phone's own position: only when `at` is where the phone is now, not a remembered place. */
+  myLocation?: boolean;
+  shelters: readonly Shelter[];
+  meetingPoints: readonly MeetingPoint[];
   title: (s: Shelter) => string;
 }) {
   const [width, setWidth] = useState(0);
@@ -74,7 +78,7 @@ export function ShelterMap({
                 tintColor: MARKERS.meetingPoint.color,
               })),
             ]}
-            properties={{ isMyLocationEnabled: at !== null }}
+            properties={{ isMyLocationEnabled: myLocation }}
           />
         ) : (
           <maps.GoogleMaps.View
@@ -90,7 +94,7 @@ export function ShelterMap({
                 zIndex: 1,
               })),
             ]}
-            properties={{ isMyLocationEnabled: at !== null }}
+            properties={{ isMyLocationEnabled: myLocation }}
           />
         )}
       </View>

@@ -406,6 +406,20 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       named near the border (Skien), directions open in Google Maps, the municipality link opens the browser, and
       TalkBack labels start with the kind of place)* Quality-checked by Mikkel's team
       on 2026-10-27 («they look good»), before production
+- [x] The position is kept on the phone (Mikkel, 2026-10-30): the screen shows the last position's lists at once, as
+      «Posisjon fra 30. oktober kl. 08.50» with «Finn posisjonen på nytt», instead of waiting for GPS each time. On
+      opening, only a fix the phone already has replaces it; GPS runs again when the user asks. The `lastPosition`
+      setting stays on this phone, never synced (`packages/store`). With no position at all, the map shows every
+      shelter and informasjonspunkt in the country, for the user to find their own town on (a pile at that zoom; the
+      map still needs a network for tiles). JS only, so `eas update` onto 1.7.x. *(Seen in the iOS simulator:
+      Skien, then moved to Kongsberg and found anew, then reopened with no fix: Kongsberg's list from the saved
+      position. Not on Android yet)*
+- [ ] Kongsberg and seven other municipalities have no informasjonspunkter in the app although their pages name them
+      with street addresses (found 2026-10-30): their sites keep the page text in a JSON blob inside a script tag,
+      written as `Edvardsl\u00f8kka`, which `update-meeting-points.mjs` strips before the name check. Decoding the
+      escapes and searching script content too would let 30 points pass in Kongsberg, Notodden, Tinn, Rælingen,
+      Alver, Austrheim, Aurland and Sveio; the address check still stands. Six pages (Bærum among them) can't be
+      read without a browser
 
 ## 10. Partner pages from a CMS (Mikkel decided 2026-10-26 to build it now)
 
@@ -555,6 +569,8 @@ public: anyone can read published documents, never drafts).
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
 - Ideas waiting for user demand: «Jeg er trygg», hazard warnings, power-saving mode, evacuation bag, barcode
   scanning, blog
+- A place picker on «Tilfluktsrom» (choose a municipality or town, all on the phone) for when there is no GPS fix
+  and no network, so the lists work there too; needs a municipality on each shelter from DSB's data
 - Company site for Holm & Tall AS, `apps/firma` (Mikkel asked for it 2026-10-23): one page in bokmål about the
   company, the app, insurers and contact, plus a privacy page. Mikkel checked the page and the names and roles on it
   (Tarjei grunnlegger og daglig leder, Mikkel medgrunnlegger og utvikler) on 2026-10-23. Live the same day on

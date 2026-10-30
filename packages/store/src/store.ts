@@ -48,6 +48,8 @@ export type BelongingFileKind = 'photo' | 'receipt';
 export type BelongingFile = DocumentFile & { kind: BelongingFileKind };
 export type StoredBelonging = Belonging & { photo?: BelongingFile; receipt?: BelongingFile };
 export type Owner = { name: string; birthDate?: IsoDate };
+/** Where the phone last found itself, and when (ISO 8601). This phone only; never synced or sent. */
+export type SavedPosition = { latitude: number; longitude: number; at: string };
 /** A thing on a claim, with the receipt added for it if it was never documented. */
 export type StoredClaimItem = ClaimItem & { receipt?: DocumentFile };
 export type StoredClaim = Claim & { items: StoredClaimItem[]; photos: DocumentFile[] };
@@ -107,6 +109,8 @@ export type AppData = {
   partner: StoredPartner | null;
   /** The Play install referrer has been read once on this phone, so it isn't asked again. */
   partnerReferrerRead: boolean;
+  /** The last position found for the shelter list, so it shows at once next time, until found anew. */
+  lastPosition: SavedPosition | null;
 };
 
 /**
@@ -114,6 +118,17 @@ export type AppData = {
  * the day it was last asked for (the app asks again on a new day); `hidden` once the user put the card away.
  */
 export type StoredPartner = { slug: string; greeting: PartnerGreeting | null; fetchedOn: IsoDate | null; hidden: boolean };
+
+function toSavedPosition(json: string | null): SavedPosition | null {
+  if (!json) return null;
+  try {
+    const { latitude, longitude, at } = JSON.parse(json) as Partial<SavedPosition>;
+    if (typeof latitude !== 'number' || typeof longitude !== 'number' || typeof at !== 'string') return null;
+    return { latitude, longitude, at };
+  } catch {
+    return null;
+  }
+}
 
 function toStoredPartner(json: string | null): StoredPartner | null {
   if (!json) return null;
@@ -292,6 +307,7 @@ export function createStore({ db, newId, now, today }: Deps) {
         followUps,
         partner,
         partnerReferrer,
+        lastPosition,
       ] = await Promise.all(
         [
           'onboardedOn',
@@ -311,6 +327,7 @@ export function createStore({ db, newId, now, today }: Deps) {
           'followUps',
           'partner',
           'partnerReferrer',
+          'lastPosition',
         ].map(
           getSetting,
         ),
@@ -555,6 +572,7 @@ export function createStore({ db, newId, now, today }: Deps) {
             : null,
         partner: toStoredPartner(partner ?? null),
         partnerReferrerRead: partnerReferrer === 'read',
+        lastPosition: toSavedPosition(lastPosition ?? null),
       };
     },
 
@@ -947,6 +965,10 @@ export function createStore({ db, newId, now, today }: Deps) {
     /** Never synced: the partner belongs to the install, not the household. */
     setPartner: (partner: StoredPartner | null) => setSetting('partner', partner ? JSON.stringify(partner) : null),
     markPartnerReferrerRead: () => setSetting('partnerReferrer', 'read'),
+
+    /** Remember where the phone found itself just now. */
+    setLastPosition: ({ latitude, longitude }: { latitude: number; longitude: number }) =>
+      setSetting('lastPosition', JSON.stringify({ latitude, longitude, at: now().toISOString() })),
 
     /** A phone restored from backup skips the welcome questions: the answers came with it. */
     markOnboarded: () => setSetting('onboardedOn', today()),

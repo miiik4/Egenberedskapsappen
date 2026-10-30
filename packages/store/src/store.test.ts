@@ -553,6 +553,20 @@ describe('insurance and beredskapssjekk', () => {
     expect((await store.load()).partner).toBeNull();
   });
 
+  it('remembers where the phone last was, on this phone only', async () => {
+    expect((await store.load()).lastPosition).toBeNull();
+    await store.setLastPosition({ latitude: 59.1999, longitude: 9.58662 });
+    expect((await store.load()).lastPosition).toEqual({
+      latitude: 59.1999,
+      longitude: 9.58662,
+      at: expect.stringMatching(/^2026-10-02T12:00:\d\d\.000Z$/),
+    });
+    await store.setLastPosition({ latitude: 59.668, longitude: 9.65 });
+    expect((await store.load()).lastPosition).toMatchObject({ latitude: 59.668, longitude: 9.65 });
+    const changes = await createSyncSource(nodeExecutor(sqlite)).pending();
+    expect(changes.some((c) => c.id === 'lastPosition')).toBe(false);
+  });
+
   it('remembers and clears a requested expiry review', async () => {
     await store.setExpiryReview('2026-10-09');
     expect((await store.load()).expiryReviewOn).toBe('2026-10-09');
