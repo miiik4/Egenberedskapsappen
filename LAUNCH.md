@@ -414,12 +414,21 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       map still needs a network for tiles). JS only, so `eas update` onto 1.7.x. *(Seen in the iOS simulator:
       Skien, then moved to Kongsberg and found anew, then reopened with no fix: Kongsberg's list from the saved
       position. Not on Android yet)*
-- [ ] Kongsberg and seven other municipalities have no informasjonspunkter in the app although their pages name them
+- [x] Kongsberg and seven other municipalities had no informasjonspunkter in the app although their pages name them
       with street addresses (found 2026-10-30): their sites keep the page text in a JSON blob inside a script tag,
-      written as `Edvardsl\u00f8kka`, which `update-meeting-points.mjs` strips before the name check. Decoding the
-      escapes and searching script content too would let 30 points pass in Kongsberg, Notodden, Tinn, Rælingen,
-      Alver, Austrheim, Aurland and Sveio; the address check still stands. Six pages (Bærum among them) can't be
-      read without a browser
+      written as `Edvardsl\u00f8kka`, which `update-meeting-points.mjs` stripped before the name check. It now
+      decodes the escapes and reads script content too (the address check still stands): 363 points in 131
+      municipalities, up from 338 in 123, with Kongsberg, Notodden, Tinn, Rælingen, Alver, Austrheim, Aurland and
+      Sveio in. Two points went out because their pages changed since the survey: Oslo now writes «Apalløkka
+      skole», Vestnes «Frivilligsentralen»; they come back once the survey's names are corrected. Six pages
+      (Bærum among them) can't be read without a browser
+- [x] The map zoomed too far out (Mikkel, 2026-10-30): the camera fitted every informasjonspunkt within 20 km, so
+      one across the fjord shrank the shelters to a cluster; it now fits the phone, the shelters and the points
+      among them (`placesToFit` in core; the rest stay as markers off the edge), with a 15 % margin and the zoom in
+      tenths instead of halves. And expo-maps on iOS reads the zoom as a square region in degrees that MapKit fits
+      whole, about a level farther out than Google Maps shows for the same number at our latitudes, so the Apple
+      map gets its own number (`appleMapsZoom`). Seen in the simulator at Skien: the markers fill three quarters of
+      the map instead of its middle. Google Maps reads the zoom the usual way, so Android is unchanged there
 
 ## 10. Partner pages from a CMS (Mikkel decided 2026-10-26 to build it now)
 

@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  appleMapsZoom,
   cameraFor,
   compassDirection,
   distanceMeters,
   nearestShelters,
+  placesToFit,
   SHELTERS,
   SHELTERS_UPDATED,
   sheltersNear,
@@ -76,9 +78,45 @@ describe('shelters', () => {
     expect(camera.zoom).toBeGreaterThanOrEqual(11);
     expect(camera.zoom).toBeLessThanOrEqual(13);
 
+    // The points fill the map: a tenth of a zoom level closer would push one past the margin.
+    const closer = cameraFor(points, {
+      width: 360,
+      height: 280,
+      margin: 0,
+    })!.zoom;
+    expect(closer - camera.zoom).toBeLessThan(0.5);
+
     // One point, or none, doesn't zoom to infinity or fail.
     expect(cameraFor([phone], { width: 360, height: 280 })?.zoom).toBe(15);
     expect(cameraFor([], { width: 360, height: 280 })).toBeNull();
+  });
+
+  it('tells Apple Maps a zoom that shows what was meant', () => {
+    // 400 × 280 points at 59°: MapKit fits the square region's latitude side into the height, 144 points' worth.
+    const camera = { center: { latitude: 59.2, longitude: 9.6 }, zoom: 12 };
+    expect(appleMapsZoom(camera, { width: 400, height: 280 })).toBeCloseTo(12 + Math.log2(256 / 143.5), 1);
+    // A map as wide and tall as a tile, at the equator, needs no correction.
+    expect(appleMapsZoom({ center: { latitude: 0, longitude: 0 }, zoom: 10 }, { width: 256, height: 256 })).toBe(10);
+  });
+
+  it('fits the shelters and the information points among them, not one far away', () => {
+    const phone = { latitude: 59.1, longitude: 9.68 };
+    const near = { latitude: 59.1156, longitude: 9.6533 };
+    const far = { latitude: 59.2, longitude: 9.6 }; // 12 km
+    const amongShelters = { latitude: 59.11, longitude: 9.69 };
+    expect(placesToFit(phone, [near], [far, amongShelters])).toEqual([phone, near, amongShelters]);
+    // Shelters farther than walking distance widen the reach, and points within it come along.
+    const farShelter = { latitude: 59.21, longitude: 9.6 }; // 12.3 km, past the point
+    expect(placesToFit(phone, [farShelter], [far])).toEqual([phone, farShelter, far]);
+    const tight = cameraFor(placesToFit(phone, [near], [far]), {
+      width: 360,
+      height: 280,
+    })!.zoom;
+    const loose = cameraFor([phone, near, far], {
+      width: 360,
+      height: 280,
+    })!.zoom;
+    expect(tight).toBeGreaterThan(loose + 2);
   });
 
   it('carries DSB’s list, all inside Norway', () => {

@@ -1,4 +1,4 @@
-import { cameraFor, type LatLon, type MeetingPoint, type Shelter } from '@egenberedskap/core';
+import { appleMapsZoom, cameraFor, placesToFit, type LatLon, type MeetingPoint, type Shelter } from '@egenberedskap/core';
 import { requireOptionalNativeModule } from 'expo';
 import Constants from 'expo-constants';
 import { useImage } from 'expo-image';
@@ -48,9 +48,13 @@ export function ShelterMap({
   const shelterIcon = useImage(MARKERS.shelter.image);
   const meetingPointIcon = useImage(MARKERS.meetingPoint.image);
   if (!maps) return null;
-  // The phone and every place listed, so none of them is off the edge; all of Norway before there's a position.
-  const camera = at ? cameraFor([at, ...shelters, ...meetingPoints], { width, height: HEIGHT }) : null;
-  const cameraPosition = camera ? { coordinates: camera.center, zoom: camera.zoom } : { coordinates: NORWAY, zoom: 4 };
+  // The phone, the shelters and the points among them, as close as they fit; all of Norway without a position.
+  const size = { width, height: HEIGHT };
+  const camera = at ? cameraFor(placesToFit(at, shelters, meetingPoints), size) : null;
+  // The two map views read the zoom differently; see appleMapsZoom.
+  const cameraPosition = camera
+    ? { coordinates: camera.center, zoom: Platform.OS === 'ios' ? appleMapsZoom(camera, size) : camera.zoom }
+    : { coordinates: NORWAY, zoom: 4 };
   const coordinates = (p: LatLon) => ({ latitude: p.latitude, longitude: p.longitude });
   const shelterMarkers = shelters.map((shelter) => ({
     id: shelter.id,

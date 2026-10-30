@@ -12,7 +12,11 @@ export type Shelter = LatLon & {
   address: string;
 };
 
-export type NearbyShelter = { shelter: Shelter; meters: number; direction: CompassDirection };
+export type NearbyShelter = {
+  shelter: Shelter;
+  meters: number;
+  direction: CompassDirection;
+};
 
 /** All of Norway's public shelters, from the snapshot in the app. Private shelters aren't public data. */
 export const SHELTERS: readonly Shelter[] = SHELTER_ROWS.map(([id, latitude, longitude, places, room, address]) => ({
@@ -70,13 +74,24 @@ export function sheltersNear(
 const METERS_PER_POINT_AT_ZOOM_0 = 156_543.03392;
 
 /**
- * The map camera that shows every point (the phone and the shelters listed), with a margin round the edge so
+ * What the map should fit round `from`: the phone, the shelters listed, and the information points no farther out
+ * than the shelters reach (at least walking distance). A point 15 km away is still drawn, off the edge, but
+ * doesn't shrink the shelters next door to a cluster in the middle of the map.
+ */
+export function placesToFit(from: LatLon, shelters: readonly LatLon[], points: readonly LatLon[]): LatLon[] {
+  const reach = Math.max(SHELTER_WALK_METERS, ...shelters.map((s) => distanceMeters(from, s)));
+  return [from, ...shelters, ...points.filter((p) => distanceMeters(from, p) <= reach)];
+}
+
+/**
+ * The map camera that shows every point (the phone and the places to fit), with a margin round the edge so
  * markers aren't cut off: the middle of the points, and the closest zoom at which they all fit in a map of
- * `width` × `height` points. One point alone, or points very close together, stop at `maxZoom`.
+ * `width` × `height` points, in tenths so the points fill the map rather than its middle. One point alone, or
+ * points very close together, stop at `maxZoom`.
  */
 export function cameraFor(
   points: readonly LatLon[],
-  { width, height, margin = 0.2, maxZoom = 15 }: { width: number; height: number; margin?: number; maxZoom?: number },
+  { width, height, margin = 0.15, maxZoom = 15 }: { width: number; height: number; margin?: number; maxZoom?: number },
 ): { center: LatLon; zoom: number } | null {
   if (points.length === 0 || width <= 0 || height <= 0) return null;
   const lats = points.map((p) => p.latitude);
@@ -91,7 +106,24 @@ export function cameraFor(
   const metersPerPoint = Math.max(metersEast / width, metersNorth / height) * (1 + 2 * margin);
   if (metersPerPoint === 0) return { center, zoom: maxZoom };
   const zoom = Math.log2((METERS_PER_POINT_AT_ZOOM_0 * cos) / metersPerPoint);
-  return { center, zoom: Math.min(maxZoom, Math.max(2, Math.floor(zoom * 2) / 2)) };
+  return {
+    center,
+    zoom: Math.min(maxZoom, Math.max(2, Math.floor(zoom * 10) / 10)),
+  };
+}
+
+/**
+ * The zoom to give expo-maps on iOS for the camera `cameraFor` meant. Google Maps reads the zoom the usual way (the
+ * world is 256 points wide at zoom 0), but on iOS expo-maps turns it into a region of `360 / 2^zoom` degrees both
+ * ways, which MapKit fits whole: the latitude side is the longer one on the ground (by 1/cos), and the map is wider
+ * than a tile, so the same number shows about a level more than meant at Norway's latitudes.
+ */
+export function appleMapsZoom(
+  camera: { center: LatLon; zoom: number },
+  { width, height }: { width: number; height: number },
+): number {
+  const cos = Math.cos(rad(camera.center.latitude));
+  return camera.zoom + Math.log2(256 / Math.min(width, height * cos));
 }
 
 /** The `count` shelters closest to `from`, nearest first. All on the phone: the position goes nowhere. */
@@ -100,5 +132,9 @@ export function nearestShelters(from: LatLon, count = 5, shelters: readonly Shel
     .map((shelter) => ({ shelter, meters: distanceMeters(from, shelter) }))
     .sort((a, b) => a.meters - b.meters)
     .slice(0, count)
-    .map(({ shelter, meters }) => ({ shelter, meters, direction: compassDirection(from, shelter) }));
+    .map(({ shelter, meters }) => ({
+      shelter,
+      meters,
+      direction: compassDirection(from, shelter),
+    }));
 }

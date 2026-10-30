@@ -39,7 +39,11 @@ const normal = (text) =>
     .replace(/[ \s]+/g, ' ')
     .trim();
 
-/** The page as plain text, or '' when it can't be read. */
+/**
+ * The page as plain text, or '' when it can't be read. Some sites (Kongsberg, Notodden, Alver) put the page's text
+ * in a JSON blob inside a script tag, with «ø» written as `\u00f8` and tags as `\u003c`, so those escapes are
+ * decoded before the tags are stripped, and script content is kept.
+ */
 async function pageText(url) {
   try {
     const response = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (egenberedskapsappen)' } });
@@ -47,7 +51,9 @@ async function pageText(url) {
     const html = await response.text();
     return normal(
       html
-        .replace(/<(script|style)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+        .replace(/\\u([0-9a-fA-F]{4})/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
+        .replace(/\\[nrt]/g, ' ')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, ' ')
         .replace(/<[^>]+>/g, ' ')
         .replace(/&nbsp;/g, ' ')
         .replace(/&amp;/g, '&')
