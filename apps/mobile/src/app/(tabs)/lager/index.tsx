@@ -1,6 +1,5 @@
 import {
   checklist,
-  computeCoverage,
   itemsToReplace,
   CATEGORY_NAMES,
   daysBetween,
@@ -9,24 +8,21 @@ import {
   TARGET_DAYS,
   type ChecklistCategory,
   type ChecklistType,
-  type Coverage,
-  type NextAction,
   type StockCategory,
 } from '@egenberedskap/core';
-import { router, Stack, type Href } from 'expo-router';
-import { useState } from 'react';
-import { LayoutAnimation, StyleSheet } from 'react-native';
+import { router, Stack } from 'expo-router';
+import { Fragment, useState } from 'react';
+import { LayoutAnimation, StyleSheet, View } from 'react-native';
 
 import { Task } from '@/components/preparedness/task-row';
 import { CheckCircle, PartialCircle, WarningDot } from '@/components/ui/check-circle';
 import { Icon } from '@/components/ui/icon';
 import { Row, Section } from '@/components/ui/list';
-import { Pill } from '@/components/ui/pill';
 import { Screen } from '@/components/ui/screen';
 import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useData } from '@/data/data-provider';
-import { capitalize, describeAction, formatExpiry, formatMeals, formatNumber, todayIso } from '@/lib/format';
+import { capitalize, formatExpiry, formatMeals, formatNumber, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 /** Tasks lifted to the top: the few that matter most, so the list below doesn't have to be read. */
@@ -42,7 +38,6 @@ export default function Lager() {
   const { household, stock } = useData();
   const today = todayIso();
   const list = checklist(household, stock, today);
-  const coverage = computeCoverage(household, stock, today);
   const actions = nextActions(household, stock, today);
   const missing = list.reduce((n, c) => n + c.types.filter((t) => !t.have).length, 0);
   // What to get or replace, in the order Oversikt ranks it; the plan for a crisis belongs on Nødinfo.
@@ -64,10 +59,7 @@ export default function Lager() {
         <Text style={styles.subtitle}>{missing === 0 ? 'Alt på listen er på plass' : `${missing} ting mangler`}</Text>
 
         {toGet.length > 0 && (
-          <Section
-            header="Viktigst å skaffe"
-            headerDetail={toGet.length > TASKS_SHOWN ? `${TASKS_SHOWN} av ${toGet.length}` : undefined}
-            footer="Det som gir flest døgn først. Resten står under kategoriene.">
+          <Section header="Viktigst å skaffe">
             {toGet.slice(0, TASKS_SHOWN).map((action, i) => (
               <Task key={i} action={action} />
             ))}
@@ -76,14 +68,7 @@ export default function Lager() {
 
         <Section header="Hele listen" separatorInset={56}>
           {list.flatMap((entry) =>
-            categoryRows({
-              entry,
-              open: open.includes(entry.category),
-              onToggle: () => toggle(entry.category),
-              actions,
-              coverage,
-              today,
-            }),
+            categoryRows({ entry, open: open.includes(entry.category), onToggle: () => toggle(entry.category), today }),
           )}
         </Section>
         <Text style={styles.footnote}>Basert på DSBs liste for egenberedskap. Mengdene tilpasses husstanden.</Text>
@@ -93,23 +78,19 @@ export default function Lager() {
 }
 
 /**
- * One category's rows: folded, the one that says how it stands, «Vann · 7 av 7 døgn»; opened, its types follow,
- * with what water or food still lacks for the week first. Vann, mat and varme have a page of their own with the
+ * One category's rows: folded, the one that says how it stands, a tick once it's complete and otherwise how far
+ * it is, «Mat · 4 av 7 døgn»; opened, its types follow. Vann, mat and varme have a page of their own with the
  * sums. A function, not a component, so the section sees every row and puts its separator between them.
  */
 function categoryRows({
   entry,
   open,
   onToggle,
-  actions,
-  coverage,
   today,
 }: {
   entry: ChecklistCategory;
   open: boolean;
   onToggle: () => void;
-  actions: NextAction[];
-  coverage: Coverage;
   today: string;
 }) {
   const { category, types, days } = entry;
@@ -122,8 +103,7 @@ function categoryRows({
     <Row
       key={`${category}-header`}
       title={name}
-      bold
-      detail={detail}
+      detail={complete ? undefined : detail}
       leading={complete ? <CheckCircle on /> : share > 0 ? <PartialCircle share={share} /> : <CheckCircle on={false} />}
       trailing={
         <Icon
@@ -132,54 +112,34 @@ function categoryRows({
           color={Colors.tertiaryLabel}
         />
       }
-      accessibilityLabel={`${name}, ${detail}, ${open ? 'åpen' : 'lukket'}`}
+      accessibilityLabel={`${name}, ${complete ? 'på plass' : detail}, ${open ? 'åpen' : 'lukket'}`}
       onPress={onToggle}
     />,
-    ...(open
-      ? [
-          shortfall(entry, actions, coverage),
+    // The types sit in a well of the page's colour, so they read as inside the category, not beside it.
+    open && (
+      <View key={`${category}-types`} style={styles.nested}>
+        {[
           ...types.map((type) => <TypeRow key={type.id} type={type} today={today} share={(days ?? 0) / TARGET_DAYS} />),
-          days !== undefined && (
-            <Row
-              key={`${category}-more`}
-              title={`Mer om ${name.toLowerCase()}`}
-              titleColor={Colors.accent}
-              chevron
-              onPress={() => router.push({ pathname: '/lager/kategori/[id]', params: { id: category } })}
-            />
-          ),
-        ]
-      : []),
+          ...(days !== undefined
+            ? [
+                <Row
+                  key="more"
+                  title={`Mer om ${name.toLowerCase()}`}
+                  titleColor={Colors.accent}
+                  chevron
+                  onPress={() => router.push({ pathname: '/lager/kategori/[id]', params: { id: category } })}
+                />,
+              ]
+            : []),
+        ].map((row, i) => (
+          <Fragment key={row.key}>
+            {i > 0 && <View style={styles.nestedSeparator} />}
+            {row}
+          </Fragment>
+        ))}
+      </View>
+    ),
   ];
-}
-
-/**
- * What water or food lacks for the week, as the task on Oversikt says it: «Kjøp 30 liter vann».
- * Opens «Ny vare» filled in with the amount.
- */
-function shortfall({ category }: ChecklistCategory, actions: NextAction[], coverage: Coverage) {
-  const action = actions.find((a) => (category === 'water' ? a.kind === 'buyWater' : category === 'food' && a.kind === 'buyFood'));
-  if (!action || (action.kind !== 'buyWater' && action.kind !== 'buyFood')) return null;
-  const { title } = describeAction(action);
-  const subtitle =
-    action.kind === 'buyWater'
-      ? `Dere har ${formatNumber(coverage.litres)} av ${formatNumber(TARGET_DAYS * coverage.litresPerDay)} liter`
-      : `Dere har ${formatNumber(coverage.meals)} av ${formatMeals(TARGET_DAYS * coverage.mealsPerDay)}`;
-  const href: Href =
-    action.kind === 'buyWater'
-      ? { pathname: '/vare', params: { type: 'drinkingWater', litres: String(action.litres) } }
-      : { pathname: '/vare', params: { type: action.suggestions[0]?.id ?? 'cannedMeals', meals: String(action.meals) } };
-  return (
-    <Row
-      key="shortfall"
-      title={title}
-      subtitle={subtitle}
-      bold
-      leading={<CheckCircle on={false} />}
-      trailing={action.dayChange > 0 ? <Pill label={`+${action.dayChange} døgn`} tone="accent" /> : undefined}
-      onPress={() => router.push(href)}
-    />
-  );
 }
 
 function TypeRow({ type, today, share }: { type: ChecklistType; today: string; share: number }) {
@@ -213,6 +173,8 @@ function TypeRow({ type, today, share }: { type: ChecklistType; today: string; s
 }
 
 const styles = StyleSheet.create({
+  nested: { backgroundColor: Colors.background },
+  nestedSeparator: { height: 1, backgroundColor: Colors.separator, marginLeft: 56 },
   subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: Spacing.underTitle, fontSize: 17, color: Colors.secondaryLabel },
   footnote: { marginHorizontal: Spacing.screen + Spacing.rowInset, marginTop: -14, fontSize: 13, lineHeight: 18, color: Colors.secondaryLabel },
 });

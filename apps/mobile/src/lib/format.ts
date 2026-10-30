@@ -135,12 +135,12 @@ export function describeAction(action: NextAction): { title: string; subtitle: s
     case 'buyWater':
       return { title: `Kjøp ${formatNumber(action.litres)} liter vann`, subtitle: 'Drikkevann på kanner' };
     case 'buyFood':
+      // One example keeps it to a line, as the days card does; the list has them all.
       return {
         title: `Kjøp mat for ${action.days} døgn`,
-        subtitle:
-          action.suggestions.length > 0
-            ? capitalize(listWords(action.suggestions.map((t) => t.name.toLowerCase())))
-            : formatMeals(action.meals),
+        subtitle: action.suggestions[0]
+          ? `${formatMeals(action.meals)}, f.eks. ${action.suggestions[0].name.toLowerCase()}`
+          : formatMeals(action.meals),
       };
     case 'replace':
       return { title: `Bytt ${action.item.name.toLowerCase()}`, subtitle: `Går ut ${formatDate(action.expiresOn)}` };
