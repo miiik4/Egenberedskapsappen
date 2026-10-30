@@ -97,14 +97,17 @@ function categoryRows({
   const have = types.filter((t) => t.have).length;
   const complete = days !== undefined ? days >= TARGET_DAYS : have === types.length;
   const share = days !== undefined ? Math.min(days, TARGET_DAYS) / TARGET_DAYS : have / types.length;
-  const detail = days !== undefined ? `${Math.min(days, TARGET_DAYS)} av ${TARGET_DAYS} døgn` : `${have} av ${types.length}`;
+  const status = complete
+    ? 'På plass'
+    : days !== undefined
+      ? `${Math.min(days, TARGET_DAYS)} av ${TARGET_DAYS} døgn`
+      : `${have} av ${types.length} på plass`;
   const name = CATEGORY_NAMES[category];
   return [
     <Row
       key={`${category}-header`}
       title={name}
-      tall
-      detail={complete ? undefined : detail}
+      subtitle={status}
       leading={complete ? <CheckCircle on /> : share > 0 ? <PartialCircle share={share} /> : <CheckCircle on={false} />}
       trailing={
         <Icon
@@ -113,7 +116,7 @@ function categoryRows({
           color={Colors.tertiaryLabel}
         />
       }
-      accessibilityLabel={`${name}, ${complete ? 'på plass' : detail}, ${open ? 'åpen' : 'lukket'}`}
+      accessibilityLabel={`${name}, ${status.toLowerCase()}, ${open ? 'åpen' : 'lukket'}`}
       onPress={onToggle}
     />,
     // The types sit in a well of the page's colour, so they read as inside the category, not beside it.

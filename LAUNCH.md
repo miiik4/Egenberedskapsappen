@@ -378,7 +378,8 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       isn't complete (the tick says the rest), no shortfall row inside a category (the task on top is the same
       thing), an open category's types in a well of the page's colour so they read as inside it, and the food task
       says «27 måltider, f.eks. havregryn og müsli» on one line everywhere, as the days card does. The category
-      rows then felt crammed (Mikkel): they're 60 points tall instead of 52 (`Row tall`), the only rows that are.
+      rows then felt crammed (Mikkel): the status now sits under the name («På plass», «4 av 7 døgn», «3 av 4 på
+      plass»), so each row is two lines and the right side holds only the chevron.
       Seen in the iOS simulator; not on Android
 - [x] The app works out when to change the water (Mikkel, 2026-10-30: users couldn't know). «Bytt innen» is set
       12 months after «Fylt» (`shelfLifeEnd` in core, DSB's figure) until the user sets a date of their own: Ny
