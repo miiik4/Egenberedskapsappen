@@ -381,6 +381,10 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       rows then felt crammed (Mikkel): the status now sits under the name («På plass», «4 av 7 døgn», «3 av 4 på
       plass»), so each row is two lines and the right side holds only the chevron.
       Seen in the iOS simulator; not on Android
+- [x] A type's row on the list opens «Ny vare» with the fields filled in (Mikkel, 2026-10-30): the name is the
+      type's, and for water and food the amount is what the household is short of (`computeCoverage`, rounded up),
+      so one save closes the gap; a «Legg til» on the category and type pages gets the same. The tasks on Oversikt
+      still say their own amount. Seen in the iOS simulator; not on Android.
 - [x] The app works out when to change the water (Mikkel, 2026-10-30: users couldn't know). «Bytt innen» is set
       12 months after «Fylt» (`shelfLifeEnd` in core, DSB's figure) until the user sets a date of their own: Ny
       vare has a «Fylt» field (today for a new item), onboarding «Vannet fylt», and on the item's page «Bytt innen»

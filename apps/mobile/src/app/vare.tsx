@@ -1,6 +1,7 @@
 import {
   CATEGORIES,
   CATEGORY_NAMES,
+  computeCoverage,
   isStockType,
   MEALS_PER_PERSON_PER_DAY,
   shelfLifeEnd,
@@ -29,8 +30,10 @@ type Params = { id?: string; type?: string; litres?: string; meals?: string };
 
 /**
  * «Ny vare», the same sheet from every «+» and «Legg til», and for editing. Category and type
- * are menus so the item lands in the right place; a type is suggested from the name. Tasks on
- * Oversikt open it prefilled, e.g. `?type=drinkingWater&litres=12`.
+ * are menus so the item lands in the right place; a type is suggested from the name. Opened for a
+ * type (a row on the list, `?type=batteries`), the name and the amount are filled in: the type's
+ * name, and for water and food what the household is short of, so one save closes the gap. Tasks on
+ * Oversikt say the amount themselves, e.g. `?type=drinkingWater&litres=12`.
  */
 export default function Vare() {
   const params = useLocalSearchParams<Params>();
@@ -44,12 +47,23 @@ export default function Vare() {
       ? params.type
       : (typesFor(household, 'water')[0]?.id ?? 'drinkingWater'));
   const [type, setType] = useState<StockType>(initialType);
+  const forType = !existing && params.type !== undefined;
+  const short = (measure: 'litres' | 'meals') => {
+    if (!forType || stockType(initialType).measure !== measure) return '';
+    const coverage = computeCoverage(household, stock, todayIso());
+    const amount = Math.ceil(measure === 'litres' ? coverage.waterLitresShort : coverage.mealsShort);
+    return amount > 0 ? String(amount) : '';
+  };
   // Once the user picks a type themselves, the name stops steering it.
   const [typeChosen, setTypeChosen] = useState(existing !== undefined || params.type !== undefined);
-  const [name, setName] = useState(existing?.name ?? '');
+  const [name, setName] = useState(existing?.name ?? (forType ? stockType(initialType).name : ''));
   const [quantity, setQuantity] = useState(existing?.quantity ?? 1);
-  const [litres, setLitres] = useState(existing?.litres !== undefined ? String(existing.litres) : (params.litres ?? ''));
-  const [meals, setMeals] = useState(existing?.meals !== undefined ? String(existing.meals) : (params.meals ?? ''));
+  const [litres, setLitres] = useState(
+    existing?.litres !== undefined ? String(existing.litres) : (params.litres ?? short('litres')),
+  );
+  const [meals, setMeals] = useState(
+    existing?.meals !== undefined ? String(existing.meals) : (params.meals ?? short('meals')),
+  );
   // Water is dated from when it was filled, today unless said otherwise, and «Bytt innen» follows from that until
   // the user sets it themselves; other things have no filling date, only the date on the packaging.
   const [boughtOn, setBoughtOn] = useState(existing?.boughtOn ?? (existing ? undefined : todayIso()));
