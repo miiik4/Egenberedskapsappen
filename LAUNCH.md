@@ -385,6 +385,13 @@ each municipality publishes its own (Oslo: schools per bydel; Bergen: one per by
       type's, and for water and food the amount is what the household is short of (`computeCoverage`, rounded up),
       so one save closes the gap; a «Legg til» on the category and type pages gets the same. The tasks on Oversikt
       still say their own amount. Seen in the iOS simulator; not on Android.
+- [x] An item is edited where it's shown (Mikkel, 2026-11-02: pressing «Hvor» opened the edit sheet, and the
+      view-then-sheet flow felt odd). The item page had already saved dates and the reminder in place; now every
+      field does: name, category, type, amount and place, with «Slett vare» at the bottom and no «Rediger». The text
+      fields save when editing ends (a save reloads everything), checked to hold when leaving the page with the
+      keyboard up; a type change to water or food takes the count as the amount until one is typed. «Ny vare» stays
+      a sheet, for new items only. `Screen` takes `keyboard` for a page with text fields. Seen in the iOS simulator;
+      not on Android.
 - [x] The app works out when to change the water (Mikkel, 2026-10-30: users couldn't know). «Bytt innen» is set
       12 months after «Fylt» (`shelfLifeEnd` in core, DSB's figure) until the user sets a date of their own: Ny
       vare has a «Fylt» field (today for a new item), onboarding «Vannet fylt», and on the item's page «Bytt innen»

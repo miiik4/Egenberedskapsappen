@@ -1,52 +1,72 @@
 import {
+  CATEGORIES,
   CATEGORY_NAMES,
   computeCoverage,
   daysBetween,
   EXPIRY_REMINDER_DAYS,
   isExpired,
   isExpiringSoon,
+  MEALS_PER_PERSON_PER_DAY,
   renewedDates,
   shelfLifeEnd,
   stockType,
   STORED_WATER_SHELF_LIFE_MONTHS,
+  typesFor,
+  WATER_LITRES_PER_PERSON_PER_DAY,
+  type StockCategory,
   type StockItem,
+  type StockType,
 } from '@egenberedskap/core';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useEffect } from 'react';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Stack, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { DateField } from '@/components/form/fields';
+import {
+  confirmDelete,
+  CountField,
+  DateField,
+  DestructiveButton,
+  NumberField,
+  parseNumber,
+  TextField,
+} from '@/components/form/fields';
+import { MenuField } from '@/components/form/menu-field';
 import { WarningDot } from '@/components/ui/check-circle';
 import { Switch } from '@/components/ui/switch';
 import { Card } from '@/components/ui/card';
 import { Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
-import { AndroidToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
-import { capitalize, formatDate, formatDays, formatDuration, formatExpiry, formatMeals, formatNumber, todayIso } from '@/lib/format';
+import { capitalize, formatDate, formatDays, formatDuration, formatExpiry, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
-/** One item: how much, how long it keeps, and where it is. Dates and the reminder change in place. */
+/**
+ * One item, edited where it's shown: every field saves on its own, the text ones when editing ends, so
+ * there's no edit mode and nothing to cancel. «Ny vare» stays a sheet: a new item has nothing to show
+ * until it's saved.
+ */
 export default function Vare() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { stock, household } = useData();
-  const { saveStockItem } = useActions();
+  const { stock } = useData();
   const item = stock.find((i) => i.id === id);
-  const gone = !item;
-
-  // Deleted from the edit sheet on top of this page: the sheet closes itself, and this page
-  // has nothing left to show, so it goes back to the list as well.
-  useEffect(() => {
-    if (!gone) return;
-    if (router.canGoBack()) router.back();
-    else router.replace('/lager');
-  }, [gone]);
-
+  // Deleted from this page: confirmDelete goes back once it's gone.
   if (!item) return null;
+  return <Editor key={item.id} item={item} />;
+}
 
+function Editor({ item }: { item: StockItem }) {
+  const { household } = useData();
+  const { saveStockItem, deleteStockItem } = useActions();
   const type = stockType(item.type);
   const today = todayIso();
+
+  // The text fields are typed into freely and saved when editing ends: a save reloads everything.
+  const [name, setName] = useState(item.name);
+  const [location, setLocation] = useState(item.location);
+  const [litres, setLitres] = useState(item.litres !== undefined ? String(item.litres) : '');
+  const [meals, setMeals] = useState(item.meals !== undefined ? String(item.meals) : '');
+
   const update = async (changes: Partial<StockItem>) => {
     const next = { ...item, ...changes };
     // Clearing a date means leaving it out, not saving it as undefined.
@@ -54,50 +74,117 @@ export default function Vare() {
     if (!next.boughtOn) delete next.boughtOn;
     await saveStockItem(next);
   };
+  const saveName = () => {
+    const next = name.trim() || type.name;
+    if (next !== name) setName(next);
+    if (next !== item.name) update({ name: next });
+  };
+  const saveLocation = () => {
+    if (location.trim() !== item.location) update({ location: location.trim() });
+  };
+  // An amount must stay a positive number; anything else goes back to what's saved.
+  const saveAmount = (
+    text: string,
+    saved: number | undefined,
+    field: 'litres' | 'meals',
+    reset: (t: string) => void,
+  ) => {
+    const amount = parseNumber(text);
+    if (amount !== undefined && amount > 0) {
+      if (amount !== saved) update({ [field]: amount });
+    } else {
+      reset(saved !== undefined ? String(saved) : '');
+    }
+  };
+  // Changing to water or food needs an amount; the count stands in until the user types one.
+  const changeType = (next: StockType) => {
+    const changes: Partial<StockItem> = { type: next };
+    const { measure } = stockType(next);
+    if (measure === 'litres' && item.litres === undefined) {
+      changes.litres = item.quantity;
+      setLitres(String(item.quantity));
+    }
+    if (measure === 'meals' && item.meals === undefined) {
+      changes.meals = item.quantity;
+      setMeals(String(item.quantity));
+    }
+    update(changes);
+  };
+  const changeCategory = (next: StockCategory) => changeType(typesFor(household, next)[0]!.id);
+  // Types the household doesn't list (baby food without small children) stay pickable for an item that has one.
+  const typeOptions = typesFor(household, type.category).some((t) => t.id === item.type)
+    ? typesFor(household, type.category)
+    : [...typesFor(household, type.category), type];
+
   // «Bytt innen» follows «Fylt» while it's empty or where the filling date put it; a date of the user's own stays.
   const filled = (boughtOn: string | undefined) => {
     const follows = !item.expiresOn || (item.boughtOn && item.expiresOn === shelfLifeEnd(item.type, item.boughtOn));
     const expiresOn = boughtOn && follows ? shelfLifeEnd(item.type, boughtOn) : undefined;
     return update({ boughtOn, ...(expiresOn && { expiresOn }) });
   };
-  const replaced = () => {
-    const dates = renewedDates(item, today);
-    if (dates) update(dates);
-    else router.push({ pathname: '/vare', params: { id: item.id } });
-  };
+  // Replaced today; with nothing to say how long the new one keeps, the old date goes and the user sets one.
+  const replaced = () => update(renewedDates(item, today) ?? { boughtOn: today, expiresOn: undefined });
 
   const litresPerDay = computeCoverage(household, [], today).litresPerDay;
 
   return (
     <>
       <Stack.Screen options={{ title: item.name }} />
-      <Stack.Toolbar placement="right">
-        {/* Text on iOS; Android can't show a text-only header button, so it gets a pencil. */}
-        <Stack.Toolbar.Button
-          icon={AndroidToolbarIcons.edit}
-          {...(Platform.OS === 'android' ? { accessibilityLabel: 'Rediger' } : {})}
-          onPress={() => router.push({ pathname: '/vare', params: { id: item.id } })}>
-          Rediger
-        </Stack.Toolbar.Button>
-      </Stack.Toolbar>
 
-      <Screen>
-        <Text style={styles.subtitle}>
-          {CATEGORY_NAMES[type.category]} · {type.name.toLowerCase()}
-        </Text>
-
+      <Screen keyboard>
         <ExpiryCard item={item} today={today} />
 
-        <Section header="Mengde">
+        <Section header="Vare">
+          <TextField label="Navn" value={name} onChange={setName} onEndEditing={saveName} placeholder={type.name} />
+          <MenuField
+            label="Kategori"
+            value={type.category}
+            options={CATEGORIES.map((c) => ({ value: c, label: CATEGORY_NAMES[c] }))}
+            onChange={changeCategory}
+          />
+          <MenuField
+            label="Type"
+            value={item.type}
+            options={typeOptions.map((t) => ({ value: t.id, label: t.name }))}
+            onChange={changeType}
+          />
+        </Section>
+
+        <Section
+          header="Mengde"
+          footer={
+            type.measure === 'litres'
+              ? `Regnestykket bruker ${WATER_LITRES_PER_PERSON_PER_DAY} liter per person per døgn, til drikke, matlaging og hygiene.`
+              : type.measure === 'meals'
+                ? `Omtrent hvor mange måltider alt dette gir. ${MEALS_PER_PERSON_PER_DAY} måltider er ett døgn for én person.`
+                : undefined
+          }
+        >
           {type.measure === 'litres' ? (
             <>
-              <Row title="Antall liter" detail={`${formatNumber(item.litres ?? 0)} l`} />
+              <NumberField
+                label="Antall liter"
+                value={litres}
+                onChange={setLitres}
+                onEndEditing={() => saveAmount(litres, item.litres, 'litres', setLitres)}
+                unit="l"
+                decimals
+              />
               <Row title="Dekker" detail={formatDays(Math.floor((item.litres ?? 0) / litresPerDay))} />
             </>
           ) : (
             <>
-              <Row title="Antall" detail={`${item.quantity} stk`} />
-              {type.measure === 'meals' && <Row title="Rekker til" detail={formatMeals(item.meals ?? 0)} />}
+              <CountField label="Antall" value={item.quantity} onChange={(quantity) => update({ quantity })} max={99} />
+              {type.measure === 'meals' && (
+                <NumberField
+                  label="Rekker til"
+                  value={meals}
+                  onChange={setMeals}
+                  onEndEditing={() => saveAmount(meals, item.meals, 'meals', setMeals)}
+                  unit="måltider"
+                  decimals
+                />
+              )}
             </>
           )}
         </Section>
@@ -107,8 +194,9 @@ export default function Vare() {
           footer={
             type.shelfLifeMonths
               ? `«Fylt» er sist vannet ble byttet. «Bytt innen» følger ${STORED_WATER_SHELF_LIFE_MONTHS} måneder etter, som DSB anbefaler, til dere setter en egen dato. Vann på flaske: bruk datoen på flasken.`
-              : undefined
-          }>
+              : 'Varen slutter å telle dagen etter at den har gått ut.'
+          }
+        >
           <DateField
             label={type.shelfLifeMonths ? 'Fylt' : 'Kjøpt'}
             value={item.boughtOn}
@@ -136,10 +224,12 @@ export default function Vare() {
         </Section>
 
         <Section header="Plassering">
-          <Row
-            title="Hvor"
-            detail={item.location || 'Legg til'}
-            onPress={() => router.push({ pathname: '/vare', params: { id: item.id } })}
+          <TextField
+            label="Hvor"
+            value={location}
+            onChange={setLocation}
+            onEndEditing={saveLocation}
+            placeholder="F.eks. bod"
           />
         </Section>
 
@@ -147,10 +237,16 @@ export default function Vare() {
           <Pressable
             onPress={replaced}
             accessibilityRole="button"
-            style={({ pressed }) => [styles.replaced, pressed && { opacity: 0.7 }]}>
+            style={({ pressed }) => [styles.replaced, pressed && { opacity: 0.7 }]}
+          >
             <Text style={styles.replacedText}>Merk som byttet</Text>
           </Pressable>
         )}
+
+        <DestructiveButton
+          label="Slett vare"
+          onPress={() => confirmDelete('Slette varen?', item.name, () => deleteStockItem(item.id))}
+        />
       </Screen>
     </>
   );
@@ -178,7 +274,6 @@ function ExpiryCard({ item, today }: { item: StockItem; today: string }) {
 }
 
 const styles = StyleSheet.create({
-  subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: Spacing.underTitle, fontSize: 17, color: Colors.secondaryLabel },
   expiry: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   expiryText: { flex: 1 },
   expiryTitle: { fontSize: 17, fontWeight: '600', color: Colors.label },

@@ -69,10 +69,13 @@ export function TextField({
   autoCapitalize = 'sentences',
   textContentType,
   secret,
+  onEndEditing,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  /** When the field loses focus or the user presses return: a page that saves as it goes saves here, not per key. */
+  onEndEditing?: () => void;
   placeholder?: string;
   keyboardType?: KeyboardTypeOptions;
   autoFocus?: boolean;
@@ -97,6 +100,7 @@ export function TextField({
         autoCorrect={!secret}
         spellCheck={!secret}
         autoComplete={secret ? 'off' : undefined}
+        onEndEditing={onEndEditing}
         accessibilityLabel={label}
         style={styles.input}
       />
@@ -115,10 +119,12 @@ export function NumberField({
   unit,
   decimals = false,
   autoFocus,
+  onEndEditing,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onEndEditing?: () => void;
   unit?: string;
   decimals?: boolean;
   /** Takes the keyboard as it appears, even from another field. */
@@ -136,6 +142,7 @@ export function NumberField({
           placeholderTextColor={Colors.tertiaryLabel}
           keyboardType={decimals ? 'decimal-pad' : 'number-pad'}
           autoFocus={nativeAutoFocus(autoFocus)}
+          onEndEditing={onEndEditing}
           accessibilityLabel={label}
           style={[styles.input, styles.numberInput]}
         />

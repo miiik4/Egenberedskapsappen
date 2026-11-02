@@ -18,7 +18,7 @@ import type { StockDraft } from '@egenberedskap/store';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
-import { confirmDelete, CountField, DateField, DestructiveButton, NumberField, parseNumber, TextField } from '@/components/form/fields';
+import { CountField, DateField, NumberField, parseNumber, TextField } from '@/components/form/fields';
 import { MenuField } from '@/components/form/menu-field';
 import { FormSheet } from '@/components/form/sheet';
 import { Row, Section } from '@/components/ui/list';
@@ -26,28 +26,25 @@ import { Switch } from '@/components/ui/switch';
 import { useActions, useData } from '@/data/data-provider';
 import { todayIso } from '@/lib/format';
 
-type Params = { id?: string; type?: string; litres?: string; meals?: string };
+type Params = { type?: string; litres?: string; meals?: string };
 
 /**
- * «Ny vare», the same sheet from every «+» and «Legg til», and for editing. Category and type
- * are menus so the item lands in the right place; a type is suggested from the name. Opened for a
- * type (a row on the list, `?type=batteries`), the name and the amount are filled in: the type's
- * name, and for water and food what the household is short of, so one save closes the gap. Tasks on
- * Oversikt say the amount themselves, e.g. `?type=drinkingWater&litres=12`.
+ * «Ny vare», the same sheet from every «+» and «Legg til». Category and type are menus so the
+ * item lands in the right place; a type is suggested from the name. Opened for a type (a row on
+ * the list, `?type=batteries`), the name and the amount are filled in: the type's name, and for
+ * water and food what the household is short of, so one save closes the gap. Tasks on Oversikt
+ * say the amount themselves, e.g. `?type=drinkingWater&litres=12`. An item that exists is edited
+ * on its own page.
  */
 export default function Vare() {
   const params = useLocalSearchParams<Params>();
   const { stock, household } = useData();
-  const { saveStockItem, deleteStockItem } = useActions();
-  const existing = stock.find((item) => item.id === params.id);
+  const { saveStockItem } = useActions();
 
   const initialType: StockType =
-    existing?.type ??
-    (params.type && isStockType(params.type)
-      ? params.type
-      : (typesFor(household, 'water')[0]?.id ?? 'drinkingWater'));
+    params.type && isStockType(params.type) ? params.type : (typesFor(household, 'water')[0]?.id ?? 'drinkingWater');
   const [type, setType] = useState<StockType>(initialType);
-  const forType = !existing && params.type !== undefined;
+  const forType = params.type !== undefined;
   const short = (measure: 'litres' | 'meals') => {
     if (!forType || stockType(initialType).measure !== measure) return '';
     const coverage = computeCoverage(household, stock, todayIso());
@@ -55,22 +52,18 @@ export default function Vare() {
     return amount > 0 ? String(amount) : '';
   };
   // Once the user picks a type themselves, the name stops steering it.
-  const [typeChosen, setTypeChosen] = useState(existing !== undefined || params.type !== undefined);
-  const [name, setName] = useState(existing?.name ?? (forType ? stockType(initialType).name : ''));
-  const [quantity, setQuantity] = useState(existing?.quantity ?? 1);
-  const [litres, setLitres] = useState(
-    existing?.litres !== undefined ? String(existing.litres) : (params.litres ?? short('litres')),
-  );
-  const [meals, setMeals] = useState(
-    existing?.meals !== undefined ? String(existing.meals) : (params.meals ?? short('meals')),
-  );
+  const [typeChosen, setTypeChosen] = useState(forType);
+  const [name, setName] = useState(forType ? stockType(initialType).name : '');
+  const [quantity, setQuantity] = useState(1);
+  const [litres, setLitres] = useState(params.litres ?? short('litres'));
+  const [meals, setMeals] = useState(params.meals ?? short('meals'));
   // Water is dated from when it was filled, today unless said otherwise, and «Bytt innen» follows from that until
   // the user sets it themselves; other things have no filling date, only the date on the packaging.
-  const [boughtOn, setBoughtOn] = useState(existing?.boughtOn ?? (existing ? undefined : todayIso()));
-  const [expiresOn, setExpiresOn] = useState(existing?.expiresOn);
-  const [expiresChosen, setExpiresChosen] = useState(existing?.expiresOn !== undefined);
-  const [remind, setRemind] = useState(existing?.remind ?? true);
-  const [location, setLocation] = useState(existing?.location ?? '');
+  const [boughtOn, setBoughtOn] = useState<IsoDate | undefined>(todayIso());
+  const [expiresOn, setExpiresOn] = useState<IsoDate | undefined>(undefined);
+  const [expiresChosen, setExpiresChosen] = useState(false);
+  const [remind, setRemind] = useState(true);
+  const [location, setLocation] = useState('');
 
   const info = stockType(type);
   const category = info.category;
@@ -104,14 +97,13 @@ export default function Vare() {
 
   const save = async () => {
     const draft: StockDraft = {
-      id: existing?.id,
       name: name.trim() || info.name,
       type,
       quantity,
       ...(info.measure === 'litres' && { litres: parseNumber(litres)! }),
       ...(info.measure === 'meals' && { meals: parseNumber(meals)! }),
       ...(expires && { expiresOn: expires }),
-      ...(filled ? boughtOn && { boughtOn } : existing?.boughtOn && { boughtOn: existing.boughtOn }),
+      ...(filled && boughtOn && { boughtOn }),
       remind,
       location,
     };
@@ -120,9 +112,9 @@ export default function Vare() {
   };
 
   return (
-    <FormSheet title={existing ? 'Rediger vare' : 'Ny vare'} canSave={amountOk} onSave={save}>
+    <FormSheet title="Ny vare" canSave={amountOk} onSave={save}>
       <Section header="Vare">
-        <TextField label="Navn" value={name} onChange={changeName} placeholder={info.name} autoFocus={!existing && !params.type} />
+        <TextField label="Navn" value={name} onChange={changeName} placeholder={info.name} autoFocus={!forType} />
         <MenuField
           label="Kategori"
           value={category}
@@ -147,9 +139,7 @@ export default function Vare() {
             ? `Regnestykket bruker ${WATER_LITRES_PER_PERSON_PER_DAY} liter per person per døgn, til drikke, matlaging og hygiene.`
             : info.measure === 'meals'
               ? `Omtrent hvor mange måltider alt dette gir. ${MEALS_PER_PERSON_PER_DAY} måltider er ett døgn for én person.`
-              : existing
-                ? undefined
-                : 'Vi foreslår type ut fra navnet.'
+              : 'Vi foreslår type ut fra navnet.'
         }>
         {info.measure === 'litres' ? (
           <NumberField label="Antall liter" value={litres} onChange={setLitres} unit="l" decimals />
@@ -181,13 +171,6 @@ export default function Vare() {
       <Section header="Plassering">
         <TextField label="Hvor" value={location} onChange={setLocation} placeholder="F.eks. bod" />
       </Section>
-
-      {existing && (
-        <DestructiveButton
-          label="Slett vare"
-          onPress={() => confirmDelete('Slette varen?', existing.name, () => deleteStockItem(existing.id))}
-        />
-      )}
     </FormSheet>
   );
 }
