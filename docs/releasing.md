@@ -69,9 +69,12 @@ Only Mikkel publishes updates. Use the script (it runs `npx eas-cli`, so no glob
 
 ```sh
 cd apps/mobile
-npm run publish-update -- --channel preview --message "…"        # to the test builds first
-npm run publish-update -- --channel production --message "Kort beskrivelse"
+npm run publish-update -- --channel preview --environment preview --message "…"        # to the test builds first
+npm run publish-update -- --channel production --environment production --message "Kort beskrivelse"
 ```
+
+`--environment` names the EAS environment whose variables go into the bundle; with `--non-interactive` (as from an
+agent) eas-cli refuses to run without it.
 
 Before publishing: `npm test`, `npm run typecheck` and `npm run lint` from the root, and try the change on a
 `preview` build. An update reaches a build on its next launch and is used from the launch after that, so close and

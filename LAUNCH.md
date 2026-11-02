@@ -574,6 +574,10 @@ public: anyone can read published documents, never drafts).
       `docs/store/listing.md`) sent to Google for review 2026-10-27 on Mikkel's go; Play shows new installs at 26 MB,
       14.9 MB smaller than 1.7.1. Managed publishing is on, so once approved, publish it from Publiseringsoversikt;
       then check the R8 warning is gone, the CTC link's referrer and the map tiles outdoors.
+- [x] Published to 1.7.2 (Mikkel's go, 2026-11-02): production update `bddba90b` (preview `00e3d092` first) with
+      everything since the 1.7.2 build, all JS: the Lager redesign, the water dates and the derived «Bytt innen»,
+      «Ny vare» filled in from the list, items edited on their own page, the onboarding keyboard fix and the
+      remembered position. Not tried on a preview build first (no phone attached); checked in the iOS simulator
 - [x] Published to 1.7.0 before the bump (Mikkel's go, 2026-10-27): production update `e33dc414` with the map
       framing, the greeting refresh, the information points and the GPS fix; seen arriving in the Play app on the
       OnePlus. Was: publish the map-framing fix (b7bc778) and the greeting refresh (6b3c483), JS only, to 1.7.0 **before**
