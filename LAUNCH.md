@@ -295,7 +295,9 @@ Checked in the iOS simulator on the test household: Oversikt, Lager, the check's
 - [x] App Store and Google Play links *(2026-10-23: the Play link is on the front page, in the hero, the closing card
       and the FAQ, with «iPhone-versjonen kommer snart»; deployed to prod hosting the same day and seen live on
       egenberedskapappen.no. 2026-11-03: Apple approved 1.7.2, so the App Store link (id 6828561866) is next to the
-      Play link on the front page, the partner pages and holmtall.no, and «kommer snart» is gone)*
+      Play link on the front page, the partner pages and holmtall.no, and «kommer snart» is gone. 1.7.2 is live on the
+      App Store: released 2026-11-03 19:24, App Store Connect shows «Ready for Distribution», and Apple's lookup API
+      for Norway returns version 1.7.2)*
 - [x] Every claim checked against the app; false ones fixed (287df93)
 - [x] *(resolved: the innbo list, receipts and PDF are shown as free, df22ba5)* The Egenberedskap+ section sells the innbo list, receipts and PDF as paid, but the app lets
       anyone add things by hand (depends on Tarjei's answer in section 7)
