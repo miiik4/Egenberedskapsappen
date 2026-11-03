@@ -9,7 +9,8 @@ import lager from '../assets/skjermbilder/lager.webp';
 import nodinfo from '../assets/skjermbilder/nodinfo.webp';
 import tilfluktsrom from '../assets/skjermbilder/tilfluktsrom.webp';
 
-/** The app on Google Play. The App Store link comes when the Apple account is approved (LAUNCH.md). */
+/** The app in the two stores. */
+const APP_STORE_URL = 'https://apps.apple.com/no/app/id6828561866';
 const PLAY_URL = 'https://play.google.com/store/apps/details?id=no.htas.egenberedskap';
 import oversikt from '../assets/skjermbilder/oversikt.webp';
 import underforsikret from '../assets/skjermbilder/underforsikret.webp';
@@ -62,7 +63,7 @@ const FAQ = [
   },
   {
     q: 'Hvilke telefoner virker appen på?',
-    a: 'Android nå, fra Google Play. iPhone-versjonen kommer snart.',
+    a: 'iPhone fra App Store og Android fra Google Play.',
   },
 ];
 ---
@@ -79,10 +80,11 @@ const FAQ = [
         på det som går ut på dato. Gratis, uten konto, og alt blir liggende på telefonen.
       </p>
       <div class="actions">
+        <a class="button" href={APP_STORE_URL}>Last ned på App Store</a>
         <a class="button" href={PLAY_URL}>Last ned på Google Play</a>
         <a class="button button-outline" href="#regn-ut">Regn ut deres døgn</a>
       </div>
-      <p class="soon">Gratis for Android. iPhone-versjonen kommer snart.</p>
+      <p class="soon">Gratis for iPhone og Android.</p>
     </div>
     <Phone
       src={oversikt}
@@ -332,8 +334,11 @@ const FAQ = [
   <section class="closing wrap">
     <div class="closing-card">
       <h2>Begynn med ett tall</h2>
-      <p>Egenberedskapsappen er gratis for alle husstander. Last den ned til Android i dag. iPhone-versjonen kommer snart.</p>
-      <a class="button button-light" href={PLAY_URL}>Last ned på Google Play</a>
+      <p>Egenberedskapsappen er gratis for alle husstander. Last den ned til iPhone eller Android i dag.</p>
+      <div class="store-links">
+        <a class="button button-light" href={APP_STORE_URL}>Last ned på App Store</a>
+        <a class="button button-light" href={PLAY_URL}>Last ned på Google Play</a>
+      </div>
     </div>
   </section>
 </Base>
@@ -405,6 +410,11 @@ const FAQ = [
     align-items: center;
     gap: 14px 22px;
     margin-top: 36px;
+  }
+  .store-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 22px;
   }
   .soon {
     margin-top: 16px;

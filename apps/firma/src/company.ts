@@ -18,6 +18,6 @@ export const APP = {
   name: 'Egenberedskapsappen',
   site: 'https://egenberedskapsappen.no',
   privacy: 'https://egenberedskapsappen.no/personvern',
-  /** Google Play. The App Store link comes when Apple has approved the company's account (LAUNCH.md). */
+  appStore: 'https://apps.apple.com/no/app/id6828561866',
   play: 'https://play.google.com/store/apps/details?id=no.htas.egenberedskap',
 };

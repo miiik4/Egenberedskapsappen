@@ -18,8 +18,9 @@ const { partner } = Astro.props as Props;
 /**
  * The app on Google Play, with this partner in the install referrer: Play hands it to the app after install, so
  * the partner's greeting shows without typing a code (`@egenberedskap/core` partners.ts). The App Store has no
- * referrer, and its link comes when the Apple account is approved (LAUNCH.md).
+ * referrer, so on iPhone the code is typed in («Har du en kode?», the steps below).
  */
+const APP_STORE_URL = 'https://apps.apple.com/no/app/id6828561866';
 const PLAY_URL = `https://play.google.com/store/apps/details?id=no.htas.egenberedskap&referrer=${encodeURIComponent(
   partnerReferrer(partner.slug),
 )}`;
@@ -27,7 +28,7 @@ const PLAY_URL = `https://play.google.com/store/apps/details?id=no.htas.egenbere
 const STEPS = [
   {
     title: 'Last ned appen',
-    text: 'Gratis fra Google Play. Ingen konto og ingen betaling.',
+    text: 'Gratis fra App Store eller Google Play. Ingen konto og ingen betaling.',
   },
   {
     title: 'Trykk «Har du en kode?»',
@@ -64,10 +65,11 @@ const STEPS = [
       <h1>{partner.headline}</h1>
       <p class="lead">{partner.lead}</p>
       <div class="actions">
+        <a class="button" href={APP_STORE_URL}>Last ned på App Store</a>
         <a class="button" href={PLAY_URL}>Last ned på Google Play</a>
         {partner.code && <a class="button button-outline" href="#kode">Slik bruker du koden</a>}
       </div>
-      <p class="soon">Gratis for Android. iPhone-versjonen kommer snart.</p>
+      <p class="soon">Gratis for iPhone og Android.</p>
     </div>
     <Phone
       src={oversikt}
@@ -146,8 +148,11 @@ const STEPS = [
   <section class="closing wrap">
     <div class="closing-card">
       <h2>Begynn med ett tall</h2>
-      <p>Egenberedskapsappen er gratis for alle husstander. Last den ned til Android i dag. iPhone-versjonen kommer snart.</p>
-      <a class="button button-light" href={PLAY_URL}>Last ned på Google Play</a>
+      <p>Egenberedskapsappen er gratis for alle husstander. Last den ned til iPhone eller Android i dag.</p>
+      <div class="store-links">
+        <a class="button button-light" href={APP_STORE_URL}>Last ned på App Store</a>
+        <a class="button button-light" href={PLAY_URL}>Last ned på Google Play</a>
+      </div>
     </div>
   </section>
 </Base>
@@ -252,6 +257,11 @@ const STEPS = [
     align-items: center;
     gap: 14px 22px;
     margin-top: 36px;
+  }
+  .store-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 22px;
   }
   .soon {
     margin-top: 16px;
