@@ -7,9 +7,17 @@ import {
   type HouseholdMembers,
   type IsoDate,
   type NextAction,
+  type SmokeAlarmTestIntervalMonths,
 } from '@egenberedskap/core';
 
 /** How often the beredskapssjekk comes round, as the menu in Innstillinger and «Kom i gang» says it. */
+export const SMOKE_ALARM_TEST_NAMES: Record<SmokeAlarmTestIntervalMonths, string> = {
+  1: 'Hver måned',
+  3: 'Hver tredje måned',
+  6: 'Hvert halvår',
+  12: 'Én gang i året',
+};
+
 export const CHECK_INTERVAL_NAMES: Record<CheckIntervalMonths, string> = {
   1: 'Hver måned',
   3: 'Hver tredje måned',

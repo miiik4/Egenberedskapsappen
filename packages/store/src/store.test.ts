@@ -600,6 +600,17 @@ describe('insurance and beredskapssjekk', () => {
     expect((await store.load()).checkIntervalMonths).toBe(1);
     await expect(store.setCheckInterval(2 as never)).rejects.toThrow();
   });
+
+  it('reminds about smoke alarms only once turned on, counted from that day', async () => {
+    expect((await store.load()).smokeAlarmTest).toBeNull();
+    await store.setSmokeAlarmTest(3);
+    const { smokeAlarmTest } = await store.load();
+    expect(smokeAlarmTest?.everyMonths).toBe(3);
+    expect(smokeAlarmTest?.from).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    await store.setSmokeAlarmTest(null);
+    expect((await store.load()).smokeAlarmTest).toBeNull();
+    await expect(store.setSmokeAlarmTest(2 as never)).rejects.toThrow();
+  });
 });
 
 describe('documents', () => {

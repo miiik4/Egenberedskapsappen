@@ -606,6 +606,17 @@ public: anyone can read published documents, never drafts).
 - [ ] The app's «Har du en kode?», the partner greeting and a shared campaign code don't exist yet; activation codes
       today are single-use and only unlock backup. Don't sign off a partner page that promises them until they do
 
+## 11. Smoke alarm reminders (Mikkel asked for it 2026-11-04)
+
+- [ ] *(in code; tests pass, not seen in the simulator or on a phone)* «Test røykvarslere» in Innstillinger, under
+      Påminnelser: Av (the default), hver måned, hver tredje måned, hvert halvår or én gang i året, counted from the
+      day it's turned on. About a year of reminders is scheduled ahead, at 10:00; tapping one opens Innstillinger.
+      Turning it on asks for notification permission if it hasn't been asked yet. This phone only, not synced (no
+      migration). JavaScript only, so it can go out with `eas update`
+- [ ] Check the intervals and the text («Trykk på testknappen på hver røykvarsler. Piper den ikke, bytt batteriet
+      eller varsleren.») against DSB's advice on smoke alarms; nothing here has been checked by a person
+- [ ] **(Mikkel)** Should 1 December (røykvarslerens dag) be offered as a choice of its own?
+
 ## After launch (1.1 and later, only when users ask)
 
 - Buying Egenberedskap+ in the app (subscription, 29 kr/mnd; consider a yearly price and the store's 15–30 %).

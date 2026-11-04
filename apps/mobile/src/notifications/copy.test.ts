@@ -46,4 +46,8 @@ describe('reminderMessage', () => {
     expect(check.url).toBe('/beredskapssjekk');
     expect(reminderMessage({ kind: 'expiryReview', on: '2026-10-09' }).url).toBe('/lager');
   });
+
+  it('opens Innstillinger from a smoke alarm reminder, where it can be changed or turned off', () => {
+    expect(reminderMessage({ kind: 'smokeAlarm', on: '2027-01-01' })).toMatchObject({ title: 'Test røykvarslerne', url: '/husstand' });
+  });
 });

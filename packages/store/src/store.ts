@@ -4,6 +4,7 @@ import {
   isCheckInterval,
   isClaimKind,
   isFollowUp,
+  isSmokeAlarmTestInterval,
   isDamage,
   isStockType,
   parsePartnerGreeting,
@@ -16,6 +17,8 @@ import {
   type FollowUp,
   type Household,
   type PartnerGreeting,
+  type SmokeAlarmTest,
+  type SmokeAlarmTestIntervalMonths,
   type Suggestion, type HouseholdMembers, type IsoDate, type StockItem } from '@egenberedskap/core';
 
 import { migrate } from './schema';
@@ -95,6 +98,8 @@ export type AppData = {
   expiryReviewOn: IsoDate | null;
   /** What the beredskapssjekk left to do, shown in «Neste å gjøre» until done. */
   followUps: FollowUp[];
+  /** Reminders to test the smoke alarms, or null when off. This phone only: it's a choice about this phone's notifications. */
+  smokeAlarmTest: SmokeAlarmTest | null;
   /** Ask for Face ID or the phone's code before showing documents. On unless turned off. */
   documentLock: boolean;
   /** Who the belongings are documented for, on the report: an insurer needs a person, not just a phone. */
@@ -308,6 +313,8 @@ export function createStore({ db, newId, now, today }: Deps) {
         partner,
         partnerReferrer,
         lastPosition,
+        smokeAlarmTestMonths,
+        smokeAlarmTestFrom,
       ] = await Promise.all(
         [
           'onboardedOn',
@@ -328,6 +335,8 @@ export function createStore({ db, newId, now, today }: Deps) {
           'partner',
           'partnerReferrer',
           'lastPosition',
+          'smokeAlarmTestMonths',
+          'smokeAlarmTestFrom',
         ].map(
           getSetting,
         ),
@@ -524,6 +533,11 @@ export function createStore({ db, newId, now, today }: Deps) {
         expiryReviewOn: expiryReviewOn ?? null,
         // One from a newer version is left out until this one learns it.
         followUps: (followUps ?? '').split(',').filter(isFollowUp),
+        // An interval from a newer version reads as off until this one learns it.
+        smokeAlarmTest:
+          smokeAlarmTestFrom && isSmokeAlarmTestInterval(Number(smokeAlarmTestMonths))
+            ? { everyMonths: Number(smokeAlarmTestMonths) as SmokeAlarmTestIntervalMonths, from: smokeAlarmTestFrom }
+            : null,
         documentLock: documentLock !== 'off',
         analysisConsent: analysisConsent === 'yes',
         owner: { name: ownerName ?? '', ...(ownerBirthDate && { birthDate: ownerBirthDate }) },
@@ -909,6 +923,15 @@ export function createStore({ db, newId, now, today }: Deps) {
     async setCheckInterval(months: CheckIntervalMonths) {
       if (!isCheckInterval(months)) throw new Error(`Not a check interval: ${months}`);
       await setSetting('checkIntervalMonths', String(months));
+    },
+
+    /** Turns the smoke alarm reminders on (counted from today) or off (null). */
+    async setSmokeAlarmTest(months: SmokeAlarmTestIntervalMonths | null) {
+      if (months !== null && !isSmokeAlarmTestInterval(months)) throw new Error(`Not a smoke alarm interval: ${months}`);
+      await db.transaction(async () => {
+        await setSetting('smokeAlarmTestMonths', months === null ? null : String(months));
+        await setSetting('smokeAlarmTestFrom', months === null ? null : today());
+      });
     },
 
     setDocumentLock: (on: boolean) => setSetting('documentLock', on ? 'on' : 'off'),

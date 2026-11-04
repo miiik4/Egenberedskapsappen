@@ -2,7 +2,12 @@ import Constants from 'expo-constants';
 import { router, Stack } from 'expo-router';
 import { Alert, Linking, Platform, StyleSheet } from 'react-native';
 
-import { CHECK_INTERVALS_MONTHS, type CheckIntervalMonths } from '@egenberedskap/core';
+import {
+  CHECK_INTERVALS_MONTHS,
+  SMOKE_ALARM_TEST_INTERVALS_MONTHS,
+  type CheckIntervalMonths,
+  type SmokeAlarmTestIntervalMonths,
+} from '@egenberedskap/core';
 
 import { DestructiveButton } from '@/components/form/fields';
 import { MenuField } from '@/components/form/menu-field';
@@ -17,7 +22,7 @@ import { deleteEverything } from '@/data/delete-everything';
 import { useBackup } from '@/backup/backup-provider';
 import { useDocumentLock } from '@/documents/lock';
 import { useNotifications } from '@/notifications/notifications-provider';
-import { CHECK_INTERVAL_NAMES, householdLabel } from '@/lib/format';
+import { CHECK_INTERVAL_NAMES, SMOKE_ALARM_TEST_NAMES, householdLabel } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 /**
@@ -25,8 +30,8 @@ import { Text } from '@/components/ui/text';
  * settings. Opened from the gear at the top of Oversikt. Changes save as they're made.
  */
 export default function Husstand() {
-  const { household, documentLock, properties, selectedPropertyId, checkIntervalMonths, backup } = useData();
-  const { updateHousehold, reset, setDocumentLock, setCheckInterval } = useActions();
+  const { household, documentLock, properties, selectedPropertyId, checkIntervalMonths, smokeAlarmTest, backup } = useData();
+  const { updateHousehold, reset, setDocumentLock, setCheckInterval, setSmokeAlarmTest } = useActions();
   const property = properties.find((p) => p.id === selectedPropertyId);
   const { method, unlock } = useDocumentLock();
   const { status: backupStatus } = useBackup();
@@ -92,7 +97,7 @@ export default function Husstand() {
             />
           </Section>
         )}
-        <Section footer="Før noe i lageret går ut, og når det er tid for beredskapssjekk.">
+        <Section footer="Før noe i lageret går ut, når det er tid for beredskapssjekk, og når røykvarslerne skal testes, hvis du vil.">
           <Row
             title="Påminnelser"
             detail={permission === 'granted' ? 'På' : permission === 'denied' ? 'Av' : 'Slå på'}
@@ -111,6 +116,20 @@ export default function Husstand() {
             value={String(checkIntervalMonths)}
             options={CHECK_INTERVALS_MONTHS.map((months) => ({ value: String(months), label: CHECK_INTERVAL_NAMES[months] }))}
             onChange={(value) => setCheckInterval(Number(value) as CheckIntervalMonths)}
+          />
+          <MenuField
+            label="Test røykvarslere"
+            value={smokeAlarmTest ? String(smokeAlarmTest.everyMonths) : 'off'}
+            options={[
+              { value: 'off', label: 'Av' },
+              ...SMOKE_ALARM_TEST_INTERVALS_MONTHS.map((months) => ({ value: String(months), label: SMOKE_ALARM_TEST_NAMES[months] })),
+            ]}
+            onChange={async (value) => {
+              const months = value === 'off' ? null : (Number(value) as SmokeAlarmTestIntervalMonths);
+              await setSmokeAlarmTest(months);
+              // A reminder is no use without permission, so ask right when it's turned on.
+              if (months !== null && permission === 'undetermined') await requestPermission();
+            }}
           />
         </Section>
         <Section

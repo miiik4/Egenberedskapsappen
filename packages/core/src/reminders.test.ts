@@ -89,4 +89,30 @@ describe('planReminders', () => {
     const items = Array.from({ length: 100 }, (_, i) => water(`w${i}`, `2027-${String((i % 12) + 1).padStart(2, '0')}-${String((i % 28) + 1).padStart(2, '0')}`));
     expect(planReminders({ items, lastCheck: today, checkIntervalMonths: 3, expiryReviewOn: null, today })).toHaveLength(MAX_REMINDERS);
   });
+
+  describe('smoke alarm tests', () => {
+    const base = { items: [], lastCheck: '2026-09-20', checkIntervalMonths: 6 as const, expiryReviewOn: null, today };
+    const smoke = (plan: ReturnType<typeof planReminders>) => plan.filter((r) => r.kind === 'smokeAlarm').map((r) => r.on);
+
+    it('are off unless asked for', () => {
+      expect(smoke(planReminders(base))).toEqual([]);
+      expect(smoke(planReminders({ ...base, smokeAlarmTest: null }))).toEqual([]);
+    });
+
+    it('come round every interval from when they were turned on, about a year ahead', () => {
+      expect(smoke(planReminders({ ...base, smokeAlarmTest: { everyMonths: 3, from: '2026-10-01' } }))).toEqual([
+        '2027-01-01',
+        '2027-04-01',
+        '2027-07-01',
+        '2027-10-01',
+      ]);
+      expect(smoke(planReminders({ ...base, smokeAlarmTest: { everyMonths: 12, from: '2026-10-01' } }))).toEqual(['2027-10-01']);
+    });
+
+    it('skip dates already past, and keep to the day of the month', () => {
+      const monthly = smoke(planReminders({ ...base, smokeAlarmTest: { everyMonths: 1, from: '2026-01-31' } }));
+      expect(monthly.slice(0, 3)).toEqual(['2026-10-31', '2026-11-30', '2026-12-31']);
+      expect(monthly).toHaveLength(13);
+    });
+  });
 });

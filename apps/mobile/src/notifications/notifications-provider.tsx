@@ -72,6 +72,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       lastCheck: data.lastCheck ?? data.onboardedOn ?? todayIso(),
       checkIntervalMonths: data.checkIntervalMonths,
       expiryReviewOn: data.expiryReviewOn,
+      smokeAlarmTest: data.smokeAlarmTest,
       today: todayIso(),
     });
     queue.current = queue.current

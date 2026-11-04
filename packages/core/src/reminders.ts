@@ -1,6 +1,12 @@
-import { addDays, daysBetween } from './dates';
+import { addDays, addMonths, daysBetween } from './dates';
 import { nextCheck } from './check';
-import { EXPIRY_REMINDER_DAYS, type CheckIntervalMonths } from './guidance';
+import {
+  EXPIRY_REMINDER_DAYS,
+  SMOKE_ALARM_REMINDER_HORIZON_MONTHS,
+  SMOKE_ALARM_TEST_INTERVALS_MONTHS,
+  type CheckIntervalMonths,
+  type SmokeAlarmTestIntervalMonths,
+} from './guidance';
 import type { IsoDate, StockItem } from './types';
 
 /**
@@ -14,7 +20,16 @@ export type Reminder =
   | { kind: 'expiring'; on: IsoDate; expiresOn: IsoDate; items: StockItem[] }
   | { kind: 'check'; on: IsoDate }
   /** «Påminn meg» from the beredskapssjekk. */
-  | { kind: 'expiryReview'; on: IsoDate };
+  | { kind: 'expiryReview'; on: IsoDate }
+  /** Time to press the test button on the smoke alarms. */
+  | { kind: 'smokeAlarm'; on: IsoDate };
+
+export function isSmokeAlarmTestInterval(months: number): months is SmokeAlarmTestIntervalMonths {
+  return (SMOKE_ALARM_TEST_INTERVALS_MONTHS as readonly number[]).includes(months);
+}
+
+/** Remind to test the smoke alarms every `everyMonths`, counted from `from` (when it was turned on). */
+export type SmokeAlarmTest = { everyMonths: SmokeAlarmTestIntervalMonths; from: IsoDate };
 
 export type ReminderInput = {
   items: StockItem[];
@@ -22,6 +37,8 @@ export type ReminderInput = {
   lastCheck: IsoDate;
   checkIntervalMonths: CheckIntervalMonths;
   expiryReviewOn: IsoDate | null;
+  /** Off when null. */
+  smokeAlarmTest?: SmokeAlarmTest | null;
   today: IsoDate;
 };
 
@@ -34,6 +51,7 @@ export function planReminders({
   lastCheck,
   checkIntervalMonths,
   expiryReviewOn,
+  smokeAlarmTest = null,
   today,
 }: ReminderInput): Reminder[] {
   const ahead = (on: IsoDate) => daysBetween(today, on) >= 0;
@@ -54,6 +72,16 @@ export function planReminders({
   if (ahead(checkDue)) reminders.push({ kind: 'check', on: checkDue });
 
   if (expiryReviewOn && ahead(expiryReviewOn)) reminders.push({ kind: 'expiryReview', on: expiryReviewOn });
+
+  if (smokeAlarmTest) {
+    // Counted from the start each time (not from the previous date), so the 31st doesn't drift to the 28th.
+    const until = addMonths(today, SMOKE_ALARM_REMINDER_HORIZON_MONTHS);
+    for (let n = 1; ; n++) {
+      const on = addMonths(smokeAlarmTest.from, n * smokeAlarmTest.everyMonths);
+      if (daysBetween(until, on) > 0) break;
+      if (ahead(on)) reminders.push({ kind: 'smokeAlarm', on });
+    }
+  }
 
   return reminders.sort((a, b) => a.on.localeCompare(b.on)).slice(0, MAX_REMINDERS);
 }

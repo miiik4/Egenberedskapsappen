@@ -38,6 +38,12 @@ export function reminderMessage(reminder: Reminder): ReminderMessage {
         body: 'Du ba om en påminnelse i beredskapssjekken.',
         url: '/lager',
       };
+    case 'smokeAlarm':
+      return {
+        title: 'Test røykvarslerne',
+        body: 'Trykk på testknappen på hver røykvarsler. Piper den ikke, bytt batteriet eller varsleren.',
+        url: '/husstand',
+      };
   }
 }
 

@@ -51,6 +51,17 @@ export type CheckIntervalMonths = (typeof CHECK_INTERVALS_MONTHS)[number];
 /** Every quarter unless the household picks something else. */
 export const DEFAULT_CHECK_INTERVAL_MONTHS: CheckIntervalMonths = 3;
 
+/**
+ * How often the app can remind the household to test the smoke alarms. Off until someone picks
+ * one; the choice is offered without a recommended default, as no figure here has been checked
+ * against DSB's advice yet.
+ */
+export const SMOKE_ALARM_TEST_INTERVALS_MONTHS = [1, 3, 6, 12] as const;
+export type SmokeAlarmTestIntervalMonths = (typeof SMOKE_ALARM_TEST_INTERVALS_MONTHS)[number];
+
+/** Recurring reminders are scheduled this far ahead; the plan is rebuilt whenever the app opens with new data. */
+export const SMOKE_ALARM_REMINDER_HORIZON_MONTHS = 13;
+
 // The beredskapssjekk goes through what expires before the next one is due, so the interval
 // is also how far ahead it looks (`expiresBeforeNextCheck`).
 
