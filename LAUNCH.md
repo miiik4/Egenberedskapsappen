@@ -619,9 +619,10 @@ public: anyone can read published documents, never drafts).
 - [ ] **1.8.0 in the stores** (dc35db0; release notes in `docs/store/listing.md`). Production builds started
       2026-11-04 with `--auto-submit`: iOS build 2 (`eef87a98`) and Android version code 9 (`7d5beffe`); both
       built and uploaded the same day (App Store Connect, and Play's internal testing).
-      **(Mikkel)** In App Store Connect: version 1.8.0, attach build 2, «What's New», submit for review. In Play
-      Console: production release from the library (9), notes, send for review, then publish from
-      Publiseringsoversikt (managed publishing). 1.7.2 builds get no updates made for 1.8.0
+      Play: production release «9 (1.8.0)», full rollout, with the no-NO notes, sent to review by Claude on
+      Mikkel's go 2026-11-04 (Publiseringsoversikt: «Endringer under gjennomgang»). Once approved, publish it from
+      Publiseringsoversikt (managed publishing). **(Mikkel)** App Store Connect: version 1.8.0, attach build 2,
+      «What's New», submit for review. 1.7.2 builds get no updates made for 1.8.0
 - [ ] Check the intervals and the text («Trykk på testknappen på hver røykvarsler. Piper den ikke, bytt batteriet
       eller varsleren.») against DSB's advice on smoke alarms; nothing here has been checked by a person
 - [ ] **(Mikkel)** Should 1 December (røykvarslerens dag) be offered as a choice of its own?
