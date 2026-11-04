@@ -608,7 +608,10 @@ public: anyone can read published documents, never drafts).
 
 ## 11. Smoke alarm reminders (Mikkel asked for it 2026-11-04)
 
-- [ ] *(in code; tests pass, not seen in the simulator or on a phone)* «Test røykvarslere» in Innstillinger, under
+- [ ] *(in code; walked through in the iOS simulator by Claude 2026-11-04, not by a person: the menu, the permission
+      prompt when turned on, 13 monthly reminders scheduled, the notification's text. Opening it from a tap wasn't
+      seen, as the simulator's Notification Center didn't respond; it uses the same `/husstand` route as the gear.
+      Not seen on Android)* «Test røykvarslere» in Innstillinger, under
       Påminnelser: Av (the default), hver måned, hver tredje måned, hvert halvår or én gang i året, counted from the
       day it's turned on. About a year of reminders is scheduled ahead, at 10:00; tapping one opens Innstillinger.
       Turning it on asks for notification permission if it hasn't been asked yet. This phone only, not synced (no
