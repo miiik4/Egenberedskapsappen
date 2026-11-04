@@ -617,7 +617,8 @@ public: anyone can read published documents, never drafts).
       Turning it on asks for notification permission if it hasn't been asked yet. This phone only, not synced (no
       migration). JavaScript only, so it can go out with `eas update`
 - [ ] **1.8.0 in the stores** (dc35db0; release notes in `docs/store/listing.md`). Production builds started
-      2026-11-04 with `--auto-submit`: iOS build 2 (`eef87a98`) and Android version code 9 (`7d5beffe`).
+      2026-11-04 with `--auto-submit`: iOS build 2 (`eef87a98`) and Android version code 9 (`7d5beffe`); both
+      built and uploaded the same day (App Store Connect, and Play's internal testing).
       **(Mikkel)** In App Store Connect: version 1.8.0, attach build 2, «What's New», submit for review. In Play
       Console: production release from the library (9), notes, send for review, then publish from
       Publiseringsoversikt (managed publishing). 1.7.2 builds get no updates made for 1.8.0
