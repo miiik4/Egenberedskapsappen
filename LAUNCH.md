@@ -616,6 +616,11 @@ public: anyone can read published documents, never drafts).
       day it's turned on. About a year of reminders is scheduled ahead, at 10:00; tapping one opens Innstillinger.
       Turning it on asks for notification permission if it hasn't been asked yet. This phone only, not synced (no
       migration). JavaScript only, so it can go out with `eas update`
+- [ ] **1.8.0 in the stores** (dc35db0; release notes in `docs/store/listing.md`). Production builds started
+      2026-11-04 with `--auto-submit`: iOS build 2 (`eef87a98`) and Android version code 9 (`7d5beffe`).
+      **(Mikkel)** In App Store Connect: version 1.8.0, attach build 2, «What's New», submit for review. In Play
+      Console: production release from the library (9), notes, send for review, then publish from
+      Publiseringsoversikt (managed publishing). 1.7.2 builds get no updates made for 1.8.0
 - [ ] Check the intervals and the text («Trykk på testknappen på hver røykvarsler. Piper den ikke, bytt batteriet
       eller varsleren.») against DSB's advice on smoke alarms; nothing here has been checked by a person
 - [ ] **(Mikkel)** Should 1 December (røykvarslerens dag) be offered as a choice of its own?
