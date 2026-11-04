@@ -146,3 +146,13 @@ Tekniske forbedringer.
 • Personvernerklæringen åpnes nå på egenberedskapsappen.no.
 </no-NO>
 ```
+
+1.8.0 (2026-11-04, written by Claude when Mikkel asked for the release; smoke alarm reminders):
+
+```
+<no-NO>
+Nytt: Påminnelse om å teste røykvarslerne.
+• Velg under Innstillinger om appen skal minne deg på det hver måned, hver tredje måned, hvert halvår eller én gang i året.
+• Påminnelsen er av til du slår den på.
+</no-NO>
+```
