@@ -616,7 +616,8 @@ public: anyone can read published documents, never drafts).
       day it's turned on. About a year of reminders is scheduled ahead, at 10:00; tapping one opens Innstillinger.
       Turning it on asks for notification permission if it hasn't been asked yet. This phone only, not synced (no
       migration). JavaScript only, so it can go out with `eas update`
-- [ ] **1.8.0 in the stores** (dc35db0; release notes in `docs/store/listing.md`). Production builds started
+- [x] **1.8.0 is live in both stores** (Mikkel, 2026-11-06; the App Store lookup for Norway returns 1.8.0,
+      released 2026-11-05, and the public Play page lists 1.8.0) (dc35db0; release notes in `docs/store/listing.md`). Production builds started
       2026-11-04 with `--auto-submit`: iOS build 2 (`eef87a98`) and Android version code 9 (`7d5beffe`); both
       built and uploaded the same day (App Store Connect, and Play's internal testing).
       Play: production release «9 (1.8.0)», full rollout, with the no-NO notes, sent to review by Claude on
