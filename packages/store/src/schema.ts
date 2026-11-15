@@ -284,6 +284,10 @@ const MIGRATIONS: string[] = [
   `
   DELETE FROM settings WHERE key = 'syncCursor';
   `,
+  // 10: the types on the list the household doesn't need (notNeeded), a new synced setting. Start over, as in 8.
+  `
+  DELETE FROM settings WHERE key = 'syncCursor';
+  `,
 ];
 
 export const SCHEMA_VERSION = MIGRATIONS.length;

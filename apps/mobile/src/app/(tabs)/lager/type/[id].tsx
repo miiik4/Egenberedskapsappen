@@ -17,7 +17,7 @@ import { SwipeToDelete } from '@/components/ui/swipe-delete';
 import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
-import { describeType, formatExpiry, formatMeals, formatMonthYear, formatNumber, todayIso } from '@/lib/format';
+import { describeType, formatExpiry, formatMeals, formatMonthYear, formatNumber, formatQuantity, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
 /** One type with the household's items: what's about to expire on top, then the rest. */
@@ -39,7 +39,7 @@ export default function Type() {
         title={item.name}
         subtitle={describeItem(item, today)}
         leading={soon.includes(item) ? <WarningDot /> : undefined}
-        detail={`${item.quantity} stk`}
+        detail={formatQuantity(item)}
         chevron
         onPress={() => router.push({ pathname: '/lager/vare/[id]', params: { id: item.id } })}
       />

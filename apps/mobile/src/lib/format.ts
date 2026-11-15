@@ -1,12 +1,14 @@
 import {
   CATEGORY_NAMES,
   peopleIn,
+  stockType,
   TARGET_DAYS,
   type CheckIntervalMonths,
   type ChecklistType,
   type HouseholdMembers,
   type IsoDate,
   type NextAction,
+  type StockItem,
   type SmokeAlarmTestIntervalMonths,
 } from '@egenberedskap/core';
 
@@ -55,6 +57,15 @@ export function formatDateWithYear(date: IsoDate): string {
 /** "186 400 kr", grouped with a no-break space so the number never wraps. */
 export function formatKr(amount: number): string {
   return `${Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} kr`;
+}
+
+/**
+ * «4 stk», or «500 kr» for cash. Cash saved before an amount could be typed has the count 1,
+ * which was never an amount: it says nothing.
+ */
+export function formatQuantity(item: Pick<StockItem, 'type' | 'quantity'>): string | undefined {
+  if (stockType(item.type).unit !== 'kr') return `${item.quantity} stk`;
+  return item.quantity > 1 ? formatKr(item.quantity) : undefined;
 }
 
 /** «7 døgn», and «7+ døgn» past DSB's week, where the exact number stops mattering. */

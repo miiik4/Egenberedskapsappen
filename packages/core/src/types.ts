@@ -18,7 +18,13 @@ export type HouseholdMembers = {
   cats: number;
 };
 
-export type Household = HouseholdMembers & { id: string };
+/**
+ * The household as the stockpile list sees it: who lives there, and the types on DSB's list
+ * they have said they don't need (iodine tablets for a couple over 40).
+ */
+export type HouseholdNeeds = HouseholdMembers & { notNeeded?: readonly StockType[] };
+
+export type Household = HouseholdMembers & { id: string; notNeeded: StockType[] };
 
 /** The categories of DSB's list, in the order the stockpile shows them. */
 export type StockCategory = 'water' | 'food' | 'heat' | 'light' | 'communication' | 'firstAid' | 'hygiene';

@@ -645,6 +645,17 @@ public: anyone can read published documents, never drafts).
 - Server counts for insurers (codes redeemed, active backups, analyses per month), without tracking users
 - «Meld en skade» guide on top of the damage claims already stored on the phone
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
+- Asked for by a customer (feedback Mikkel passed on 2026-11-15). Built the same day, JS only, so it can go out
+  with `eas update`; **not released, and not run on a phone or simulator** (no phone was connected, and Xcode's
+  licence isn't accepted on this Mac). Tests, typecheck, lint and an iOS bundle pass.
+  - [x] Typing the count: the number between − and + on «Antall» is a field (`CountField`), up to 999
+  - [x] A unit on the count: «stk» after the number; cash is «Beløp» in kroner (kept in `quantity`; cash saved
+        earlier has the count 1 and shows no amount); the food footer says «Antall» is packs or tins
+  - [x] «Trenger ikke»: swipe an empty type left on Lager and it leaves the list, the counts and «Neste å gjøre»,
+        and waits under «Trenger ikke» at the bottom until it's put back. Not for water, food or heat. A synced
+        setting (`notNeeded`, migration 10)
+  - [ ] **(Mikkel)** Try all three on a phone (iOS and Android) before `eas update`: the typed count with the
+        keyboard up in «Ny vare», the swipe inside an opened category, and VoiceOver, which can't reach a swipe
 - Ideas waiting for user demand: «Jeg er trygg», hazard warnings, power-saving mode, evacuation bag, barcode
   scanning, blog
 - A place picker on «Tilfluktsrom» (choose a municipality or town, all on the phone) for when there is no GPS fix

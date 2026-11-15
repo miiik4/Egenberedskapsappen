@@ -54,6 +54,7 @@ const SYNCED_SETTINGS = [
   'expiryReviewOn',
   'checkIntervalMonths',
   'followUps',
+  'notNeeded',
   'ownerName',
   'ownerBirthDate',
 ];

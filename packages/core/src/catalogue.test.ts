@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { renewedDates, shelfLifeEnd, STOCK_TYPES, suggestType, typesFor } from './catalogue';
+import { canSkip, notNeededTypes, renewedDates, shelfLifeEnd, STOCK_TYPES, stockType, suggestType, typesFor } from './catalogue';
 import { computeCoverage } from './coverage';
 import { item } from './test-items';
 import { addMonths } from './dates';
@@ -35,6 +35,28 @@ describe('catalogue', () => {
     expect(ids(two)).not.toContain('nappies');
     expect(ids({ ...two, infants: 1 })).toContain('nappies');
     expect(ids(two)).toContain('menstrualProducts');
+  });
+
+  it('lets a household do without anything but water, food and heat', () => {
+    expect(canSkip(stockType('iodine'))).toBe(true);
+    expect(canSkip(stockType('menstrualProducts'))).toBe(true);
+    expect(canSkip(stockType('drinkingWater'))).toBe(false);
+    expect(canSkip(stockType('oats'))).toBe(false);
+    expect(canSkip(stockType('heatSource'))).toBe(false);
+  });
+
+  it('lists what the household does not need, without the types that have something in them', () => {
+    const two = { adults: 2, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 };
+    const household = { ...two, notNeeded: ['nappies', 'menstrualProducts', 'iodine'] as const };
+    expect(typesFor(household, 'firstAid').map((t) => t.id)).toEqual(['firstAidKit', 'medicines']);
+    // List order; nappies aren't on a list without infants in the first place.
+    expect(notNeededTypes(household, []).map((t) => t.id)).toEqual(['iodine', 'menstrualProducts']);
+    expect(notNeededTypes(household, [item('i1', { type: 'iodine' })]).map((t) => t.id)).toEqual(['menstrualProducts']);
+  });
+
+  it('counts cash in kroner', () => {
+    expect(stockType('cash').unit).toBe('kr');
+    expect(stockType('batteries').unit).toBeUndefined();
   });
 
   it('does not count a cooking stove as heat for the home', () => {

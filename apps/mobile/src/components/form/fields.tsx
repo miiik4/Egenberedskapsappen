@@ -226,25 +226,60 @@ export function DateField({
   );
 }
 
-/** − n + for small whole numbers like the household size. */
+/** As many as «Antall» on an item takes. */
+export const MAX_COUNT = 999;
+
+/**
+ * − n + for whole numbers, e.g. «3 stk». The number can also be typed, so forty candles aren't
+ * forty presses. `onChange` gets every number as it's typed, within 1 and `max`.
+ */
 export function CountField({
   label,
   value,
   onChange,
   max = 20,
+  unit,
 }: {
   label: string;
   value: number;
   onChange: (value: number) => void;
   max?: number;
+  /** What is counted, after the number: «stk». */
+  unit?: string;
 }) {
   const min = 1;
-  const step = (delta: number) => onChange(Math.min(max, Math.max(min, value + delta)));
+  const clamp = (n: number) => Math.min(max, Math.max(min, n));
+  // While it's typed the number is text, so it can be emptied on the way to another one.
+  const [typed, setTyped] = useState<string | null>(null);
+  const change = (next: number) => next !== value && onChange(next);
+  const step = (delta: number) => {
+    setTyped(null);
+    change(clamp(value + delta));
+  };
+  const type = (text: string) => {
+    const digits = text.replace(/\D/g, '').slice(0, String(max).length);
+    setTyped(digits);
+    if (digits) change(clamp(Number(digits)));
+  };
   return (
     <FieldRow label={label}>
-      <View style={styles.stepper} accessibilityRole="adjustable" accessibilityValue={{ now: value, min, max }}>
+      <View style={styles.stepper}>
         <StepButton symbol="−" onPress={() => step(-1)} disabled={value <= min} label="Færre" />
-        <Text style={styles.count}>{value}</Text>
+        <View style={styles.countRow}>
+          <TextInput
+            value={typed ?? String(value)}
+            onChangeText={type}
+            onFocus={() => setTyped(String(value))}
+            // What's left in the field may be empty or out of range: show what was saved.
+            onBlur={() => setTyped(null)}
+            keyboardType="number-pad"
+            selectTextOnFocus
+            maxLength={String(max).length}
+            accessibilityLabel={unit ? `${label}, ${unit}` : label}
+            style={styles.count}
+          />
+          {unit && <Text style={styles.unit}>{unit}</Text>}
+        </View>
         <StepButton symbol="+" onPress={() => step(1)} disabled={value >= max} label="Flere" />
       </View>
     </FieldRow>
@@ -312,7 +347,16 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.fill,
   },
   stepSymbol: { fontSize: 20, fontWeight: '500', color: Colors.label, lineHeight: 22 },
-  count: { minWidth: 24, textAlign: 'center', fontSize: 17, fontWeight: '600', color: Colors.label },
+  countRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  count: {
+    minWidth: 36,
+    paddingVertical: 6,
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
+    color: Colors.label,
+  },
   destructive: {
     marginHorizontal: Spacing.screen,
     alignItems: 'center',

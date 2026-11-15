@@ -5,6 +5,7 @@ import {
   isClaimKind,
   isFollowUp,
   isSmokeAlarmTestInterval,
+  canSkip,
   isDamage,
   isStockType,
   parsePartnerGreeting,
@@ -19,7 +20,7 @@ import {
   type PartnerGreeting,
   type SmokeAlarmTest,
   type SmokeAlarmTestIntervalMonths,
-  type Suggestion, type HouseholdMembers, type IsoDate, type StockItem } from '@egenberedskap/core';
+  type Suggestion, type HouseholdMembers, type IsoDate, type StockItem, type StockType } from '@egenberedskap/core';
 
 import { migrate } from './schema';
 import type { SqlExecutor, SqlValue } from './sql';
@@ -310,6 +311,7 @@ export function createStore({ db, newId, now, today }: Deps) {
         ownerBirthDate,
         checkInterval,
         followUps,
+        notNeeded,
         partner,
         partnerReferrer,
         lastPosition,
@@ -332,6 +334,7 @@ export function createStore({ db, newId, now, today }: Deps) {
           'ownerBirthDate',
           'checkIntervalMonths',
           'followUps',
+          'notNeeded',
           'partner',
           'partnerReferrer',
           'lastPosition',
@@ -479,6 +482,8 @@ export function createStore({ db, newId, now, today }: Deps) {
         infants: infants!,
         dogs: dogs!,
         cats: cats!,
+        // A type from a newer version of the app, arrived through the backup, is left alone.
+        notNeeded: (notNeeded ?? '').split(',').filter(isStockType),
       };
       const visibleProperties = properties.map((p) => ({ id: p.id, name: p.name, shortName: p.short_name }));
       return {
@@ -913,6 +918,16 @@ export function createStore({ db, newId, now, today }: Deps) {
       const current = ((await getSetting('followUps')) ?? '').split(',').filter((f) => f !== '' && f !== followUp);
       const next = on ? [...current, followUp] : current;
       await setSetting('followUps', next.length > 0 ? next.join(',') : null);
+    },
+
+    /** «Trenger ikke» on a type of the list, or back on the list again. */
+    async setNotNeeded(type: StockType, notNeeded: boolean) {
+      if (!isStockType(type) || !canSkip(stockType(type))) {
+        throw new ValidationError('type', `Not a type a household can do without: ${String(type)}`);
+      }
+      const current = ((await getSetting('notNeeded')) ?? '').split(',').filter((t) => t !== '' && t !== type);
+      const next = notNeeded ? [...current, type] : current;
+      await setSetting('notNeeded', next.length > 0 ? next.join(',') : null);
     },
 
     async setExpiryReview(on: IsoDate | null) {

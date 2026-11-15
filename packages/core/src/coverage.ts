@@ -1,4 +1,4 @@
-import { CATEGORIES, stockType, typesFor, type StockTypeInfo } from './catalogue';
+import { CATEGORIES, notNeededTypes, stockType, typesFor, type StockTypeInfo } from './catalogue';
 import { daysBetween } from './dates';
 import {
   EXPIRY_WARNING_DAYS,
@@ -9,7 +9,7 @@ import {
   WATER_LITRES_PER_DOG_PER_DAY,
   WATER_LITRES_PER_PERSON_PER_DAY,
 } from './guidance';
-import type { HouseholdMembers, IsoDate, StockCategory, StockItem } from './types';
+import type { HouseholdMembers, HouseholdNeeds, IsoDate, StockCategory, StockItem } from './types';
 
 /** The three things that run out, each counted in days. */
 export type DayKind = 'water' | 'food' | 'heat';
@@ -129,9 +129,13 @@ export type ChecklistCategory = {
   days?: number;
 };
 
-/** DSB's list for this household, each type ticked off once it has an item, or enough of one. */
-export function checklist(members: HouseholdMembers, items: StockItem[], today: IsoDate): ChecklistCategory[] {
-  const coverage = computeCoverage(members, items, today);
+/**
+ * DSB's list for this household, each type ticked off once it has an item, or enough of one.
+ * Types the household doesn't need are left out, unless there is something in them.
+ */
+export function checklist(household: HouseholdNeeds, items: StockItem[], today: IsoDate): ChecklistCategory[] {
+  const coverage = computeCoverage(household, items, today);
+  const members = { ...household, notNeeded: notNeededTypes(household, items).map((t) => t.id) };
   const daysOf: Partial<Record<StockCategory, number>> = {
     water: coverage.waterDays,
     food: coverage.foodDays,
@@ -152,6 +156,6 @@ export function checklist(members: HouseholdMembers, items: StockItem[], today: 
   });
 }
 
-export function missingTypes(members: HouseholdMembers, items: StockItem[], today: IsoDate): StockTypeInfo[] {
+export function missingTypes(members: HouseholdNeeds, items: StockItem[], today: IsoDate): StockTypeInfo[] {
   return checklist(members, items, today).flatMap((c) => c.types.filter((t) => !t.have));
 }

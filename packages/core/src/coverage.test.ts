@@ -133,6 +133,17 @@ describe('checklist', () => {
     ]);
   });
 
+  it('leaves out what the household does not need, until there is something in it', () => {
+    const household = { ...two, notNeeded: ['iodine', 'menstrualProducts'] as const };
+    const ids = (items: StockItem[]) => checklist(household, items, today).flatMap((c) => c.types.map((t) => t.id));
+    expect(ids([])).not.toContain('iodine');
+    expect(ids([])).not.toContain('menstrualProducts');
+    expect(missingTypes(household, [], today).map((t) => t.id)).not.toContain('iodine');
+    // An item is never out of sight: its type is back on the list.
+    expect(ids([item('i1', { type: 'iodine' })])).toContain('iodine');
+    expect(ids([item('i1', { type: 'iodine' })])).not.toContain('menstrualProducts');
+  });
+
   it('lists what is missing in list order, water and food that are short included', () => {
     expect(missingTypes(two, stock, today).map((t) => t.id).slice(0, 6)).toEqual([
       'drinkingWater',

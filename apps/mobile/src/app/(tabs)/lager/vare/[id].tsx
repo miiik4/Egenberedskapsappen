@@ -26,6 +26,7 @@ import {
   CountField,
   DateField,
   DestructiveButton,
+  MAX_COUNT,
   NumberField,
   parseNumber,
   TextField,
@@ -66,6 +67,8 @@ function Editor({ item }: { item: StockItem }) {
   const [location, setLocation] = useState(item.location);
   const [litres, setLitres] = useState(item.litres !== undefined ? String(item.litres) : '');
   const [meals, setMeals] = useState(item.meals !== undefined ? String(item.meals) : '');
+  // Cash from before the amount could be typed has the count 1, which was never an amount.
+  const [kroner, setKroner] = useState(type.unit === 'kr' && item.quantity > 1 ? String(item.quantity) : '');
 
   const update = async (changes: Partial<StockItem>) => {
     const next = { ...item, ...changes };
@@ -96,10 +99,23 @@ function Editor({ item }: { item: StockItem }) {
       reset(saved !== undefined ? String(saved) : '');
     }
   };
+  const saveKroner = () => {
+    const amount = parseNumber(kroner);
+    if (amount !== undefined && amount >= 1) {
+      if (amount !== item.quantity) update({ quantity: amount });
+    } else {
+      setKroner(item.quantity > 1 ? String(item.quantity) : '');
+    }
+  };
   // Changing to water or food needs an amount; the count stands in until the user types one.
   const changeType = (next: StockType) => {
     const changes: Partial<StockItem> = { type: next };
-    const { measure } = stockType(next);
+    const { measure, unit } = stockType(next);
+    // A count of things is not an amount in kroner, nor the other way round.
+    if (unit !== type.unit) {
+      changes.quantity = 1;
+      setKroner('');
+    }
     if (measure === 'litres' && item.litres === undefined) {
       changes.litres = item.quantity;
       setLitres(String(item.quantity));
@@ -156,8 +172,10 @@ function Editor({ item }: { item: StockItem }) {
             type.measure === 'litres'
               ? `Regnestykket bruker ${WATER_LITRES_PER_PERSON_PER_DAY} liter per person per døgn, til drikke, matlaging og hygiene.`
               : type.measure === 'meals'
-                ? `Omtrent hvor mange måltider alt dette gir. ${MEALS_PER_PERSON_PER_DAY} måltider er ett døgn for én person.`
-                : undefined
+                ? `«Antall» er pakker eller bokser. «Rekker til» er omtrent hvor mange måltider alt dette gir. ${MEALS_PER_PERSON_PER_DAY} måltider er ett døgn for én person.`
+                : type.unit === 'kr'
+                  ? 'Hvor mye dere har liggende i kontanter.'
+                  : undefined
           }
         >
           {type.measure === 'litres' ? (
@@ -172,9 +190,17 @@ function Editor({ item }: { item: StockItem }) {
               />
               <Row title="Dekker" detail={formatDays(Math.floor((item.litres ?? 0) / litresPerDay))} />
             </>
+          ) : type.unit === 'kr' ? (
+            <NumberField label="Beløp" value={kroner} onChange={setKroner} onEndEditing={saveKroner} unit="kr" />
           ) : (
             <>
-              <CountField label="Antall" value={item.quantity} onChange={(quantity) => update({ quantity })} max={99} />
+              <CountField
+                label="Antall"
+                value={item.quantity}
+                onChange={(quantity) => update({ quantity })}
+                max={MAX_COUNT}
+                unit="stk"
+              />
               {type.measure === 'meals' && (
                 <NumberField
                   label="Rekker til"

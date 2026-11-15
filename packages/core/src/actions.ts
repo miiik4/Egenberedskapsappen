@@ -1,7 +1,7 @@
 import type { StockTypeInfo } from './catalogue';
 import { checklist, computeCoverage, dayImpactOfLosing, isExpiringSoon } from './coverage';
 import { TARGET_DAYS } from './guidance';
-import type { FollowUp, HouseholdMembers, IsoDate, StockItem, StockType } from './types';
+import type { FollowUp, HouseholdNeeds, IsoDate, StockItem, StockType } from './types';
 
 /** One entry in «Neste å gjøre». The ones that count in days say what they do to the number. */
 export type NextAction =
@@ -30,7 +30,7 @@ export type PlanState = { contacts: number; meetingPlace: boolean; followUps: Fo
  * shopping, and what the beredskapssjekk left to fix follows the gaps.
  */
 export function nextActions(
-  members: HouseholdMembers,
+  members: HouseholdNeeds,
   items: StockItem[],
   today: IsoDate,
   plan?: PlanState,

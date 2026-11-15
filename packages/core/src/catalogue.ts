@@ -1,6 +1,6 @@
 import { addDays, addMonths, daysBetween } from './dates';
 import { STORED_WATER_SHELF_LIFE_MONTHS, WATER_LITRES_PER_PERSON_PER_DAY } from './guidance';
-import type { HouseholdMembers, IsoDate, StockCategory, StockItem, StockType } from './types';
+import type { HouseholdMembers, HouseholdNeeds, IsoDate, StockCategory, StockItem, StockType } from './types';
 
 /**
  * The stockpile list: our selection based on DSB's checklist for household preparedness
@@ -18,6 +18,8 @@ export type StockTypeInfo = {
   task: string;
   /** What the amount is counted in, for the types that count towards the days. */
   measure?: 'litres' | 'meals';
+  /** What an item's `quantity` counts when it isn't a number of things: cash is an amount in kroner. */
+  unit?: 'kr';
   /** Only on the list for households this applies to. */
   appliesTo?: (members: HouseholdMembers) => boolean;
   /** How long a fresh one keeps, so «Merk som byttet» can set the next date. */
@@ -101,7 +103,7 @@ export const STOCK_TYPES: StockTypeInfo[] = [
   { id: 'candles', category: 'light', name: 'Stearinlys', hint: '', task: 'Kjøp stearinlys' },
   { id: 'powerBank', category: 'light', name: 'Ladet powerbank', hint: '', task: 'Lad en powerbank' },
   { id: 'radio', category: 'communication', name: 'DAB-radio på batteri', hint: 'NRK sender viktig informasjon', task: 'Skaff radio på batteri' },
-  { id: 'cash', category: 'communication', name: 'Kontanter', hint: 'Når kortterminaler ikke virker', task: 'Ta ut kontanter' },
+  { id: 'cash', category: 'communication', name: 'Kontanter', hint: 'Når kortterminaler ikke virker', task: 'Ta ut kontanter', unit: 'kr' },
   { id: 'firstAidKit', category: 'firstAid', name: 'Førstehjelpsskrin', hint: '', task: 'Lag et førstehjelpsskrin' },
   { id: 'medicines', category: 'firstAid', name: 'Faste medisiner for en uke', hint: '', task: 'Hent faste medisiner for en uke' },
   { id: 'iodine', category: 'firstAid', name: 'Jodtabletter', hint: 'For alle under 40, gravide og ammende', task: 'Kjøp jodtabletter' },
@@ -123,10 +125,34 @@ export function isStockType(id: string): id is StockType {
   return BY_ID.has(id as StockType);
 }
 
-/** The types on this household's list, in list order. */
-export function typesFor(members: HouseholdMembers, category?: StockCategory): StockTypeInfo[] {
+/** The types on this household's list, in list order: without what doesn't apply to them or they don't need. */
+export function typesFor(household: HouseholdNeeds, category?: StockCategory): StockTypeInfo[] {
   return STOCK_TYPES.filter(
-    (t) => (!category || t.category === category) && (!t.appliesTo || t.appliesTo(members)),
+    (t) =>
+      (!category || t.category === category) &&
+      (!t.appliesTo || t.appliesTo(household)) &&
+      !household.notNeeded?.includes(t.id),
+  );
+}
+
+/**
+ * Whether a household can say «trenger ikke» to this type. Not water, food or heat: those are
+ * what the days are counted from, and nobody manages without them.
+ */
+export function canSkip(type: StockTypeInfo): boolean {
+  return type.measure === undefined && type.id !== 'heatSource';
+}
+
+/**
+ * What the household has said it doesn't need, in list order. A type with something in it is
+ * back on the list whatever was said, so an item is never out of sight.
+ */
+export function notNeededTypes(household: HouseholdNeeds, items: StockItem[]): StockTypeInfo[] {
+  return STOCK_TYPES.filter(
+    (t) =>
+      household.notNeeded?.includes(t.id) &&
+      (!t.appliesTo || t.appliesTo(household)) &&
+      !items.some((item) => item.type === t.id),
   );
 }
 

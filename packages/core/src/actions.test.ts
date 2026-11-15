@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { nextActions, type NextAction } from './actions';
 import { item } from './test-items';
-import type { HouseholdMembers, StockItem } from './types';
+import type { HouseholdMembers, StockItem, StockType } from './types';
 
 const today = '2026-09-30';
 const two: HouseholdMembers = { adults: 2, seniors: 0, children: 0, infants: 0, dogs: 0, cats: 0 };
@@ -57,6 +57,13 @@ describe('nextActions', () => {
   it('puts a missing heat source before the amounts, since it alone holds the number at zero', () => {
     const cold = items.filter((i) => i.type !== 'heatSource');
     expect(nextActions(two, cold, today).slice(0, 3).map(label)).toEqual(['get heatSource', 'buyWater', 'buyFood']);
+  });
+
+  it('does not ask for what the household does not need', () => {
+    const get = (notNeeded: StockType[]) =>
+      nextActions({ ...two, notNeeded }, items, today).flatMap((a) => (a.kind === 'getType' ? [a.type.id] : []));
+    expect(get([])).toContain('iodine');
+    expect(get(['iodine'])).not.toContain('iodine');
   });
 
   it('asks for baby food and pet food when the household needs them', () => {

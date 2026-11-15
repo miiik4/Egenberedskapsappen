@@ -1,14 +1,17 @@
 import {
+  canSkip,
   checklist,
   itemsToReplace,
   CATEGORY_NAMES,
   daysBetween,
   isExpired,
   nextActions,
+  notNeededTypes,
   TARGET_DAYS,
   type ChecklistCategory,
   type ChecklistType,
   type StockCategory,
+  type StockType,
 } from '@egenberedskap/core';
 import { router, Stack } from 'expo-router';
 import { Fragment, useState } from 'react';
@@ -19,9 +22,10 @@ import { CheckCircle, PartialCircle, WarningDot } from '@/components/ui/check-ci
 import { Icon } from '@/components/ui/icon';
 import { Row, Section } from '@/components/ui/list';
 import { Screen } from '@/components/ui/screen';
+import { SwipeAction } from '@/components/ui/swipe-delete';
 import { ToolbarIcons } from '@/components/toolbar-icons';
 import { Colors, Spacing } from '@/constants/theme';
-import { useData } from '@/data/data-provider';
+import { useActions, useData } from '@/data/data-provider';
 import { capitalize, formatExpiry, formatMeals, formatNumber, todayIso } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
@@ -32,11 +36,18 @@ const TASKS_SHOWN = 3;
  * DSB's whole list as one checklist, split by category as in Reminders. A type is ticked off
  * once it has something in it, and water and food once there's enough for the week, so the
  * list says what Oversikt says. The things worth getting first are lifted to the top, and each
- * category folds, so the list is a row per category until one is opened.
+ * category folds, so the list is a row per category until one is opened. What the household doesn't
+ * need (iodine tablets for a couple over 40) is swiped off the list and waits at the bottom.
  */
 export default function Lager() {
   const { household, stock } = useData();
+  const { setNotNeeded } = useActions();
   const today = todayIso();
+  const skipped = notNeededTypes(household, stock);
+  const skip = (type: StockType, on: boolean) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setNotNeeded(type, on);
+  };
   const list = checklist(household, stock, today);
   const actions = nextActions(household, stock, today);
   const missing = list.reduce((n, c) => n + c.types.filter((t) => !t.have).length, 0);
@@ -68,10 +79,33 @@ export default function Lager() {
 
         <Section header="Hele listen" separatorInset={56}>
           {list.flatMap((entry) =>
-            categoryRows({ entry, open: open.includes(entry.category), onToggle: () => toggle(entry.category), today }),
+            categoryRows({
+              entry,
+              open: open.includes(entry.category),
+              onToggle: () => toggle(entry.category),
+              onSkip: (type) => skip(type, true),
+              today,
+            }),
           )}
         </Section>
-        <Text style={styles.footnote}>Basert på DSBs liste for egenberedskap. Mengdene tilpasses husstanden.</Text>
+        <Text style={styles.footnote}>
+          Basert på DSBs liste for egenberedskap. Mengdene tilpasses husstanden. Sveip til venstre på det dere ikke
+          trenger.
+        </Text>
+
+        {skipped.length > 0 && (
+          <Section header="Trenger ikke" footer="Teller ikke med på listen. Trykk for å legge det tilbake.">
+            {skipped.map((type) => (
+              <Row
+                key={type.id}
+                title={type.name}
+                trailing={<Text style={styles.restore}>Legg tilbake</Text>}
+                accessibilityLabel={`${type.name}, legg tilbake på listen`}
+                onPress={() => skip(type.id, false)}
+              />
+            ))}
+          </Section>
+        )}
       </Screen>
     </>
   );
@@ -86,11 +120,13 @@ function categoryRows({
   entry,
   open,
   onToggle,
+  onSkip,
   today,
 }: {
   entry: ChecklistCategory;
   open: boolean;
   onToggle: () => void;
+  onSkip: (type: StockType) => void;
   today: string;
 }) {
   const { category, types, days } = entry;
@@ -123,7 +159,9 @@ function categoryRows({
     open && (
       <View key={`${category}-types`} style={styles.nested}>
         {[
-          ...types.map((type) => <TypeRow key={type.id} type={type} today={today} share={(days ?? 0) / TARGET_DAYS} />),
+          ...types.map((type) => (
+            <TypeRow key={type.id} type={type} today={today} share={(days ?? 0) / TARGET_DAYS} onSkip={() => onSkip(type.id)} />
+          )),
           ...(days !== undefined
             ? [
                 <Row
@@ -146,7 +184,17 @@ function categoryRows({
   ];
 }
 
-function TypeRow({ type, today, share }: { type: ChecklistType; today: string; share: number }) {
+function TypeRow({
+  type,
+  today,
+  share,
+  onSkip,
+}: {
+  type: ChecklistType;
+  today: string;
+  share: number;
+  onSkip: () => void;
+}) {
   const expiring = itemsToReplace(type.items, today)[0];
   // What still counts: expired items are in the list only so they can be replaced.
   const own = type.items.filter((item) => !isExpired(item, today)).reduce(
@@ -161,7 +209,7 @@ function TypeRow({ type, today, share }: { type: ChecklistType; today: string; s
         : formatMeals(own)
       : type.hint || undefined;
 
-  return (
+  const row = (
     <Row
       title={type.name}
       subtitle={subtitle}
@@ -174,11 +222,25 @@ function TypeRow({ type, today, share }: { type: ChecklistType; today: string; s
       }
     />
   );
+  // Only what's empty can go: a type with something in it stays where the items can be seen.
+  if (!canSkip(type) || type.items.length > 0) return row;
+  return (
+    <SwipeAction
+      onAction={onSkip}
+      text="Trenger ikke"
+      accessibilityLabel={`Trenger ikke ${type.name.toLowerCase()}`}
+      color={Colors.secondaryLabel}
+      width={132}
+      background={Colors.background}>
+      {row}
+    </SwipeAction>
+  );
 }
 
 const styles = StyleSheet.create({
   nested: { backgroundColor: Colors.background },
   nestedSeparator: { height: 1, backgroundColor: Colors.separator, marginLeft: 56 },
   subtitle: { marginHorizontal: Spacing.screen + 4, marginTop: Spacing.underTitle, fontSize: 17, color: Colors.secondaryLabel },
+  restore: { fontSize: 17, color: Colors.accent },
   footnote: { marginHorizontal: Spacing.screen + Spacing.rowInset, marginTop: -14, fontSize: 13, lineHeight: 18, color: Colors.secondaryLabel },
 });

@@ -103,6 +103,14 @@ describe('migrations', () => {
     expect(old.prepare("SELECT COUNT(*) AS n FROM settings WHERE key = 'syncCursor'").get()).toEqual({ n: 0 });
   });
 
+  it('starts the backup download over for what the household does not need, a new synced setting', async () => {
+    const old = new DatabaseSync(':memory:');
+    await migrate(nodeExecutor(old), 9);
+    old.exec(`INSERT INTO settings (key, value, updated_at) VALUES ('syncCursor', '2026-10-01T10:00:00Z', '2026-10-01T10:00:00Z')`);
+    await migrate(nodeExecutor(old));
+    expect(old.prepare("SELECT COUNT(*) AS n FROM settings WHERE key = 'syncCursor'").get()).toEqual({ n: 0 });
+  });
+
   it('upgrades a version 1 database without losing data', async () => {
     // A phone that installed the very first release: schema 1, with data written then.
     const old = new DatabaseSync(':memory:');
@@ -138,7 +146,7 @@ describe('first launch', () => {
     const data = await store.load();
     expect(data.onboarded).toBe(true);
     expect(data.onboardedOn).toBe('2026-10-02');
-    expect(data.household).toEqual({ id: 'household', ...two });
+    expect(data.household).toEqual({ id: 'household', ...two, notNeeded: [] });
     expect(data.properties).toEqual([{ id: 'id1', name: 'Hjemme', shortName: 'Hjemme' }]);
     expect(data.selectedPropertyId).toBe('id1');
     expect(data.rooms.map((r) => r.name)).toEqual(DEFAULT_ROOMS);
@@ -233,7 +241,7 @@ describe('contacts, meeting place and household', () => {
   it('changes the household the numbers are measured against', async () => {
     const family = { adults: 2, seniors: 1, children: 1, infants: 0, dogs: 1, cats: 0 };
     await store.updateHousehold(family);
-    expect((await store.load()).household).toEqual({ id: 'household', ...family });
+    expect((await store.load()).household).toEqual({ id: 'household', ...family, notNeeded: [] });
     await expect(store.updateHousehold({ ...family, children: -1 })).rejects.toThrow('children');
     await expect(store.updateHousehold({ ...family, adults: 0, seniors: 0, children: 0 })).rejects.toThrow(ValidationError);
   });
@@ -579,6 +587,20 @@ describe('insurance and beredskapssjekk', () => {
     today = '2027-01-03';
     await store.recordCheck({ household: 'Ja' });
     expect((await store.load()).lastCheck).toBe('2027-01-03');
+  });
+
+  it('keeps what the household does not need until it is put back', async () => {
+    expect((await store.load()).household.notNeeded).toEqual([]);
+    await store.setNotNeeded('iodine', true);
+    await store.setNotNeeded('menstrualProducts', true);
+    await store.setNotNeeded('iodine', true);
+    expect((await store.load()).household.notNeeded).toEqual(['menstrualProducts', 'iodine']);
+    await store.setNotNeeded('menstrualProducts', false);
+    expect((await store.load()).household.notNeeded).toEqual(['iodine']);
+    // Water, food and heat are what the days are counted from.
+    await expect(store.setNotNeeded('drinkingWater', true)).rejects.toThrow();
+    await expect(store.setNotNeeded('heatSource', true)).rejects.toThrow();
+    await expect(store.setNotNeeded('gold' as never, true)).rejects.toThrow();
   });
 
   it('keeps what the beredskapssjekk left to do until it is cleared', async () => {

@@ -18,7 +18,7 @@ import type { StockDraft } from '@egenberedskap/store';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
-import { CountField, DateField, NumberField, parseNumber, TextField } from '@/components/form/fields';
+import { CountField, DateField, MAX_COUNT, NumberField, parseNumber, TextField } from '@/components/form/fields';
 import { MenuField } from '@/components/form/menu-field';
 import { FormSheet } from '@/components/form/sheet';
 import { Row, Section } from '@/components/ui/list';
@@ -55,6 +55,7 @@ export default function Vare() {
   const [typeChosen, setTypeChosen] = useState(forType);
   const [name, setName] = useState(forType ? stockType(initialType).name : '');
   const [quantity, setQuantity] = useState(1);
+  const [kroner, setKroner] = useState('');
   const [litres, setLitres] = useState(params.litres ?? short('litres'));
   const [meals, setMeals] = useState(params.meals ?? short('meals'));
   // Water is dated from when it was filled, today unless said otherwise, and «Bytt innen» follows from that until
@@ -99,7 +100,8 @@ export default function Vare() {
     const draft: StockDraft = {
       name: name.trim() || info.name,
       type,
-      quantity,
+      // Cash is an amount in kroner; without one it's 1, as a thing the household has.
+      quantity: info.unit === 'kr' ? Math.max(1, parseNumber(kroner) ?? 1) : quantity,
       ...(info.measure === 'litres' && { litres: parseNumber(litres)! }),
       ...(info.measure === 'meals' && { meals: parseNumber(meals)! }),
       ...(expires && { expiresOn: expires }),
@@ -138,13 +140,17 @@ export default function Vare() {
           info.measure === 'litres'
             ? `Regnestykket bruker ${WATER_LITRES_PER_PERSON_PER_DAY} liter per person per døgn, til drikke, matlaging og hygiene.`
             : info.measure === 'meals'
-              ? `Omtrent hvor mange måltider alt dette gir. ${MEALS_PER_PERSON_PER_DAY} måltider er ett døgn for én person.`
-              : 'Vi foreslår type ut fra navnet.'
+              ? `«Antall» er pakker eller bokser. «Rekker til» er omtrent hvor mange måltider alt dette gir. ${MEALS_PER_PERSON_PER_DAY} måltider er ett døgn for én person.`
+              : info.unit === 'kr'
+                ? 'Hvor mye dere har liggende i kontanter.'
+                : 'Vi foreslår type ut fra navnet.'
         }>
         {info.measure === 'litres' ? (
           <NumberField label="Antall liter" value={litres} onChange={setLitres} unit="l" decimals />
+        ) : info.unit === 'kr' ? (
+          <NumberField label="Beløp" value={kroner} onChange={setKroner} unit="kr" />
         ) : (
-          <CountField label="Antall" value={quantity} onChange={setQuantity} max={99} />
+          <CountField label="Antall" value={quantity} onChange={setQuantity} max={MAX_COUNT} unit="stk" />
         )}
         {info.measure === 'meals' && (
           <NumberField label="Rekker til" value={meals} onChange={setMeals} unit="måltider" decimals />
