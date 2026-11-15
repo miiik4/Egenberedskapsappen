@@ -654,6 +654,9 @@ public: anyone can read published documents, never drafts).
   - [x] «Trenger ikke»: swipe an empty type left on Lager and it leaves the list, the counts and «Neste å gjøre»,
         and waits under «Trenger ikke» at the bottom until it's put back. Not for water, food or heat. A synced
         setting (`notNeeded`, migration 10)
+  - [x] Published to the `preview` channel 2026-11-15 (update group `392d3748`, runtime 1.8.0, commit 6501a02).
+        Not on `production`: once a phone has run migration 10, an update without it can't open the database, so
+        this can't be rolled back by republishing the old bundle, only fixed forward
   - [ ] **(Mikkel)** Try all three on a phone (iOS and Android) before `eas update`: the typed count with the
         keyboard up in «Ny vare», the swipe inside an opened category, and VoiceOver, which can't reach a swipe
 - Ideas waiting for user demand: «Jeg er trygg», hazard warnings, power-saving mode, evacuation bag, barcode
