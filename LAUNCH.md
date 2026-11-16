@@ -646,8 +646,7 @@ public: anyone can read published documents, never drafts).
 - «Meld en skade» guide on top of the damage claims already stored on the phone
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
 - Asked for by a customer (feedback Mikkel passed on 2026-11-15). Built the same day, JS only, so it can go out
-  with `eas update`; **not released, and not run on a phone or simulator** (no phone was connected, and Xcode's
-  licence isn't accepted on this Mac). Tests, typecheck, lint and an iOS bundle pass.
+  with `eas update`; **not on `production`**. Tests, typecheck, lint and an iOS bundle pass.
   - [x] Typing the count: the number between − and + on «Antall» is a field (`CountField`), up to 999
   - [x] A unit on the count: «stk» after the number; cash is «Beløp» in kroner (kept in `quantity`; cash saved
         earlier has the count 1 and shows no amount); the food footer says «Antall» is packs or tins
@@ -657,8 +656,19 @@ public: anyone can read published documents, never drafts).
   - [x] Published to the `preview` channel 2026-11-15 (update group `392d3748`, runtime 1.8.0, commit 6501a02).
         Not on `production`: once a phone has run migration 10, an update without it can't open the database, so
         this can't be rolled back by republishing the old bundle, only fixed forward
-  - [ ] **(Mikkel)** Try all three on a phone (iOS and Android) before `eas update`: the typed count with the
-        keyboard up in «Ny vare», the swipe inside an opened category, and VoiceOver, which can't reach a swipe
+  - [x] Seen in the iOS simulator 2026-11-16 (iPhone 17 Pro Max, dev build with Metro, demo data): migration 10
+        ran; «Antall» showed «10 stk», + gave 11, typing gave 240 and it was kept; «Ny vare» for Kontanter had
+        «Beløp … kr», 2500 saved and showed as «2 500 kr»; swiping Batterier inside the opened «Lys og strøm»
+        showed «Trenger ikke», the type left the list and the counts, and «Legg tilbake» put it back. Typed with
+        the Mac's keyboard, so the on-screen keyboard over the fields is not seen; VoiceOver not tried
+  - [x] Seen on the OnePlus 6 over adb 2026-11-16 (Android 11, preview build 1.8.0 from commit 722cd7f, installed
+        over 1.7.2 with its data): swiping Batterier inside the opened «Lys og strøm» showed «Trenger ikke», the
+        category went from 4 to 3 types and «Legg tilbake» put it back; «Ny vare» for Kontanter took 3000 with the
+        on-screen keyboard up and listed «3 000 kr»; «Antall» took a typed 40, + gave 41, saved as «41 stk»
+  - [ ] The very first open after that install showed «Kunne ikke åpne dataene» once (log: `NativeDatabase.
+        prepareAsync` rejected, the statement's database object no longer valid). It came after the migration had
+        run, the app had been started twice by adb, once while the phone was locked, and it did not come back in
+        five restarts (three cold, one double start, one while locked). Not explained; watch for it
 - Ideas waiting for user demand: «Jeg er trygg», hazard warnings, power-saving mode, evacuation bag, barcode
   scanning, blog
 - A place picker on «Tilfluktsrom» (choose a municipality or town, all on the phone) for when there is no GPS fix
