@@ -646,7 +646,7 @@ public: anyone can read published documents, never drafts).
 - «Meld en skade» guide on top of the damage claims already stored on the phone
 - Removing a phone from a backup (devices are only ever added; after 20 reinstalls a vault is full)
 - Asked for by a customer (feedback Mikkel passed on 2026-11-15). Built the same day, JS only, so it can go out
-  with `eas update`; **not on `production`**. Tests, typecheck, lint and an iOS bundle pass.
+  with `eas update`. Tests, typecheck, lint and an iOS bundle pass.
   - [x] Typing the count: the number between − and + on «Antall» is a field (`CountField`), up to 999
   - [x] A unit on the count: «stk» after the number; cash is «Beløp» in kroner (kept in `quantity`; cash saved
         earlier has the count 1 and shows no amount); the food footer says «Antall» is packs or tins
@@ -654,8 +654,11 @@ public: anyone can read published documents, never drafts).
         and waits under «Trenger ikke» at the bottom until it's put back. Not for water, food or heat. A synced
         setting (`notNeeded`, migration 10)
   - [x] Published to the `preview` channel 2026-11-15 (update group `392d3748`, runtime 1.8.0, commit 6501a02).
-        Not on `production`: once a phone has run migration 10, an update without it can't open the database, so
-        this can't be rolled back by republishing the old bundle, only fixed forward
+        Once a phone has run migration 10, an update without it can't open the database, so this can't be
+        rolled back by republishing the old bundle, only fixed forward
+  - [x] **Published to `production` 2026-11-16** on Mikkel's word (update group `a49aff94`, runtime 1.8.0, commit
+        3b0f791): reaches 1.8.0 store builds on their next launch and is used from the launch after. Not seen
+        arriving on a store build
   - [x] Seen in the iOS simulator 2026-11-16 (iPhone 17 Pro Max, dev build with Metro, demo data): migration 10
         ran; «Antall» showed «10 stk», + gave 11, typing gave 240 and it was kept; «Ny vare» for Kontanter had
         «Beløp … kr», 2500 saved and showed as «2 500 kr»; swiping Batterier inside the opened «Lys og strøm»
