@@ -649,6 +649,8 @@ public: anyone can read published documents, never drafts).
       is asked again. JavaScript only
 - [x] «Senere» hides it for 90 days (Mikkel decided 2026-11-26). The 14 days before the first question are
       Claude's choice
+- [x] Published to the `preview` channel 2026-11-26 on Mikkel's word (update group `3ecf1ac1`, runtime 1.8.0,
+      commit bb6a23f). Not seen arriving on a preview build. Not published to `production`
 - [ ] **(Mikkel)** Read the text a friend receives: «Jeg bruker Egenberedskapsappen til å holde oversikt over
       beredskapen hjemme. Kanskje noe for deg?», and the footer «Kjenner du noen som bør ha et lager hjemme? Send
       dem lenken til appen.»
