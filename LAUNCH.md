@@ -650,7 +650,11 @@ public: anyone can read published documents, never drafts).
 - [x] «Senere» hides it for 90 days (Mikkel decided 2026-11-26). The 14 days before the first question are
       Claude's choice
 - [x] Published to the `preview` channel 2026-11-26 on Mikkel's word (update group `3ecf1ac1`, runtime 1.8.0,
-      commit bb6a23f). Not seen arriving on a preview build. Not published to `production`
+      commit bb6a23f). Not seen arriving on a preview build
+- [x] **Published to `production` 2026-11-26** on Mikkel's word (update group `0c889270`, runtime 1.8.0, commit
+      f5d7481): reaches 1.8.0 store builds on their next launch and is used from the launch after. Not seen
+      arriving on a store build, and it went out without having been seen on Android or on a preview build. No new
+      store builds: the change is JavaScript only
 - [ ] **(Mikkel)** Read the text a friend receives: «Jeg bruker Egenberedskapsappen til å holde oversikt over
       beredskapen hjemme. Kanskje noe for deg?», and the footer «Kjenner du noen som bør ha et lager hjemme? Send
       dem lenken til appen.»
