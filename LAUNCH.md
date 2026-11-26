@@ -647,8 +647,8 @@ public: anyone can read published documents, never drafts).
       `packages/core/src/share-prompt.ts`). «Del appen» and «Ikke spør igjen» hide it for good; «Senere» lets it
       come back after 90 days. Kept in two settings on this phone, not synced (no migration), so a restored phone
       is asked again. JavaScript only
-- [ ] **(Mikkel)** The 14 and 90 days and asking again after «Senere» are Claude's choices; say if it should be
-      asked once only
+- [x] «Senere» hides it for 90 days (Mikkel decided 2026-11-26). The 14 days before the first question are
+      Claude's choice
 - [ ] **(Mikkel)** Read the text a friend receives: «Jeg bruker Egenberedskapsappen til å holde oversikt over
       beredskapen hjemme. Kanskje noe for deg?», and the footer «Kjenner du noen som bør ha et lager hjemme? Send
       dem lenken til appen.»
