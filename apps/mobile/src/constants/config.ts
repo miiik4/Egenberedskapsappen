@@ -15,3 +15,6 @@ export const CONTACT_EMAIL = 'kontakt@holmtall.no';
 
 /** The privacy policy on the website. Google Play requires a link to it inside the app, not only in the listing. */
 export const PRIVACY_POLICY_URL = 'https://egenberedskapsappen.no/personvern';
+
+/** The link «Del appen med en venn» sends: the website's front page, which has the buttons to both stores. */
+export const APP_SHARE_URL = 'https://egenberedskapsappen.no';

@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { router, Stack } from 'expo-router';
-import { Alert, Linking, Platform, StyleSheet } from 'react-native';
+import { Alert, Linking, Platform, Share, StyleSheet } from 'react-native';
 
 import {
   CHECK_INTERVALS_MONTHS,
@@ -15,7 +15,7 @@ import { MembersSection } from '@/components/form/members';
 import { Row, Section } from '@/components/ui/list';
 import { Switch } from '@/components/ui/switch';
 import { Screen } from '@/components/ui/screen';
-import { CONTACT_EMAIL, EGENBEREDSKAP_PLUS_ENABLED, PRIVACY_POLICY_URL } from '@/constants/config';
+import { APP_SHARE_URL, CONTACT_EMAIL, EGENBEREDSKAP_PLUS_ENABLED, PRIVACY_POLICY_URL } from '@/constants/config';
 import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { deleteEverything } from '@/data/delete-everything';
@@ -150,6 +150,9 @@ export default function Husstand() {
             }
           />
         </Section>
+        <Section footer="Kjenner du noen som bør ha et lager hjemme? Send dem lenken til appen.">
+          <Row title="Del appen med en venn" titleColor={Colors.accent} onPress={shareApp} />
+        </Section>
         <Section footer="Savner du noe, eller er noe feil? Skriv til oss på e-post. Personvernerklæringen sier hva appen lagrer, og hvor.">
           <Row title="Gi tilbakemelding" chevron onPress={giveFeedback} />
           <Row title="Personvernerklæring" chevron onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {})} />
@@ -157,6 +160,17 @@ export default function Husstand() {
         <DestructiveButton label="Slett alle data" onPress={wipe} />
       </Screen>
     </>
+  );
+}
+
+/**
+ * The system share sheet with a line about the app and the link to the website, which has both stores.
+ * iOS takes the link as `url`, so Messages shows a preview; Android only shares `message`.
+ */
+function shareApp() {
+  const message = 'Jeg bruker Egenberedskapsappen til å holde oversikt over beredskapen hjemme. Kanskje noe for deg?';
+  Share.share(Platform.OS === 'ios' ? { message, url: APP_SHARE_URL } : { message: `${message} ${APP_SHARE_URL}` }).catch(
+    () => {},
   );
 }
 

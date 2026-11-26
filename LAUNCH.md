@@ -628,6 +628,17 @@ public: anyone can read published documents, never drafts).
       eller varsleren.») against DSB's advice on smoke alarms; nothing here has been checked by a person
 - [ ] **(Mikkel)** Should 1 December (røykvarslerens dag) be offered as a choice of its own?
 
+## 12. Share the app with a friend (Mikkel asked for it 2026-11-26)
+
+- [ ] *(in code; tests, typecheck and lint pass. Not seen running anywhere: the simulator wouldn't boot because the
+      Xcode license has to be accepted again, and no Android phone was connected)* «Del appen med en venn» in
+      Innstillinger, in its own section above «Gi tilbakemelding». Opens the system share sheet with one line of
+      text and `APP_SHARE_URL` (`constants/config.ts`), the website's front page, which has the buttons to both
+      stores. Nothing is counted or tracked. JavaScript only, so it can go out with `eas update`
+- [ ] **(Mikkel)** Read the text a friend receives: «Jeg bruker Egenberedskapsappen til å holde oversikt over
+      beredskapen hjemme. Kanskje noe for deg?», and the footer «Kjenner du noen som bør ha et lager hjemme? Send
+      dem lenken til appen.»
+
 ## After launch (1.1 and later, only when users ask)
 
 - Buying Egenberedskap+ in the app (subscription, 29 kr/mnd; consider a yearly price and the store's 15–30 %).
