@@ -10,7 +10,7 @@ import {
   type Coverage,
   type NextAction,
 } from '@egenberedskap/core';
-import { router, Stack, type Href } from 'expo-router';
+import { router, Stack, useIsFocused, type Href } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { PartnerCard } from '@/components/partner-card';
@@ -37,6 +37,7 @@ import {
   householdLabel,
   todayIso,
 } from '@/lib/format';
+import { useSharePrompt } from '@/lib/share-app';
 import { Text } from '@/components/ui/text';
 
 const TASKS_SHOWN = 3;
@@ -61,6 +62,7 @@ export default function Oversikt() {
   const checkIn = daysUntilCheck(checkFrom, data.checkIntervalMonths, today);
   const { property, policy, alert } = useHomeInsurance();
   const { permission, requestPermission } = useNotifications();
+  useSharePrompt(useIsFocused());
 
   const toLager = (href: Href) => router.navigate(href, { withAnchor: true });
   const nextCheckOn = formatDate(nextCheck(checkFrom, data.checkIntervalMonths));

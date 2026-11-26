@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { router, Stack } from 'expo-router';
-import { Alert, Linking, Platform, Share, StyleSheet } from 'react-native';
+import { Alert, Linking, Platform, StyleSheet } from 'react-native';
 
 import {
   CHECK_INTERVALS_MONTHS,
@@ -15,13 +15,14 @@ import { MembersSection } from '@/components/form/members';
 import { Row, Section } from '@/components/ui/list';
 import { Switch } from '@/components/ui/switch';
 import { Screen } from '@/components/ui/screen';
-import { APP_SHARE_URL, CONTACT_EMAIL, EGENBEREDSKAP_PLUS_ENABLED, PRIVACY_POLICY_URL } from '@/constants/config';
+import { CONTACT_EMAIL, EGENBEREDSKAP_PLUS_ENABLED, PRIVACY_POLICY_URL } from '@/constants/config';
 import { Colors, Spacing } from '@/constants/theme';
 import { useActions, useData } from '@/data/data-provider';
 import { deleteEverything } from '@/data/delete-everything';
 import { useBackup } from '@/backup/backup-provider';
 import { useDocumentLock } from '@/documents/lock';
 import { useNotifications } from '@/notifications/notifications-provider';
+import { shareApp } from '@/lib/share-app';
 import { CHECK_INTERVAL_NAMES, SMOKE_ALARM_TEST_NAMES, householdLabel } from '@/lib/format';
 import { Text } from '@/components/ui/text';
 
@@ -160,17 +161,6 @@ export default function Husstand() {
         <DestructiveButton label="Slett alle data" onPress={wipe} />
       </Screen>
     </>
-  );
-}
-
-/**
- * The system share sheet with a line about the app and the link to the website, which has both stores.
- * iOS takes the link as `url`, so Messages shows a preview; Android only shares `message`.
- */
-function shareApp() {
-  const message = 'Jeg bruker Egenberedskapsappen til å holde oversikt over beredskapen hjemme. Kanskje noe for deg?';
-  Share.share(Platform.OS === 'ios' ? { message, url: APP_SHARE_URL } : { message: `${message} ${APP_SHARE_URL}` }).catch(
-    () => {},
   );
 }
 

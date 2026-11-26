@@ -18,6 +18,7 @@ import {
   type FollowUp,
   type Household,
   type PartnerGreeting,
+  type SharePrompt,
   type SmokeAlarmTest,
   type SmokeAlarmTestIntervalMonths,
   type Suggestion, type HouseholdMembers, type IsoDate, type StockItem, type StockType } from '@egenberedskap/core';
@@ -101,6 +102,8 @@ export type AppData = {
   followUps: FollowUp[];
   /** Reminders to test the smoke alarms, or null when off. This phone only: it's a choice about this phone's notifications. */
   smokeAlarmTest: SmokeAlarmTest | null;
+  /** «Vil du dele appen med en venn?»: whether it's hidden for good and when it was last shown. This phone only. */
+  sharePrompt: SharePrompt;
   /** Ask for Face ID or the phone's code before showing documents. On unless turned off. */
   documentLock: boolean;
   /** Who the belongings are documented for, on the report: an insurer needs a person, not just a phone. */
@@ -317,6 +320,8 @@ export function createStore({ db, newId, now, today }: Deps) {
         lastPosition,
         smokeAlarmTestMonths,
         smokeAlarmTestFrom,
+        sharePromptHidden,
+        sharePromptAskedOn,
       ] = await Promise.all(
         [
           'onboardedOn',
@@ -340,6 +345,8 @@ export function createStore({ db, newId, now, today }: Deps) {
           'lastPosition',
           'smokeAlarmTestMonths',
           'smokeAlarmTestFrom',
+          'sharePromptHidden',
+          'sharePromptAskedOn',
         ].map(
           getSetting,
         ),
@@ -543,6 +550,7 @@ export function createStore({ db, newId, now, today }: Deps) {
           smokeAlarmTestFrom && isSmokeAlarmTestInterval(Number(smokeAlarmTestMonths))
             ? { everyMonths: Number(smokeAlarmTestMonths) as SmokeAlarmTestIntervalMonths, from: smokeAlarmTestFrom }
             : null,
+        sharePrompt: { hidden: sharePromptHidden === 'yes', askedOn: sharePromptAskedOn ?? null },
         documentLock: documentLock !== 'off',
         analysisConsent: analysisConsent === 'yes',
         owner: { name: ownerName ?? '', ...(ownerBirthDate && { birthDate: ownerBirthDate }) },
@@ -948,6 +956,12 @@ export function createStore({ db, newId, now, today }: Deps) {
         await setSetting('smokeAlarmTestFrom', months === null ? null : today());
       });
     },
+
+    /** The share question was shown today, so it waits before asking again. */
+    markSharePromptAsked: () => setSetting('sharePromptAskedOn', today()),
+
+    /** «Ikke spør igjen», or the user shared: the share question never comes back. */
+    hideSharePrompt: () => setSetting('sharePromptHidden', 'yes'),
 
     setDocumentLock: (on: boolean) => setSetting('documentLock', on ? 'on' : 'off'),
 

@@ -638,6 +638,17 @@ public: anyone can read published documents, never drafts).
       Innstillinger, in its own section above «Gi tilbakemelding». Opens the system share sheet with one line of
       text and `APP_SHARE_URL` (`constants/config.ts`), the website's front page, which has the buttons to both
       stores. Nothing is counted or tracked. JavaScript only, so it can go out with `eas update`
+- [ ] *(in code; tests, typecheck and lint pass. Seen in the iOS simulator by Claude 2026-11-26, not by a person:
+      the question on Oversikt, «Del appen» opening the share sheet, «Ikke spør igjen» saved, and no question after
+      a restart once hidden. «Senere» and the 90 days are covered by tests only. Not seen on Android, where the
+      three buttons sit in a row)* A question on Oversikt, «Vil du dele appen med en venn?», with «Del appen»,
+      «Ikke spør igjen» and «Senere» (Mikkel asked for it 2026-11-26). Asked 14 days after the household was set
+      up, only with something in the stockpile and only on Oversikt (`shouldAskToShare` in
+      `packages/core/src/share-prompt.ts`). «Del appen» and «Ikke spør igjen» hide it for good; «Senere» lets it
+      come back after 90 days. Kept in two settings on this phone, not synced (no migration), so a restored phone
+      is asked again. JavaScript only
+- [ ] **(Mikkel)** The 14 and 90 days and asking again after «Senere» are Claude's choices; say if it should be
+      asked once only
 - [ ] **(Mikkel)** Read the text a friend receives: «Jeg bruker Egenberedskapsappen til å holde oversikt over
       beredskapen hjemme. Kanskje noe for deg?», and the footer «Kjenner du noen som bør ha et lager hjemme? Send
       dem lenken til appen.»

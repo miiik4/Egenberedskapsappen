@@ -633,6 +633,16 @@ describe('insurance and beredskapssjekk', () => {
     expect((await store.load()).smokeAlarmTest).toBeNull();
     await expect(store.setSmokeAlarmTest(2 as never)).rejects.toThrow();
   });
+
+  it('remembers when the share question was shown, and that it is hidden for good', async () => {
+    expect((await store.load()).sharePrompt).toEqual({ hidden: false, askedOn: null });
+    await store.markSharePromptAsked();
+    const asked = (await store.load()).sharePrompt;
+    expect(asked.hidden).toBe(false);
+    expect(asked.askedOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    await store.hideSharePrompt();
+    expect((await store.load()).sharePrompt.hidden).toBe(true);
+  });
 });
 
 describe('documents', () => {
