@@ -630,8 +630,11 @@ public: anyone can read published documents, never drafts).
 
 ## 12. Share the app with a friend (Mikkel asked for it 2026-11-26)
 
-- [ ] *(in code; tests, typecheck and lint pass. Not seen running anywhere: the simulator wouldn't boot because the
-      Xcode license has to be accepted again, and no Android phone was connected)* «Del appen med en venn» in
+- [ ] *(in code; tests, typecheck and lint pass. Seen in the iOS simulator by Claude 2026-11-26, not by a person
+      (iPhone 17 Pro Max, dev build with Metro): the row and its footer, and the share sheet with the website's
+      preview and «egenberedskapsappen.no». The sheet came on the second tap; the first may only have been slow.
+      The text as it lands in Messages or mail is not seen, as the simulator has neither. Not seen on Android)*
+      «Del appen med en venn» in
       Innstillinger, in its own section above «Gi tilbakemelding». Opens the system share sheet with one line of
       text and `APP_SHARE_URL` (`constants/config.ts`), the website's front page, which has the buttons to both
       stores. Nothing is counted or tracked. JavaScript only, so it can go out with `eas update`
